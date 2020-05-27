@@ -16,7 +16,8 @@ class PGMPath:
         self.genome_tail = gtail  # Genome for tail
 
     # Connect two PGMPaths
-    def connect(self, path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> PGMPath or None:
+    @staticmethod
+    def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> PGMPath or None:
         h = 0
         t = 0
         gh = 0
