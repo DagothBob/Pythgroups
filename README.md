@@ -6,7 +6,7 @@ Based on the original Java implementation of Pathgroups provided by the research
 - Provide a config file for the user to input the tree structure using the Newick format, along with any other data needed from the user.
 - Improve the clarity of the input and output of the program
 - Improve the readability of the code.
-- Provide implementations of the algorithm for other comparative genomic problems, such as the quartet and aliquoting problems.
+- Provide implementations of the algorithm for other comparative genomic problems, such as the genome aliquoting problem.
 
 ## References
 Zheng, C., Sankoff, D. *On the PATHGROUPS approach to rapid small phylogeny*. BMC Bioinformatics 12, S4 (2011). https://doi.org/10.1186/1471-2105-12-S1-S4 
