@@ -85,7 +85,7 @@ class Priority:
         cur_pos = self.empty_start
         first_empty_pos = self.empty_next[cur_pos]
 
-        # Update non-taken values
+        # Update cs/median_indexes and empty_start/previous
         self.cs_indexes[cur_pos] = cs_index
         self.median_indexes[cur_pos] = which_ancestor
         self.empty_start = first_empty_pos
@@ -119,7 +119,7 @@ class Priority:
         t_next = self.taken_next[cs_pos]
         last_empty_pos = self.empty_end
 
-        # Update non-taken values
+        # Update cs/median_indexes and empty_end/next
         self.cs_indexes[cs_pos] = -1
         self.median_indexes[cs_pos] = -1
         self.empty_next[last_empty_pos] = cs_pos
