@@ -9,11 +9,14 @@ from __future__ import annotations
 # Author: Holger Jensen                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 class BPGPath:
-    def __init__(self, head: int, tail: int, ghead: int, gtail: int):
-        self.head = head          # Head gene
-        self.tail = tail          # Tail gene
-        self.genome_head = ghead  # Genome for head
-        self.genome_tail = gtail  # Genome for tail
+    def __init__(self, head: int or None, tail: int or None, ghead: int or None, gtail: int or None):
+        if head is None or tail is None or ghead is None or gtail is None:
+            return
+        else:
+            self.head = head          # Head gene
+            self.tail = tail          # Tail gene
+            self.genome_head = ghead  # Genome for head
+            self.genome_tail = gtail  # Genome for tail
 
     def __str__(self):
         return "Head node is: " + str(self.head) + \
