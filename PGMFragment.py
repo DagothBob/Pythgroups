@@ -20,8 +20,8 @@ class PGMFragment:
         end2 = fragment.end2
         return cls(end1, end2)
 
-    def str(self):
-        return str(self.end1) + " " + str(self.end2)
+    def __str__(self):
+        return "end1: " + str(self.end1) + " | end2: " + str(self.end2)
 
 
 # Combines two fragments using the path between them to work out which ends to use
