@@ -1,3 +1,3 @@
 class GenomeInString:
     def __init__(self, chromosomes: [str]):
-        self.chromosomes = chromosomes
+        self.chromosomes: [str] = chromosomes
