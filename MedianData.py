@@ -1,3 +1,4 @@
+from __future__ import annotations
 from PGMPath import PGMPath
 from PGMFragment import PGMFragment
 from ChoiceStructure import ChoiceStructure
@@ -31,7 +32,7 @@ def get_gene_next_node(end1: int) -> int:
 
 def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> int or None:
     """
-
+    Find the gray edge end that matches the given fragment end
 
     Parameters
     ----------
@@ -54,6 +55,51 @@ def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> int or None:
                 return path.head
 
     return None
+
+
+def get_next_path(start_pos: int, paths: [PGMPath]) -> PGMPath or None:
+    """
+    Returns the first path it finds in paths
+    Renamed from getAPath() for accuracy
+
+    Parameters
+    ----------
+    start_pos : int
+        Where to start in the paths list
+    paths : [PGMPath]
+        List of paths to search
+
+    Returns
+    -------
+        PGMPath or None
+            If a path is found, return that, else return None
+    """
+    for i in range(start_pos, len(paths)):
+        if paths[i] is not None:
+            return paths[i]
+    return None
+
+
+def good_cycle(end1: int, end2: int) -> bool:
+    """
+    A good cycle has either of its ends be -1,
+    and if either are >= 0 then it's an incomplete path
+
+    Parameters
+    ----------
+    end1 : int
+        end1 of the path
+    end2 : int
+        end1 of the path
+
+    Returns
+    -------
+    bool
+        Good cycle or not
+    """
+    if end1 >= 0 or end2 >= 0:
+        return False
+    return end1 == -1 or end2 == -1
 
 
 class MedianData:
@@ -116,13 +162,172 @@ class MedianData:
             cs.position = -1
             cs.gray_edge = None
 
-            self.choice_structures[i] = cs
+            self.choice_structures[cs_index] = cs
             cs_index += 1
+
+    def count_total_distance(self, median: MedianData) -> int:
+        """
+        Calculate the total distances between the three genome paths from the given median
+        and this instance's gray edge
+
+        Parameters
+        ----------
+        median : MedianData
+            Median to calculate distances from
+
+        Returns
+        -------
+            int
+                Total distance between three genome paths from the given median and this instance's gray edge
+        """
+        d1 = self.get_distance(median.three_genome_paths[0], self.gray_edge)
+        d2 = self.get_distance(median.three_genome_paths[1], self.gray_edge)
+        d3 = self.get_distance(median.three_genome_paths[2], self.gray_edge)
+        return d1 + d2 + d3
+
+    def get_distance(self, p1: [PGMPath], p2: [PGMPath]) -> int:
+        """
+        Gets the distance between two sets of paths
+
+        Parameters
+        ----------
+        p1 : [PGMPath]
+        p2 : [PGMPath]
+
+        Returns
+        -------
+        int
+            The distance between two path sets, calculated as:
+                (total number of genes) + (number of chromosomes) - (number of cycles) - (number of "good" paths)
+        """
+
+        cycle_count, good_path_count, chr_count = 0, 0, 0
+        paths1 = List[PGMPath]
+
+        # Populates paths1 based on the heads and tails of each path in p1
+        # where negative values are set to -1
+        for path in p1:
+            if path is not None:
+                end1 = path.head
+                end2 = path.tail
+                if end1 < 0:
+                    end1 = -1
+                if end2 < 0:
+                    end2 = -1
+                if end1 > 0:
+                    paths1[end1] = PGMPath(end1, end2, 1, 1)
+                if end2 > 0:
+                    paths1[end2] = PGMPath(end2, end1, 1, 1)
+
+        # Counts the number of chromosomes in paths1
+        # Fills in None values with paths where head is i and tail is -1
+        # Count gets divided by 2 in the end I think because there are two paths for each gene?
+        for i in range(0, len(paths1)):
+            if paths1[i] is not None and paths1[i].tail == -1:
+                chr_count += 1
+            elif paths1[i] is None and i != 0:
+                paths1[i] = PGMPath(i, -1, 1, 1)
+                chr_count += 1
+        chr_count = math.trunc(chr_count / 2)
+
+        # Same as paths1, except without chr_count
+        paths2 = List[PGMPath]
+        for path in p2:
+            if path is not None:
+                end1 = path.head
+                end2 = path.tail
+                if end1 < 0:
+                    end1 = -1
+                if end2 < 0:
+                    end2 = -1
+                if end1 > 0:
+                    paths2[end1] = PGMPath(end1, end2, 2, 2)
+                if end2 > 0:
+                    paths2[end2] = PGMPath(end2, end1, 2, 2)
+
+        for i in range(0, len(paths1)):
+            if paths2[i] is None and i != 0:
+                paths2[i] = PGMPath(i, -2, 2, 2)
+
+        # Iterates through paths1 until all paths have been checked
+        next_path = get_next_path(0, paths1)
+        while next_path is not None:
+            n1 = next_path.head
+            n2 = next_path.tail
+            start_point = n1
+
+            if n1 > 0:
+                paths1[n1] = None
+            if n2 > 0:
+                paths1[n2] = None
+
+            if n1 > n2:
+                n_big = n1
+                n_small = n2
+            else:
+                n_big = n2
+                n_small = n1
+
+            more = True
+            while more:
+                if next_path.head < 0 and next_path.tail < 0:
+                    if good_cycle(next_path.head, next_path.tail):
+                        good_path_count += 1
+                    break
+
+                l = paths2[n_big]
+                m1 = l.head
+                m2 = l.tail
+                if m2 > 0:
+                    if m2 == n_small:
+                        cycle_count += 1
+                        more = False
+                        paths2[m1] = None
+                        paths2[m2] = None
+                    else:
+                        m2_path = paths1[m2]
+                        next_path = PGMPath(m2_path.tail, n_small, 1, 1)
+                        n1 = next_path.head
+                        n2 = next_path.tail
+                        if n1 > n2:
+                            n_big = n1
+                            n_small = n2
+                        else:
+                            n_big = n2
+                            n_small = n1
+
+                        other_path = paths1[m2].tail
+                        if other_path > 0:
+                            paths1[other_path] = None
+                        paths2[m1] = None
+                        paths2[m2] = None
+                        paths1[m2] = None
+                elif m2 < 0:
+                    if n_small < 0:
+                        if good_cycle(m2, n_small):
+                            good_path_count += 1
+                        more = False
+                        paths2[m1] = None
+                    elif n_small > 0:
+                        next_path = PGMPath(n_small, m2, 1, 2)
+                        n1 = next_path.head
+                        n2 = next_path.tail
+                        if n1 > n2:
+                            n_big = n1
+                            n_small = n2
+                        else:
+                            n_big = n2
+                            n_small = n1
+                        paths2[m1] = None
+
+            next_path = get_next_path(start_point, paths1)
+
+        return self.gene_num + chr_count - cycle_count - good_path_count
 
     def get_ancestors(self):
         """
         Fills medians[] with all the genome's medians (ancestors),
-        which are formatted for the purposes of printing to screen.
+        which are formatted for the purpose of printing to screen.
         """
 
         for i in range(0, len(self.fragments)):
