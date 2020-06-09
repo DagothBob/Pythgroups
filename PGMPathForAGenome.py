@@ -1,4 +1,4 @@
-import PGMPath
+from PGMPath import PGMPath
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -11,4 +11,4 @@ import PGMPath
 # # # # # # # # # # # # # # # # # # # # # # # # # #
 class PGMPathForAGenome:
     def __init__(self, paths: [PGMPath]):
-        self.paths = paths
+        self.paths: [PGMPath] = paths
