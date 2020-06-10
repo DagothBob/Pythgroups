@@ -9,13 +9,18 @@
 
 class GenomeInString:
     """
-    Attributes:
-        chromosomes: List of chromosomes expressed as strings
+    Attributes
+    ----------
+    chromosomes
+        List of chromosomes expressed as strings
     """
     def __init__(self, chromosomes: [str]):
         """
         Constructor
 
-        :param chromosomes: Chromosomes to construct from
+        Parameters
+        ----------
+        chromosomes
+            Chromosomes to construct from
         """
         self.chromosomes: [str] = chromosomes
