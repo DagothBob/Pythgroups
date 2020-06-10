@@ -1,31 +1,63 @@
 from __future__ import annotations
+
 import PGMPath
 
+"""                                
+ Fragment for use in the PathGroups algorithm (Median problem) 
+                                                               
+ Based on PGMFragment.java from C. Zheng and D. Sankoff (2011) 
+                                                               
+ Author: Oskar Jensen                                          
+"""
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Fragment for use in the PathGroups algorithm (Median problem) #
-#                                                               #
-# Based on PGMFragment.java from C. Zheng and D. Sankoff (2011) #
-#                                                               #
-# Author: Oskar Jensen                                          #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 class PGMFragment:
+    """
+    Attributes:
+        end1: One end of the fragment
+        end2: Other end of the fragment
+    """
     def __init__(self, end1: int, end2: int):
+        """
+        Constructor
+
+        :param end1: One end of the fragment
+        :param end2: Other end of the fragment
+        """
         self.end1 = end1
         self.end2 = end2
 
     @classmethod
     def from_fragment(cls, fragment: PGMFragment):
+        """
+        Construct new PGMFragment from existing one
+
+        :param fragment: To construct from
+        :return: New PGMFragment
+        """
         end1 = fragment.end1
         end2 = fragment.end2
+
         return cls(end1, end2)
 
     def __str__(self):
+        """
+        String override
+
+        :return: String representation of the object
+        """
         return "end1: " + str(self.end1) + " | end2: " + str(self.end2)
 
 
-# Combines two fragments using the path between them to work out which ends to use
 def combine(f_path: PGMPath, f1: PGMFragment, f2: PGMFragment) -> PGMFragment or None:
+    """
+    Combines two fragments using the path between them to work out which ends to use
+
+    :param f_path: Path fragment belongs to
+    :param f1: First fragment to combine
+    :param f2: Second fragment to combine
+    :return: New PGMFragment from the given fragments, or None if they cannot be combined
+    """
     h = f_path.head
     t = f_path.tail
     if (h == f1.end1 and t == f2.end1) or (t == f1.end1 and h == f2.end1):
