@@ -13,15 +13,24 @@ import PGMPath
 
 class ChoiceStructure:
     """
-    Attributes:
-        index_from: Object instance identifier
-        for_which_genome: For which genome this structure refers to
-        priority: Priority level for makeCycles algorithm
-        position: Position of the choice structure in Priority's cs_index
-        genome_1_path: Path for genome 1
-        genome_2_path: Path for genome 2
-        genome_3_path: Path for genome 3
-        gray_edge: Used when updating paths and priorities in the makeCycles algorithm
+    Attributes
+    ----------
+    index_from
+        Object instance identifier
+    for_which_genome
+        For which genome this structure refers to
+    priority
+        Priority level for makeCycles algorithm
+    position
+        Position of the choice structure in Priority's cs_index
+    genome_1_path
+        Path for genome 1
+    genome_2_path
+        Path for genome 2
+    genome_3_path
+        Path for genome 3
+    gray_edge
+        Used when updating paths and priorities in the makeCycles algorithm
     """
     def __init__(self):
         """
@@ -41,8 +50,14 @@ class ChoiceStructure:
         """
         Constructs a new ChoiceStructure from an existing given one
 
-        :param cs: ChoiceStructure to copy from
-        :return: New ChoiceStructure
+        Parameters
+        ----------
+        cs
+            ChoiceStructure to copy from
+
+        Returns
+        -------
+        New ChoiceStructure
         """
         cls.index_from = cs.index_from
         cls.for_which_genome = cs.for_which_genome
@@ -57,7 +72,10 @@ class ChoiceStructure:
         """
         Sets instance paths to the given PGMPath if its genome matches
 
-        :param path: PGMPath to copy from
+        Parameters
+        ----------
+        path
+            PGMPath to copy from
         """
         genome_here = path.genome_head
 
