@@ -1,23 +1,48 @@
 from __future__ import annotations
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Path for use in the PathGroups algorithm (Median problem) #
-#                                                           #
-# Based on PGMPath.java from C.Zheng & D.Sankoff (2011)     #
-#                                                           #
-# Author: Holger Jensen                                     #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-class PGMPath:
-    def __init__(self, head: int, tail: int, ghead: int, gtail: int):
-        self.head = head          # Head gene
-        self.tail = tail          # Tail gene
-        self.genome_head = ghead  # Genome for head
-        self.genome_tail = gtail  # Genome for tail
+"""                              
+ Path for use in the PathGroups algorithm (Median problem) 
+                                                           
+ Based on PGMPath.java from C.Zheng & D.Sankoff (2011)     
+                                                           
+ Author: Holger Jensen & Oskar Jensen                                     
+"""
 
-    # Connect two PGMPaths
+
+class PGMPath:
+    """
+    Attributes:
+        head: Head gene
+        tail: Tail gene
+        genome_head: Genome for the head gene
+        genome_tail: Genome for the tail gene
+    """
+    def __init__(self, head: int, tail: int, ghead: int, gtail: int):
+        """
+        Constructor
+
+        :param head: Head gene
+        :param tail: Tail gene
+        :param ghead: Genome for the head gene
+        :param gtail: Genome for the tail gene
+        """
+        self.head = head
+        self.tail = tail
+        self.genome_head = ghead
+        self.genome_tail = gtail
+
     @staticmethod
     def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> PGMPath or None:
+        """
+        Connect two PGMPaths
+
+        :param path1: First path to connect
+        :param path2: Second path to connect
+        :param pathl:
+        :param which_genome: Which genome this path belongs to
+        :return: New PGMPath from the given paths or None if they are unable to be connected
+        """
         h = 0
         t = 0
         gh = 0
