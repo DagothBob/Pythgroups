@@ -1,9 +1,11 @@
 from __future__ import annotations
-from PGMPath import PGMPath
-from PGMFragment import PGMFragment
-from ChoiceStructure import ChoiceStructure
+
 import math
 from typing import List
+
+from ChoiceStructure import ChoiceStructure
+from PGMFragment import PGMFragment
+from PGMPath import PGMPath
 
 
 def get_gene_next_node(end1: int) -> int:
@@ -177,8 +179,8 @@ class MedianData:
 
         Returns
         -------
-            int
-                Total distance between three genome paths from the given median and this instance's gray edge
+        int
+            Total distance between three genome paths from the given median and this instance's gray edge
         """
         d1 = self.get_distance(median.three_genome_paths[0], self.gray_edge)
         d2 = self.get_distance(median.three_genome_paths[1], self.gray_edge)
@@ -192,7 +194,9 @@ class MedianData:
         Parameters
         ----------
         p1 : [PGMPath]
+            Path 1
         p2 : [PGMPath]
+            Path 2
 
         Returns
         -------
