@@ -2,14 +2,16 @@ import BPGPath
 from BPGPath import BPGPath
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Calculate the distance between two genomes using          #
-# a breakpoint graph and counting the number of cycles.     #
-#                                                           #
-# Based on BPGDistance.java from C.Zheng & D.Sankoff (2011) #
-#                                                           #
-# Author: Holger Jensen                                     #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+"""                              
+ Calculate the distance between two genomes using          
+ a breakpoint graph and counting the number of cycles.     
+                                                           
+ Based on BPGDistance.java from C.Zheng & D.Sankoff (2011) 
+                                                           
+ Author: Holger Jensen                                     
+"""
+
+
 def insert_character(s: str, i: int, c: str) -> str:
     """
     Utility function for inserting a character into a string.
