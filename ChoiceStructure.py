@@ -54,10 +54,6 @@ class ChoiceStructure:
         ----------
         cs
             ChoiceStructure to copy from
-
-        Returns
-        -------
-        New ChoiceStructure
         """
         cls.index_from = cs.index_from
         cls.for_which_genome = cs.for_which_genome

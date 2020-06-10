@@ -66,7 +66,7 @@ class Priority:
         self.taken_start = -1
         self.taken_end = -1
 
-    def insert(self, cs_index: int, which_ancestor: int):
+    def insert(self, cs_index: int, which_ancestor: int) -> int:
         """ Insert a choice structure position into the Priority object
 
         Parameters

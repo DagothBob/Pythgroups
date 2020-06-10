@@ -52,7 +52,8 @@ class BPGPath:
 
         Returns
         -------
-        String representation of the BPGPath
+        str
+            String representation of the BPGPath
         """
         return "Head node is: " + str(self.head) + \
                "(" + str(self.genome_head) + ") | Tail node is: " + \

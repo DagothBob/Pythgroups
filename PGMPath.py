@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Optional
 
 """                              
  Path for use in the PathGroups algorithm (Median problem) 
@@ -44,7 +45,7 @@ class PGMPath:
         self.genome_tail = gtail
 
     @staticmethod
-    def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> PGMPath or None:
+    def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> Optional[PGMPath]:
         """
         Connect two PGMPaths
 
@@ -61,7 +62,8 @@ class PGMPath:
 
         Returns
         -------
-        New PGMPath from the given paths or None if they are unable to be connected
+        Optional[PGMPath]
+            New PGMPath from the given paths or None if they are unable to be connected
         """
         h = 0
         t = 0

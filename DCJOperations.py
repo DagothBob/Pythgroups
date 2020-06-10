@@ -36,7 +36,8 @@ def insert_character(s: str, i: int, c: str) -> str:
 
     Returns
     -------
-    New string with the inserted character
+    str
+        New string with the inserted character
     """
     return s[:i] + c + s[(i + 1):]
 
@@ -243,7 +244,8 @@ class DCJOperations:
 
         Returns
         -------
-        Node index
+        int
+            Node index
         """
         for i in range(len(self.gene_node_in_string)):
             if g_string == self.gene_node_in_string[i][0] + self.gene_node_in_string[i][1]:
@@ -262,7 +264,8 @@ class DCJOperations:
 
         Returns
         -------
-        New GenomeInString
+        GenomeInString
+            New GenomeInString
         """
         chromosome: [str] = [" " * len(node_list)]
 
@@ -303,7 +306,8 @@ class DCJOperations:
 
         Returns
         -------
-        New list of GenomeInStrings after operations performed
+        [GenomeInString]
+            New list of GenomeInStrings after operations performed
         """
         all_steps: [GenomeInString] = [GenomeInString(None)] * number_of_operations
         step_index: int = 0
@@ -578,7 +582,8 @@ class DCJOperations:
 
         Returns
         -------
-        List of operation attributes
+        [int]
+            List of operation attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -605,7 +610,8 @@ class DCJOperations:
 
         Returns
         -------
-        List of operation attributes
+        [int]
+            List of operation attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -813,7 +819,8 @@ class DCJOperations:
 
         Returns
         -------
-        List of result attributes
+        [int]
+            List of result attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -885,7 +892,8 @@ class DCJOperations:
 
         Returns
         -------
-        List of result attributes
+        [int]
+            List of result attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1

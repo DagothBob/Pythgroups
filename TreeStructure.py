@@ -1,15 +1,54 @@
+from typing import Optional
+
 from GenomeInString import GenomeInString
+from MedianData import MedianData
 from PGMPath import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
 
 
-# Utility function for modifying strings in a similar way to lists.
-# Character c is inserted at index i into string s and returned.
 def insert_character(s: str, i: int, c: str) -> str:
+    """
+    Utility function for modifying strings in a similar way to lists.
+    Character c is inserted at index i into string s and returned.
+
+    Parameters
+    ----------
+    s
+        String to replace character in
+    i
+        Index to replace in string
+    c
+        Character to insert
+
+    Returns
+    -------
+    str
+        New string with the character inserted
+    """
     return s[:i] + c + s[(i + 1):]
 
 
 class TreeStructure:
+    """
+    Attributes
+    ----------
+    number_of_ancestors
+        Number of ancestor nodes in the tree structure
+    number_of_leaves
+        Number of leaf nodes in the tree structure
+    gene_number
+        Number of genes in the structure
+    leaves
+        List of leaf nodes
+    medians
+        List of MedianData information
+    node_int
+        Current node as a list of integers
+    node_string
+        Current node as a list of strings
+    all_paths
+        All paths as PGMForAGenomes
+    """
     def __init__(self,
                  number_of_ancestors: int,
                  number_of_leaves: int,
@@ -17,12 +56,32 @@ class TreeStructure:
                  paths: [PGMPathForAGenome],
                  node_strings: [str],
                  node_ints: [int],
-                 ancestor_genome_string: [GenomeInString] or None):
+                 ancestor_genome_string: [Optional[GenomeInString]]):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        number_of_ancestors
+            Number of ancestor nodes in the tree structure
+        number_of_leaves
+            Number of leaf nodes in the tree structure
+        gene_number
+            Number of genes in the structure
+        paths
+            All paths as PGMForAGenomes
+        node_strings
+            Current node as a list of strings
+        node_ints
+            Current node as a list of integers
+        ancestor_genome_string
+            Ancestor genomes as a list of GenomeInStrings
+        """
         self.number_of_ancestors: int = number_of_ancestors
         self.number_of_leaves: int = number_of_leaves
         self.gene_number: int = gene_number
         self.leaves: [[int]] = [[-1] * (self.number_of_ancestors + self.number_of_leaves)] * 3
-        self.medians: [object] = [object()] * self.number_of_ancestors  # TODO: After MedianData is complete
+        self.medians: [MedianData] = [MedianData(None, None, None, 0, 0, 0, 0, 0, None)] * self.number_of_ancestors
         self.node_int: [int] = [0] * (self.gene_number * 2)
         self.node_string: [str] = [" "] * (self.gene_number * 2)
 
@@ -90,12 +149,39 @@ class TreeStructure:
                 self.all_paths[i] = PGMPathForAGenome(self.get_pgm_path(None, i))
 
     def set_tree_structure(self, which_genome: int, genome1: int, genome2: int, genome3: int):
+        """
+        Sets the leaves and medians of the tree structure
+
+        Parameters
+        ----------
+        which_genome
+            Which genome this belongs to
+        genome1
+            First genome to fill tree leaves with
+        genome2
+            Second genome to fill tree leaves with
+        genome3
+            Third genome to fill tree leaves with
+        """
         self.leaves[which_genome][0] = genome1
         self.leaves[which_genome][1] = genome2
         self.leaves[which_genome][2] = genome3
-        self.medians[which_genome - self.number_of_leaves] = object()  # TODO: After MedianData is complete
+        self.medians[which_genome - self.number_of_leaves] = MedianData(self.all_paths[genome1],
+                                                                        self.all_paths[genome2],
+                                                                        self.all_paths[genome3],
+                                                                        self.gene_number,
+                                                                        which_genome,
+                                                                        genome1,
+                                                                        genome2,
+                                                                        genome3,
+                                                                        self.node_string)
 
     def get_relation(self) -> [[int]]:
+        """
+        Returns
+        -------
+        Relation between leaves
+        """
         relation: [[int]] = [[0] * (self.number_of_leaves + self.number_of_ancestors)] * (
                     self.number_of_leaves + self.number_of_ancestors)
 
@@ -106,7 +192,22 @@ class TreeStructure:
 
         return relation
 
-    def get_pgm_path(self, genome: [str] or None, which_genome: int) -> [PGMPath]:
+    def get_pgm_path(self, genome: [Optional[str]], which_genome: int) -> [PGMPath]:
+        """
+        Gets list of PGMPaths for a genome
+
+        Parameters
+        ----------
+        genome
+            Genome to get the PGMPath for
+        which_genome
+            Identifier for the genome
+
+        Returns
+        -------
+        [PGMPath]
+            List of PGMPaths for the genome
+        """
         if genome is None:
             path2: [PGMPath] = [PGMPath(0, 0, 0, 0)] * ((2 * self.gene_number) + 1)
 
@@ -163,6 +264,19 @@ class TreeStructure:
         return path1
 
     def find_node_int(self, ancestor_string: str) -> int:
+        """
+        Gets the integer node identifier for an ancestor node
+
+        Parameters
+        ----------
+        ancestor_string
+            Ancestor node represented as a string
+
+        Returns
+        -------
+        int
+            Identifier for the node
+        """
         for i in range(len(self.node_string)):
             if self.node_string[i] == ancestor_string:
                 return i + 1
