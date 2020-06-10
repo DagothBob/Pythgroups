@@ -1,12 +1,14 @@
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Priority for use in the PathGroups Algorithm                  #
-#                                                               #
-# Based on Priority.java from C. Zheng and D. Sankoff (2011)    #
-#                                                               #
-# Author: Oskar Jensen                                          #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+"""
+Priority for use in the PathGroups Algorithm
+
+Based on Priority.java from C. Zheng and D. Sankoff (2011)
+
+Author: Oskar Jensen
+"""
+
+
 class Priority:
     """ Based on the priority system described in 'On the PATHGROUPS approach to rapid small phylogeny'
 

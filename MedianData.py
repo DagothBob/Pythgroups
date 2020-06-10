@@ -7,6 +7,14 @@ from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
 from PGMPath import PGMPath
 
+"""                            
+ Represents a median (ancestor) in the Pathgroups algorithm, with related static methods.
+
+ Based on MedianData.java from C.Zheng & D.Sankoff (2011)
+
+ Author: Oskar Jensen
+"""
+
 
 def get_gene_next_node(end1: int) -> int:
     """
