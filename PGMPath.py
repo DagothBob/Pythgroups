@@ -12,20 +12,31 @@ from __future__ import annotations
 
 class PGMPath:
     """
-    Attributes:
-        head: Head gene
-        tail: Tail gene
-        genome_head: Genome for the head gene
-        genome_tail: Genome for the tail gene
+    Attributes
+    ----------
+    head
+        Head gene
+    tail
+        Tail gene
+    genome_head
+        Genome for the head gene
+    genome_tail
+        Genome for the tail gene
     """
     def __init__(self, head: int, tail: int, ghead: int, gtail: int):
         """
         Constructor
 
-        :param head: Head gene
-        :param tail: Tail gene
-        :param ghead: Genome for the head gene
-        :param gtail: Genome for the tail gene
+        Parameters
+        ----------
+        head
+            Head gene
+        tail
+            Tail gene
+        ghead
+            Genome for the head gene
+        gtail
+            Genome for the tail gene
         """
         self.head = head
         self.tail = tail
@@ -37,11 +48,20 @@ class PGMPath:
         """
         Connect two PGMPaths
 
-        :param path1: First path to connect
-        :param path2: Second path to connect
-        :param pathl:
-        :param which_genome: Which genome this path belongs to
-        :return: New PGMPath from the given paths or None if they are unable to be connected
+        Parameters
+        ----------
+        path1
+            First path to connect
+        path2
+            Second path to connect
+        pathl
+            TODO: Figure out what this means
+        which_genome
+            Which genome this path belongs to
+
+        Returns
+        -------
+        New PGMPath from the given paths or None if they are unable to be connected
         """
         h = 0
         t = 0
