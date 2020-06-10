@@ -16,10 +16,19 @@ def insert_character(s: str, i: int, c: str) -> str:
     """
     Utility function for inserting a character into a string.
 
-    :param s: String to be modified
-    :param i: Index to change
-    :param c: Character to be inserted
-    :return: New string with the inserted character
+    Parameters
+    ----------
+    s
+        String to be modified
+    i
+        Index to change
+    c
+        Character to be inserted
+
+    Returns
+    -------
+    str
+        New string with the inserted character
     """
     return s[:i] + c + s[(i + 1):]
 
@@ -28,9 +37,17 @@ def is_valid_cycle(edge1: int, edge2: int) -> bool:
     """
     Checks if the given path is a valid cycle.
 
-    :param edge1: Head or Tail of a path
-    :param edge2: Tail or Head of a path
-    :return: True if edge1 and edge2 are negative AND edge1 or edge2 are even
+    Parameters
+    ----------
+    edge1
+        Head or Tail of a path
+    edge2
+        Tail or Head of a path
+
+    Returns
+    -------
+    bool
+        True if edge1 and edge2 are negative AND edge1 or edge2 are even
     """
     if edge1 >= 0 or edge2 >= 0:
         return False
@@ -43,22 +60,35 @@ def is_valid_cycle(edge1: int, edge2: int) -> bool:
 
 class BPGDistance:
     """
-    Attributes:
-        genome1: First genome for distance calculation
-        genome2: Genome to compare to the first
-        gene_ints: Integer values of genes
-        gene_strs1: String representation for genes in genome 1
-        gene_strs2: String representation for genes in genome 2
-        genome_paths1: Paths for combining into cycles in genome 1
-        genome_paths2: Paths for combining into cycles in genome 2
-        distance: Integer distance between genome 1 and genome 2
+    Attributes
+    ----------
+    genome1
+        First genome for distance calculation
+    genome2
+        Genome to compare to the first
+    gene_ints
+        Integer values of genes
+    gene_strs1
+        String representation for genes in genome 1
+    gene_strs2
+        String representation for genes in genome 2
+    genome_paths1
+        Paths for combining into cycles in genome 1
+    genome_paths2
+        Paths for combining into cycles in genome 2
+    distance
+        Integer distance between genome 1 and genome 2
     """
     def __init__(self, genome1: [str], genome2: [str]):
         """
         Constructor
 
-        :param genome1: First genome for distance calculation
-        :param genome2: Genome to test distance from the first one
+        Parameters
+        ----------
+        genome1
+            First genome for distance calculation
+        genome2
+            Genome to test distance from the first one
         """
         index1: int = 0
         index2: int = 0
@@ -96,8 +126,6 @@ class BPGDistance:
     def graph_init(self):
         """
         Initialize BPG graph to the state which contains the set of gene/telomere paths
-
-        :return: None
         """
         index1: int = 0
 
@@ -141,9 +169,17 @@ class BPGDistance:
         """
         Gets the gene/telomere paths from the given genome and node
 
-        :param genome: Genome which the path is constructed from
-        :param node: Current node to use for the path
-        :return: A list of BPGPaths
+        Parameters
+        ----------
+        genome
+            Genome which the path is constructed from
+        node
+            Current node to use for the path
+
+        Returns
+        -------
+        [BPGPath]
+            A list of BPGPaths
         """
         null_node: int = -node
         path1: [BPGPath] = [BPGPath(None, None, None, None)] * ((self.gene_number * 2) + 1)
@@ -193,9 +229,17 @@ class BPGDistance:
         """
         Gets the node's integer value from the full string representation
 
-        :param gene_str: Gene as a string
-        :param gene_int: Gene as an integer
-        :return: Integer of node
+        Parameters
+        ----------
+        gene_str
+            Gene as a string
+        gene_int
+            Gene as an integer
+
+        Returns
+        -------
+        int
+            Integer of node
         """
         if gene_int == 1:
             for i in range(len(self.gene_strs1)):
@@ -214,8 +258,6 @@ class BPGDistance:
     def calculate_distance(self):
         """
         Produces cycles from the gene/telomere paths and counts them to calculate genome distance
-
-        :return: None
         """
         self.graph_init()
 
