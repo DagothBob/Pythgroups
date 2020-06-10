@@ -25,10 +25,18 @@ def insert_character(s: str, i: int, c: str) -> str:
     """
     Utility function for modifying strings in a similar way to lists.
 
-    :param s: String to modify
-    :param i: Index to insert the character at
-    :param c: Character to insert
-    :return: New string with the inserted character
+    Parameters
+    ----------
+    s
+        String to modify
+    i
+        Index to insert the character at
+    c
+        Character to insert
+
+    Returns
+    -------
+    New string with the inserted character
     """
     return s[:i] + c + s[(i + 1):]
 
@@ -60,25 +68,41 @@ class OperationOptions(Enum):
 
 class DCJOperations:
     """
-    Attributes:
-        genome1: Genome 1 as a list of strings
-        genome2: Genome 2 as a list of strings
-        gene_number: How many genes are in both genomes (must be the same)
-        max_chromosome_number: Highest number of chromosomes in either genome
-        min_chromosome_number: Lower number of chromosomes in either genome
-        gene_node1: First gene node for performing DCJ operations
-        gene_node2: Second gene node for performing DCJ operations
-        chromosome_in_gene_node1: Chromosome for first gene node
-        chromosome_in_gene_node2: Chromosome for second gene node
-        gene_node_in_string: String representation for both gene nodes
-        touched_chromosome: Current chromosome being updated
+    Attributes
+    ----------
+    genome1
+        Genome 1 as a list of strings
+    genome2
+        Genome 2 as a list of strings
+    gene_number
+        How many genes are in both genomes (must be the same)
+    max_chromosome_number
+        Highest number of chromosomes in either genome
+    min_chromosome_number
+        Lower number of chromosomes in either genome
+    gene_node1
+        First gene node for performing DCJ operations
+    gene_node2
+        Second gene node for performing DCJ operations
+    chromosome_in_gene_node1
+        Chromosome for first gene node
+    chromosome_in_gene_node2
+        Chromosome for second gene node
+    gene_node_in_string
+        String representation for both gene nodes
+    touched_chromosome
+        Current chromosome being updated
     """
     def __init__(self, genome1: [str], genome2: [str]):
         """
         Constructor
 
-        :param genome1: First genome for DCJ operations
-        :param genome2: Second genome for DCJ operations
+        Parameters
+        ----------
+        genome1
+            First genome for DCJ operations
+        genome2
+            Second genome for DCJ operations
         """
         self.genome1: GenomeInString = GenomeInString(genome1)
         self.genome2: GenomeInString = GenomeInString(genome2)
@@ -212,8 +236,14 @@ class DCJOperations:
         """
         Get the node index for given gene pair
 
-        :param g_string: Genome as a string
-        :return: Node index
+        Parameters
+        ----------
+        g_string
+            Genome as a string
+
+        Returns
+        -------
+        Node index
         """
         for i in range(len(self.gene_node_in_string)):
             if g_string == self.gene_node_in_string[i][0] + self.gene_node_in_string[i][1]:
@@ -225,8 +255,14 @@ class DCJOperations:
         """
         Creates a GenomeInString from the given list of nodes
 
-        :param node_list: List of nodes
-        :return: New GenomeInString
+        Parameters
+        ----------
+        node_list
+            List of nodes
+
+        Returns
+        -------
+        New GenomeInString
         """
         chromosome: [str] = [" " * len(node_list)]
 
@@ -252,12 +288,22 @@ class DCJOperations:
         """
         Performs a DCJ operation
 
-        :param min_chromosome: Minimum chromosome count
-        :param max_chromosome: Maximum chromosome count
-        :param which_chromosome: Which chromosome to perform operation on
-        :param types_of_operation: Types of operation to perform
-        :param number_of_operations: How many operations to perform
-        :return: New list of GenomeInStrings after operations performed
+        Parameters
+        ----------
+        min_chromosome
+            Minimum chromosome count
+        max_chromosome
+            Maximum chromosome count
+        which_chromosome
+            Which chromosome to perform operation on
+        types_of_operation
+            Types of operation to perform
+        number_of_operations
+            How many operations to perform
+
+        Returns
+        -------
+        New list of GenomeInStrings after operations performed
         """
         all_steps: [GenomeInString] = [GenomeInString(None)] * number_of_operations
         step_index: int = 0
@@ -305,8 +351,12 @@ class DCJOperations:
         """
         Updates instance attributes based on the operation
 
-        :param operation: Which operation is being run
-        :param which_chromosome: Which chromosome operating on
+        Parameters
+        ----------
+        operation
+            Which operation is being run
+        which_chromosome
+            Which chromosome operating on
         """
         if which_chromosome == -1:
             if operation[OperationOptions.CHROMOSOME1] != -1:
@@ -519,9 +569,16 @@ class DCJOperations:
         """
         Turn the list of given operation types into a list of operation attributes
 
-        :param types_of_operation: Operation types to expand
-        :param which_chromosome: Which chromosome is being operated on
-        :return: List of operation attributes
+        Parameters
+        ----------
+        types_of_operation
+            Operation types to expand
+        which_chromosome
+            Which chromosome is being operated on
+
+        Returns
+        -------
+        List of operation attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -539,9 +596,16 @@ class DCJOperations:
         """
         Gets a list of operation attributes for given operation type
 
-        :param which_chromosome: Which chromosome being operated on
-        :param operation_type: Operation type to check
-        :return: List of operation attributes
+        Parameters
+        ----------
+        which_chromosome
+            Which chromosome being operated on
+        operation_type
+            Operation type to check
+
+        Returns
+        -------
+        List of operation attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -742,8 +806,14 @@ class DCJOperations:
         """
         Gets the reversal of a given chromosome
 
-        :param chromosome: Chromosome to perform reversal on
-        :return: List of result attributes
+        Parameters
+        ----------
+        chromosome
+            Chromosome to perform reversal on
+
+        Returns
+        -------
+        List of result attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
@@ -806,9 +876,16 @@ class DCJOperations:
         """
         Gets the translocation of a given chromosome
 
-        :param chromosome: Chromosome to perform translocation on
-        :param which_chromosome: Which chromosome is being operated on
-        :return: List of result attributes
+        Parameters
+        ----------
+        chromosome
+            Chromosome to perform translocation on
+        which_chromosome
+            Which chromosome is being operated on
+
+        Returns
+        -------
+        List of result attributes
         """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
