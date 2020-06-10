@@ -2,29 +2,34 @@ from enum import Enum
 
 from GenomeInString import GenomeInString
 
+"""                               
+ Double-Cut-and-Join Operations class                        
+                                                             
+ DCJ distance is the minimum number of DCJ operations -      
+ inversion, translocation, fission, and fusion - required    
+ to transform a genome into another. Also can be expressed   
+ in an adjacency graph as the number of adjacencies, minus   
+ the number of cycles present.                               
+                                                             
+ Input: Two adjacencies                                      
+ Output: Two new adjacencies created by recombining the four 
+         involved extremities                                
+                                                             
+ Based on DCJOperations.java from C.Zheng & D.Sankoff (2011) 
+                                                             
+ Author: Holger Jensen                                       
+"""
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Double-Cut-and-Join Operations class                        #
-#                                                             #
-# DCJ distance is the minimum number of DCJ operations -      #
-# inversion, translocation, fission, and fusion - required    #
-# to transform a genome into another. Also can be expressed   #
-# in an adjacency graph as the number of adjacencies, minus   #
-# the number of cycles present.                               #
-#                                                             #
-# Input: Two adjacencies                                      #
-# Output: Two new adjacencies created by recombining the four #
-#         involved extremities                                #
-#                                                             #
-# Based on DCJOperations.java from C.Zheng & D.Sankoff (2011) #
-#                                                             #
-# Author: Holger Jensen                                       #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
-# Utility function for modifying strings in a similar way to lists.
-# Character c is inserted at index i into string s and returned.
 def insert_character(s: str, i: int, c: str) -> str:
+    """
+    Utility function for modifying strings in a similar way to lists.
+
+    :param s: String to modify
+    :param i: Index to insert the character at
+    :param c: Character to insert
+    :return: New string with the inserted character
+    """
     return s[:i] + c + s[(i + 1):]
 
 
@@ -54,7 +59,27 @@ class OperationOptions(Enum):
 
 
 class DCJOperations:
+    """
+    Attributes:
+        genome1: Genome 1 as a list of strings
+        genome2: Genome 2 as a list of strings
+        gene_number: How many genes are in both genomes (must be the same)
+        max_chromosome_number: Highest number of chromosomes in either genome
+        min_chromosome_number: Lower number of chromosomes in either genome
+        gene_node1: First gene node for performing DCJ operations
+        gene_node2: Second gene node for performing DCJ operations
+        chromosome_in_gene_node1: Chromosome for first gene node
+        chromosome_in_gene_node2: Chromosome for second gene node
+        gene_node_in_string: String representation for both gene nodes
+        touched_chromosome: Current chromosome being updated
+    """
     def __init__(self, genome1: [str], genome2: [str]):
+        """
+        Constructor
+
+        :param genome1: First genome for DCJ operations
+        :param genome2: Second genome for DCJ operations
+        """
         self.genome1: GenomeInString = GenomeInString(genome1)
         self.genome2: GenomeInString = GenomeInString(genome2)
         self.gene_number: int = 0
@@ -73,6 +98,9 @@ class DCJOperations:
         self.touched_chromosome: [int] = [0]
 
     def initial_value(self):
+        """
+        Initializer
+        """
         gene_number1: int = 0
         gene_number2: int = 0
 
@@ -180,8 +208,13 @@ class DCJOperations:
 
             self.gene_node2[pre_node_index][0] = -1
 
-    # Renamed from findNodeIndex() for clarity
-    def get_node_index(self, g_string: str) -> int:
+    def get_node_index(self, g_string: str) -> int:  # Renamed from findNodeIndex() for clarity
+        """
+        Get the node index for given gene pair
+
+        :param g_string: Genome as a string
+        :return: Node index
+        """
         for i in range(len(self.gene_node_in_string)):
             if g_string == self.gene_node_in_string[i][0] + self.gene_node_in_string[i][1]:
                 return i
@@ -189,6 +222,12 @@ class DCJOperations:
         return -1
 
     def get_genome_in_string(self, node_list: [[int]]) -> GenomeInString:
+        """
+        Creates a GenomeInString from the given list of nodes
+
+        :param node_list: List of nodes
+        :return: New GenomeInString
+        """
         chromosome: [str] = [" " * len(node_list)]
 
         for i in range(len(node_list)):
@@ -209,7 +248,17 @@ class DCJOperations:
         return GenomeInString(chromosome)
 
     def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: [int],
-                   number_of_operations: int):
+                   number_of_operations: int) -> [GenomeInString]:
+        """
+        Performs a DCJ operation
+
+        :param min_chromosome: Minimum chromosome count
+        :param max_chromosome: Maximum chromosome count
+        :param which_chromosome: Which chromosome to perform operation on
+        :param types_of_operation: Types of operation to perform
+        :param number_of_operations: How many operations to perform
+        :return: New list of GenomeInStrings after operations performed
+        """
         all_steps: [GenomeInString] = [GenomeInString(None)] * number_of_operations
         step_index: int = 0
         current_operation: int = 0
@@ -253,6 +302,12 @@ class DCJOperations:
         return result
 
     def update_all_values(self, operation: [int], which_chromosome: int):
+        """
+        Updates instance attributes based on the operation
+
+        :param operation: Which operation is being run
+        :param which_chromosome: Which chromosome operating on
+        """
         if which_chromosome == -1:
             if operation[OperationOptions.CHROMOSOME1] != -1:
                 self.touched_chromosome[operation[OperationOptions.CHROMOSOME1]] = 1
@@ -461,6 +516,13 @@ class DCJOperations:
 
     # Renamed from findAOperation() for accuracy
     def expand_all_operations(self, types_of_operation: [int], which_chromosome: int) -> [int]:
+        """
+        Turn the list of given operation types into a list of operation attributes
+
+        :param types_of_operation: Operation types to expand
+        :param which_chromosome: Which chromosome is being operated on
+        :return: List of operation attributes
+        """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
@@ -474,6 +536,13 @@ class DCJOperations:
 
     # Renamed from findATypeOperation() for accuracy
     def get_operation_attributes(self, which_chromosome: int, operation_type: int) -> [int]:
+        """
+        Gets a list of operation attributes for given operation type
+
+        :param which_chromosome: Which chromosome being operated on
+        :param operation_type: Operation type to check
+        :return: List of operation attributes
+        """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
@@ -670,6 +739,12 @@ class DCJOperations:
 
     # Renamed from findReversal() for clarity
     def get_reversal(self, chromosome: int) -> [int]:
+        """
+        Gets the reversal of a given chromosome
+
+        :param chromosome: Chromosome to perform reversal on
+        :return: List of result attributes
+        """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
@@ -728,6 +803,13 @@ class DCJOperations:
 
     # Renamed from findTranslocation() for clarity
     def get_translocation(self, chromosome: int, which_chromosome: int) -> [int]:
+        """
+        Gets the translocation of a given chromosome
+
+        :param chromosome: Chromosome to perform translocation on
+        :param which_chromosome: Which chromosome is being operated on
+        :return: List of result attributes
+        """
         result: [int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
