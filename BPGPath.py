@@ -12,20 +12,31 @@ from __future__ import annotations
 
 class BPGPath:
     """
-    Attributes:
-        head: Head gene of the path
-        tail: Tail gene of the path
-        genome_head: Genome identifier for the head gene
-        genome_tail: Genome identifier for the tail gene
+    Attributes
+    ----------
+    head
+        Head gene of the path
+    tail
+        Tail gene of the path
+    genome_head
+        Genome identifier for the head gene
+    genome_tail
+        Genome identifier for the tail gene
     """
     def __init__(self, head: int or None, tail: int or None, ghead: int or None, gtail: int or None):
         """
         Constructor
 
-        :param head: Head gene
-        :param tail: Tail gene
-        :param ghead: Genome which gene head belongs to
-        :param gtail: Genome which gene tail belongs to
+        Parameters
+        ----------
+        head
+            Head gene
+        tail
+            Tail gene
+        ghead
+            Genome which gene head belongs to
+        gtail
+            Genome which gene tail belongs to
         """
         if head is None or tail is None or ghead is None or gtail is None:
             return
@@ -39,7 +50,9 @@ class BPGPath:
         """
         String override
 
-        :return: String representation of the BPGPath
+        Returns
+        -------
+        String representation of the BPGPath
         """
         return "Head node is: " + str(self.head) + \
                "(" + str(self.genome_head) + ") | Tail node is: " + \
