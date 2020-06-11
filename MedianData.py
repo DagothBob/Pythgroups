@@ -175,10 +175,11 @@ class MedianData:
             self.choice_structures[cs_index] = cs
             cs_index += 1
 
-    def count_total_distance(self, median: MedianData) -> int:
+    def gray_edge_total_distance(self, median: MedianData) -> int:
         """
         Calculate the total distances between the three genome paths from the given median
         and this instance's gray edge
+        Renamed from countTotalDis
 
         Parameters
         ----------
