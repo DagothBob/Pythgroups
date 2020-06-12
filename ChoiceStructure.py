@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-import PGMPath
+from typing import Optional
+
+from PGMPath import PGMPath
 
 """                                 
  Used in MedianData for solving the rearrangement median problem.
@@ -36,14 +38,14 @@ class ChoiceStructure:
         """
         Constructor
         """
-        self.index_from = 0
-        self.for_which_genome = 0
-        self.priority = 0
-        self.position = 0
-        self.genome_1_path = None
-        self.genome_2_path = None
-        self.genome_3_path = None
-        self.gray_edge = None
+        self.index_from: int = 0
+        self.for_which_genome: int = 0
+        self.priority: int = 0
+        self.position: int = 0
+        self.genome_1_path: Optional[PGMPath] = None
+        self.genome_2_path: Optional[PGMPath] = None
+        self.genome_3_path: Optional[PGMPath] = None
+        self.gray_edge: Optional[PGMPath] = None
 
     @classmethod
     def from_cs(cls, cs: ChoiceStructure):
@@ -73,7 +75,7 @@ class ChoiceStructure:
         path
             PGMPath to copy from
         """
-        genome_here = path.genome_head
+        genome_here: int = path.genome_head
 
         if genome_here == self.genome_1_path.genome_head:
             self.genome_1_path = path

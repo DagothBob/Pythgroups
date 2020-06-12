@@ -39,10 +39,10 @@ class PGMPath:
         gtail
             Genome for the tail gene
         """
-        self.head = head
-        self.tail = tail
-        self.genome_head = ghead
-        self.genome_tail = gtail
+        self.head: int = head
+        self.tail: int = tail
+        self.genome_head: int = ghead
+        self.genome_tail: int = gtail
 
     @staticmethod
     def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> Optional[PGMPath]:
@@ -65,10 +65,10 @@ class PGMPath:
         Optional[PGMPath]
             New PGMPath from the given paths or None if they are unable to be connected
         """
-        h = 0
-        t = 0
-        gh = 0
-        gt = 0
+        h: int = 0
+        t: int = 0
+        gh: int = 0
+        gt: int = 0
 
         # Step 1: Assigning the new head to path 1
         if path1.head == pathl.head or path1.head == pathl.tail:

@@ -42,19 +42,22 @@ class Priority:
         Next taken values
 
     """
-    cs_indexes, median_indexes = [], []
-    empty_previous, empty_next = [], []
-    taken_previous, taken_next = [], []
 
     def __init__(self, cycle_now: int, best_cycle_look_ahead: int, better_or_worse: int, size: int):
-        self.cn = cycle_now
-        self.bcla = best_cycle_look_ahead
-        self.bw = better_or_worse
+        self.cn: int = cycle_now
+        self.bcla: int = best_cycle_look_ahead
+        self.bw: int = better_or_worse
+        self.cs_indexes: [int] = []
+        self.median_indexes: [int] = []
+        self.empty_previous: [int] = []
+        self.empty_next: [int] = []
+        self.taken_previous: [int] = []
+        self.taken_next: [int] = []
 
         # Initializes all the arrays to various default values
         for i in range(0, size):
-            self.taken_previous[i] = None   # These two arrays are filled in so
-            self.taken_next[i] = None       # that their sizes match the others
+            self.taken_previous[i] = 0   # These two arrays are filled in so
+            self.taken_next[i] = 0       # that their sizes match the others
             self.cs_indexes[i] = -1
             self.median_indexes[i] = -1
             self.empty_previous[i] = i - 1
