@@ -141,17 +141,17 @@ class MedianData:
     def __init__(self, paths1: [PGMPath], paths2: [PGMPath], paths3: [PGMPath], gene_num: int, which_genome: int,
                  genome1: int, genome2: int, genome3: int, node_str: [str]):
 
-        self.three_genome_paths = [paths1, paths2, paths3]
-        self.three_genomes = [genome1, genome2, genome3]
-        self.gene_num = gene_num
-        self.which_genome = which_genome
-        self.node_strings = node_str
+        self.three_genome_paths: [[PGMPath]] = [paths1, paths2, paths3]
+        self.three_genomes: [int] = [genome1, genome2, genome3]
+        self.gene_num: int = gene_num
+        self.which_genome: int = which_genome
+        self.node_strings: [str] = node_str
 
-        self.gray_edge = List[PGMPath]
-        self.gray_edge_index = 0
-        self.fragments = List[PGMFragment]
-        self.choice_structures = [ChoiceStructure]
-        self.medians = List[str]
+        self.gray_edge: [PGMPath] = List[PGMPath]
+        self.gray_edge_index: int = 0
+        self.fragments: [PGMFragment] = List[PGMFragment]
+        self.choice_structures: [ChoiceStructure] = [ChoiceStructure]
+        self.medians: [str] = List[str]
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -287,9 +287,9 @@ class MedianData:
                         good_path_count += 1
                     break
 
-                l = paths2[n_big]
-                m1 = l.head
-                m2 = l.tail
+                path_l = paths2[n_big]
+                m1 = path_l.head
+                m2 = path_l.tail
                 if m2 > 0:
                     if m2 == n_small:
                         cycle_count += 1
