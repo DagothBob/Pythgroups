@@ -16,6 +16,27 @@ from TreeStructure import TreeStructure
 
 
 class MedianIteration:
+    """ Used in result optimization in the Pathgroups algorithm
+
+    Attributes
+    ----------
+    leaf_num : int
+        Number of leaves in the tree
+    changed : [int]
+        List of changed ancestors. Unsure of what its purpose is, as it's not used anywhere meaningfully.
+    gene_num : int
+        Total number of genes in the tree
+    leaves : [[int]]
+        List of each leaf for each genome in the tree (in relation to the median)
+    all_paths : [PGMPathForAGenome]
+        List of all paths for each genome in the tree
+    medians : [MedianData]
+        List of all medians in the tree
+    nodes_int : [int]
+        List of the integer representations of each node
+    nodes_str : [str]
+        List of the string representations of each node
+    """
 
     def __init__(self, leaf_num: int,
                  ancestor_num: int,
@@ -26,17 +47,24 @@ class MedianIteration:
                  nodes_int: [int],
                  nodes_str: [str]):
         """
-
         Parameters
         ----------
         leaf_num : int
+            Number of leaves in the tree
         ancestor_num : int
+            Number of ancestors (medians) in the tree
         gene_num : int
+            Total number of genes in the tree
         leaves : [[int]]
+            List of each leaf for each genome in the tree (in relation to the median)
         all_paths : [PGMPathForAGenome]
+            List of all paths for each genome in the tree
         medians : [MedianData]
+            List of all medians in the tree
         nodes_int : [int]
+            List of the integer representations of each node
         nodes_str : [str]
+            List of the string representations of each node
         """
         self.leaf_num: int = leaf_num
         self.changed: [int] = [1] * ancestor_num
@@ -56,9 +84,13 @@ class MedianIteration:
         Parameters
         ----------
         median_paths : [PGMPath]
+            List of paths for the given median
         paths1 : [PGMPath]
+            List of paths for the first leaf
         paths2 : [PGMPath]
+            List of paths for the second leaf
         paths3 : [PGMPath]
+            List of paths for the third leaf
 
         Returns
         -------
@@ -72,6 +104,7 @@ class MedianIteration:
 
     def optimize_result(self, prob_threshold_top: float, runs: int):
         """
+        Optimizes the results of the ancestor reconstruction
 
         Renamed from optimizeResultTwoStepLA
 
@@ -85,7 +118,9 @@ class MedianIteration:
         p1 = prob_threshold_top  # Probability threshold for when total_dis == dis_before
         p2 = 0                   # Probability threshold for when total_dis > dis_before
 
+        # Each optimization run
         for turn in range(0, runs):
+            # Iterates through each changed ancestor
             for i in range(0, len(self.changed)):
                 leaf1 = self.leaves[i + self.leaf_num][0]
                 leaf2 = self.leaves[i + self.leaf_num][1]
@@ -95,10 +130,11 @@ class MedianIteration:
                                                         self.all_paths[leaf1],
                                                         self.all_paths[leaf2],
                                                         self.all_paths[leaf3])
-                aps = List[PGMPathForAGenome]
+                aps = List[PGMPathForAGenome]  # Local copy of all_paths containing the given leaves
                 aps[0] = self.all_paths[leaf1]
                 aps[1] = self.all_paths[leaf2]
                 aps[2] = self.all_paths[leaf3]
+                # Filters out all None values for each list of paths in each leaf
                 for t in range(0, len(aps[0].paths)):
                     if aps[0].paths[t] is not None:
                         aps[0].paths[t] = PGMPath(aps[0].paths[t].head, aps[0].paths[t].tail, 0, 0)
@@ -111,6 +147,7 @@ class MedianIteration:
                 sp = object()   # Will be SmallPhylogeny(ts)
                 # sp.get_result() TODO: Waiting on implementation of SmallPhylogeny
 
+                # Specifies thresholds to meet to perform optimizations
                 total_dis = ts.medians[0].gray_edge_total_distance(ts.medians[0])
                 rand1 = random()
                 rand2 = random()
@@ -118,6 +155,7 @@ class MedianIteration:
                 total_equal = total_dis == dis_before and rand1 < p1
                 total_greater = total_dis > dis_before and rand2 < p2
                 if total_less or total_equal or total_greater:
+                    # Not sure what the point of these statements are, self.changed isn't used anywhere really
                     if leaf1 >= self.leaf_num:
                         self.changed[leaf1 - self.leaf_num] = 1
                     if leaf2 >= self.leaf_num:
@@ -127,6 +165,7 @@ class MedianIteration:
 
                     self.medians[i] = ts.medians[0]
                     self.all_paths[i + self.leaf_num].paths = List[PGMPath]
+                    # Performs optimizations on each path in gray_edge
                     for g in range(0, len(self.medians[i].gray_edge)):
                         if self.medians[i].gray_edge[g] is not None:
                             end1 = self.medians[i].gray_edge[g].head
