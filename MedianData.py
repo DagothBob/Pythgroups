@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import math
 from typing import List
+from typing import Optional
 
 from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
 from PGMPath import PGMPath
 
 """                            
- Represents a median (ancestor) in the Pathgroups algorithm, with related static methods.
+ Represents data related to medians (ancestors) in the Pathgroups algorithm, 
+ with related static methods.
 
  Based on MedianData.java from C.Zheng & D.Sankoff (2011)
 
@@ -18,21 +20,23 @@ from PGMPath import PGMPath
 
 def get_gene_next_node(end1: int) -> int:
     """
-    If end1 is even then it's greater than end2, else it's less than end2 (I think)
-    Recall the pattern described in __init__ for self.fragments[]: [(1, 2) (2, 1), (3, 4), (4, 3), ... ]
+    If end1 is even then it's greater than end2, else it's less than end2 (I think).
+    Recall the pattern described in __init__ for self.fragments[]: [(1, 2) (2, 1), (3, 4), (4, 3), ... ]::
+
+        ...
+        Some possible hints on why it returns what it returns:
+        (2, 1) is just (1, 2) flipped, so end1 - 1 from (2, 1) == end1 from (1, 2)
+        In the case of (1, 2), end1 + 1 from (1, 2) == end2 from (1, 2).
 
     Parameters
     ----------
-    end1
+    end1 : `int`
         end1 from PGMFragment
 
     Returns
     -------
     int
         end1 - 1 if even, else end + 1
-        Some possible hints on why it returns what it returns:
-        (2, 1) is just (1, 2) flipped, so end1 - 1 from (2, 1) == end1 from (1, 2)
-        In the case of (1, 2), end1 + 1 from (1, 2) == end2 from (1, 2).
     """
 
     if end1 % 2 == 0:
@@ -40,7 +44,7 @@ def get_gene_next_node(end1: int) -> int:
     return end1 + 1
 
 
-def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> int or None:
+def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> Optional[int]:
     """
     Find the gray edge end that matches the given fragment end
 
@@ -53,7 +57,7 @@ def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> int or None:
 
     Returns
     -------
-    int or None
+    Optional[int]
         If end1 found in gray_edge, return the opposite of what it matched with (head/tail), else return None
     """
 
@@ -67,10 +71,9 @@ def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> int or None:
     return None
 
 
-def get_next_path(start_pos: int, paths: [PGMPath]) -> PGMPath or None:
+def get_next_path(start_pos: int, paths: [PGMPath]) -> Optional[PGMPath]:
     """
-    Returns the first path it finds in paths
-    Renamed from getAPath() for accuracy
+    Returns the first path it finds in paths. Renamed from getAPath() for accuracy
 
     Parameters
     ----------
@@ -81,7 +84,7 @@ def get_next_path(start_pos: int, paths: [PGMPath]) -> PGMPath or None:
 
     Returns
     -------
-        PGMPath or None
+        Optional[PGMPath]
             If a path is found, return that, else return None
     """
     for i in range(start_pos, len(paths)):
@@ -100,7 +103,7 @@ def good_cycle(end1: int, end2: int) -> bool:
     end1 : int
         end1 of the path
     end2 : int
-        end1 of the path
+        end2 of the path
 
     Returns
     -------
@@ -113,7 +116,8 @@ def good_cycle(end1: int, end2: int) -> bool:
 
 
 class MedianData:
-    """
+    """ Represents data related to medians (ancestors) in the Pathgroups algorithm
+
     Attributes
     ----------
     self.three_genome_paths : [[PGMPath]]
@@ -138,20 +142,48 @@ class MedianData:
         List of each median
     """
 
-    def __init__(self, paths1: [PGMPath], paths2: [PGMPath], paths3: [PGMPath], gene_num: int, which_genome: int,
-                 genome1: int, genome2: int, genome3: int, node_str: [str]):
+    def __init__(self, paths1: [PGMPath],
+                 paths2: [PGMPath],
+                 paths3: [PGMPath],
+                 gene_num: int,
+                 which_genome: int,
+                 genome1: int,
+                 genome2: int,
+                 genome3: int,
+                 node_strings: [str]):
+        """
+        Parameters
+        ----------
+        paths1 : [[PGMPath]]
+            All paths for genome 1 in the tree structure
+        paths2 : [[PGMPath]]
+            All paths for genome 2 in the tree structure
+        paths3 : [[PGMPath]]
+            All paths for genome 3 in the tree structure
+        genome1 : [int]
+            The identifiers for leaf 1 (genome) in the tree structure
+        genome2 : [int]
+            The identifiers for leaf 2 (genome) in the tree structure
+        genome3 : [int]
+            The identifiers for leaf 3 (genome) in the tree structure
+        gene_num : int
+            Total number of genes in each genome
+        which_genome : int
+            Which genome in the tree structure these medians exist in
+        node_strings : [str]
+            String representation of each node
+        """
+        self.three_genome_paths = [paths1, paths2, paths3]
+        self.three_genomes = [genome1, genome2, genome3]
+        self.gene_num = gene_num
+        self.which_genome = which_genome
+        self.node_strings = node_strings
 
-        self.three_genome_paths: [[PGMPath]] = [paths1, paths2, paths3]
-        self.three_genomes: [int] = [genome1, genome2, genome3]
-        self.gene_num: int = gene_num
-        self.which_genome: int = which_genome
-        self.node_strings: [str] = node_str
-
-        self.gray_edge: [PGMPath] = List[PGMPath]
-        self.gray_edge_index: int = 0
-        self.fragments: [PGMFragment] = List[PGMFragment]
-        self.choice_structures: [ChoiceStructure] = [ChoiceStructure]
-        self.medians: [str] = List[str]
+        self.gray_edge = List[PGMPath]
+        self.gray_edge_index = 0
+        self.fragments = List[PGMFragment]
+        self.choice_structures = [ChoiceStructure]
+        self.medians = List[str]
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -175,10 +207,10 @@ class MedianData:
             self.choice_structures[cs_index] = cs
             cs_index += 1
 
-    def count_total_distance(self, median: MedianData) -> int:
+    def gray_edge_total_distance(self, median: MedianData) -> int:
         """
         Calculate the total distances between the three genome paths from the given median
-        and this instance's gray edge
+        and this instance's gray edge. Renamed from countTotalDis
 
         Parameters
         ----------
