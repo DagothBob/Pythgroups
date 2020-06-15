@@ -319,9 +319,9 @@ class MedianData:
                         good_path_count += 1
                     break
 
-                l = paths2[n_big]
-                m1 = l.head
-                m2 = l.tail
+                path_l = paths2[n_big]
+                m1 = path_l.head
+                m2 = path_l.tail
                 if m2 > 0:
                     if m2 == n_small:
                         cycle_count += 1

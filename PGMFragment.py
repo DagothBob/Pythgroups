@@ -33,8 +33,8 @@ class PGMFragment:
         end2
             Other end of the fragment
         """
-        self.end1 = end1
-        self.end2 = end2
+        self.end1: int = end1
+        self.end2: int = end2
 
     @classmethod
     def from_fragment(cls, fragment: PGMFragment):
