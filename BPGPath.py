@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 """                            
  Path for use in a BreakPoint Graph for BPGDistance.   
                                                        
@@ -14,15 +13,16 @@ class BPGPath:
     """
     Attributes
     ----------
-    head
+    head : int
         Head gene of the path
-    tail
+    tail : int
         Tail gene of the path
-    genome_head
+    genome_head : int
         Genome identifier for the head gene
-    genome_tail
+    genome_tail : int
         Genome identifier for the tail gene
     """
+
     def __init__(self, head: int or None, tail: int or None, ghead: int or None, gtail: int or None):
         """
         Constructor

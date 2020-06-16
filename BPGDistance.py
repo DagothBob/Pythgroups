@@ -1,7 +1,6 @@
 import BPGPath
 from BPGPath import BPGPath
 
-
 """                              
  Calculate the distance between two genomes using          
  a breakpoint graph and counting the number of cycles.     
@@ -62,23 +61,24 @@ class BPGDistance:
     """
     Attributes
     ----------
-    genome1
+    genome1 : str
         First genome for distance calculation
-    genome2
+    genome2 : str
         Genome to compare to the first
-    gene_ints
+    gene_ints : [int]
         Integer values of genes
-    gene_strs1
+    gene_strs1 : str
         String representation for genes in genome 1
-    gene_strs2
+    gene_strs2 : str
         String representation for genes in genome 2
-    genome_paths1
+    genome_paths1 : [BPGPath]
         Paths for combining into cycles in genome 1
-    genome_paths2
+    genome_paths2 : [BPGPath]
         Paths for combining into cycles in genome 2
-    distance
+    distance : int
         Integer distance between genome 1 and genome 2
     """
+
     def __init__(self, genome1: [str], genome2: [str]):
         """
         Constructor
@@ -94,8 +94,8 @@ class BPGDistance:
         index2: int = 0
         num_genes1: int = 0
         num_genes2: int = 0
-        self.genome1: str = " " * len(genome1)                # Genome 1 as String
-        self.genome2: str = " " * len(genome2)                # Genome 2 as String
+        self.genome1: str = " " * len(genome1)  # Genome 1 as String
+        self.genome2: str = " " * len(genome2)  # Genome 2 as String
 
         for gene in genome1:
             genes: [str] = gene.split(' ')
@@ -113,15 +113,15 @@ class BPGDistance:
                 self.genome2 = insert_character(self.genome2, index2, gene)
                 index2 += 1
 
-        if num_genes1 == num_genes2:                          # Algorithm requires genomes are equal length
-            self.gene_number: int = num_genes1                # Number of genes
+        if num_genes1 == num_genes2:  # Algorithm requires genomes are equal length
+            self.gene_number: int = num_genes1  # Number of genes
 
         self.gene_ints: [int] = [0] * (self.gene_number * 2)  # Integer values for genes
-        self.gene_strs1: str = " " * (self.gene_number * 2)   # String representation of genes (genome 1)
-        self.gene_strs2: str = " " * (self.gene_number * 2)   # String representation of genes (genome 2)
-        self.genome_paths1: [BPGPath] = []                    # Paths for combining into cycles (genome 1)
-        self.genome_paths2: [BPGPath] = []                    # Paths for combining into cycles (genome 2)
-        self.distance: int = 0                                # Distance
+        self.gene_strs1: str = " " * (self.gene_number * 2)  # String representation of genes (genome 1)
+        self.gene_strs2: str = " " * (self.gene_number * 2)  # String representation of genes (genome 2)
+        self.genome_paths1: [BPGPath] = []  # Paths for combining into cycles (genome 1)
+        self.genome_paths2: [BPGPath] = []  # Paths for combining into cycles (genome 2)
+        self.distance: int = 0  # Distance
 
     def graph_init(self):
         """

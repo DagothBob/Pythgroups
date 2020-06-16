@@ -1,5 +1,3 @@
-
-
 """
 Priority for use in the PathGroups Algorithm
 
@@ -10,7 +8,8 @@ Author: Oskar Jensen
 
 
 class Priority:
-    """ Based on the priority system described in 'On the PATHGROUPS approach to rapid small phylogeny'
+    """
+    Based on the priority system described in 'On the PATHGROUPS approach to rapid small phylogeny'
 
     Attributes
     ----------
@@ -58,18 +57,18 @@ class Priority:
 
         # Initializes all the arrays to various default values
         for i in range(0, size):
-            self.taken_previous[i] = 0   # These two arrays are filled in so
-            self.taken_next[i] = 0       # that their sizes match the others
+            self.taken_previous[i] = 0  # These two arrays are filled in so
+            self.taken_next[i] = 0  # that their sizes match the others
             self.cs_indexes[i] = -1
             self.median_indexes[i] = -1
             self.empty_previous[i] = i - 1
             self.empty_next[i] = i + 1
         self.empty_next[size - 1] = -1  # last entry set to -1
 
-        self.empty_start = 0
-        self.empty_end = size - 1
-        self.taken_start = -1
-        self.taken_end = -1
+        self.empty_start: int = 0
+        self.empty_end: int = size - 1
+        self.taken_start: int = -1
+        self.taken_end: int = -1
 
     def insert(self, cs_index: int, which_ancestor: int) -> int:
         """ Insert a choice structure position into the Priority object
