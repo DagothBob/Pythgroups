@@ -71,29 +71,30 @@ class DCJOperations:
     """
     Attributes
     ----------
-    genome1
+    genome1 : GenomeInString
         Genome 1 as a list of strings
-    genome2
+    genome2 : GenomeInString
         Genome 2 as a list of strings
-    gene_number
+    gene_number : int
         How many genes are in both genomes (must be the same)
-    max_chromosome_number
+    max_chromosome_number : int
         Highest number of chromosomes in either genome
-    min_chromosome_number
+    min_chromosome_number : int
         Lower number of chromosomes in either genome
-    gene_node1
+    gene_node1 : [[int]]
         First gene node for performing DCJ operations
-    gene_node2
+    gene_node2 : [[int]]
         Second gene node for performing DCJ operations
-    chromosome_in_gene_node1
+    chromosome_in_gene_node1 : [[int]]
         Chromosome for first gene node
-    chromosome_in_gene_node2
+    chromosome_in_gene_node2 : [[int]]
         Chromosome for second gene node
-    gene_node_in_string
+    gene_node_in_string : [str]
         String representation for both gene nodes
-    touched_chromosome
+    touched_chromosome : [int]
         Current chromosome being updated
     """
+
     def __init__(self, genome1: [str], genome2: [str]):
         """
         Constructor
@@ -445,7 +446,7 @@ class DCJOperations:
                 for i in range(lengthc):
                     new_chromosome1[i + lengtha] = \
                         self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][
-                        lengthc - i - 1]
+                            lengthc - i - 1]
 
                 for i in range(lengthb):
                     new_chromosome2[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][
@@ -537,8 +538,8 @@ class DCJOperations:
                 self.gene_node1[new_chromosome[i]][GeneNodeAttributes.CHROMOSOME_POSITION] = i
 
             for i in range(len(self.gene_node1)):
-                if self.gene_node1[i][1] >= chromosome1 and self.gene_node1[i][
-                        GeneNodeAttributes.CHROMOSOMES_INDEX] >= chromosome2:
+                if self.gene_node1[i][1] >= chromosome1 and \
+                        self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] >= chromosome2:
                     self.gene_node1[i][1] = self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] - 1
 
             chromosome_in_gene_node1_temp: [[int]] = [[0] * (len(self.chromosome_in_gene_node1) - 1)]
@@ -643,17 +644,17 @@ class DCJOperations:
                                 GeneNodeAttributes.CHROMOSOMES_INDEX]
                             result[OperationOptions.NODE1] = node1
                         elif (-1 < which_chromosome == self.gene_node1[node2][GeneNodeAttributes.CHROMOSOMES_INDEX]) \
-                                or (which_chromosome < 0 and self.touched_chromosome[
-                                self.gene_node1[node2][GeneNodeAttributes.CHROMOSOMES_INDEX]] == 0):
+                                or (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node2]
+                                    [GeneNodeAttributes.CHROMOSOMES_INDEX]] == 0):
                             result[OperationOptions.CHROMOSOME1] = self.gene_node1[node2][
                                 GeneNodeAttributes.CHROMOSOMES_INDEX]
                             result[OperationOptions.NODE1] = node2
 
-                        if self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node3 or self.gene_node1[node2][
-                                GeneNodeAttributes.ADJACENCY] == node3:
+                        if self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node3 or \
+                                self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node3:
                             result[OperationOptions.NODE3] = node3
-                        elif self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node4 or self.gene_node1[node2][
-                                GeneNodeAttributes.ADJACENCY] == node4:
+                        elif self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node4 or \
+                                self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node4:
                             result[OperationOptions.NODE3] = node4
 
                         result[OperationOptions.CHROMOSOME2] = len(self.chromosome_in_gene_node1)
@@ -747,23 +748,23 @@ class DCJOperations:
                     if (which_chromosome < 0 and self.touched_chromosome[i] == 0 and
                         self.touched_chromosome[j] == 0) or \
                             (which_chromosome > -1 and (i == which_chromosome or j == which_chromosome)):
-                        if self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and self.gene_node2[node3][
-                                GeneNodeAttributes.ADJACENCY] != -1:
+                        if self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and \
+                                self.gene_node2[node3][GeneNodeAttributes.ADJACENCY] != -1:
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node3
                             result[OperationOptions.OPERATION_SUBTYPE] = 1
-                        elif self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and self.gene_node2[node4][
-                                GeneNodeAttributes.ADJACENCY] != -1:
+                        elif self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and \
+                                self.gene_node2[node4][GeneNodeAttributes.ADJACENCY] != -1:
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node4
                             result[OperationOptions.OPERATION_SUBTYPE] = 2
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and self.gene_node2[node3][
-                                GeneNodeAttributes.ADJACENCY] != -1:
+                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and \
+                                self.gene_node2[node3][GeneNodeAttributes.ADJACENCY] != -1:
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node3
                             result[OperationOptions.OPERATION_SUBTYPE] = 3
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and self.gene_node2[node4][
-                                GeneNodeAttributes.ADJACENCY] != -1:
+                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and \
+                                self.gene_node2[node4][GeneNodeAttributes.ADJACENCY] != -1:
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node4
                             result[OperationOptions.OPERATION_SUBTYPE] = 4
@@ -807,8 +808,7 @@ class DCJOperations:
 
         return result
 
-    # Renamed from findReversal() for clarity
-    def get_reversal(self, chromosome: int) -> [int]:
+    def get_reversal(self, chromosome: int) -> [int]:  # Renamed from findReversal() for clarity
         """
         Gets the reversal of a given chromosome
 

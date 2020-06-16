@@ -2,8 +2,9 @@ from random import random
 from typing import List
 
 from MedianData import MedianData
-from PGMPathForAGenome import PGMPathForAGenome
 from PGMPath import PGMPath
+from PGMPathForAGenome import PGMPathForAGenome
+from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
 
 """
@@ -116,7 +117,7 @@ class MedianIteration:
             Total number of optimization runs
         """
         p1 = prob_threshold_top  # Probability threshold for when total_dis == dis_before
-        p2 = 0                   # Probability threshold for when total_dis > dis_before
+        p2 = 0  # Probability threshold for when total_dis > dis_before
 
         # Each optimization run
         for turn in range(0, runs):
@@ -143,9 +144,9 @@ class MedianIteration:
                     if aps[2].paths[t] is not None:
                         aps[2].paths[t] = PGMPath(aps[2].paths[t].head, aps[2].paths[t].tail, 2, 2)
 
-                ts = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int)
-                sp = object()   # Will be SmallPhylogeny(ts)
-                # sp.get_result() TODO: Waiting on implementation of SmallPhylogeny
+                ts = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int, None)
+                sp = SmallPhylogeny(ts)
+                sp.get_result()
 
                 # Specifies thresholds to meet to perform optimizations
                 total_dis = ts.medians[0].gray_edge_total_distance(ts.medians[0])

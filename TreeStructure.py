@@ -32,23 +32,24 @@ class TreeStructure:
     """
     Attributes
     ----------
-    number_of_ancestors
+    number_of_ancestors : int
         Number of ancestor nodes in the tree structure
-    number_of_leaves
+    number_of_leaves : int
         Number of leaf nodes in the tree structure
-    gene_number
+    gene_number : int
         Number of genes in the structure
-    leaves
+    leaves : [[int]]
         List of leaf nodes
-    medians
+    medians : [MedianData]
         List of MedianData information
-    node_int
+    node_int : [int]
         Current node as a list of integers
-    node_string
+    node_string : [str]
         Current node as a list of strings
-    all_paths
+    all_paths : [PGMPathForAGenome]
         All paths as PGMForAGenomes
     """
+
     def __init__(self,
                  number_of_ancestors: int,
                  number_of_leaves: int,
@@ -134,13 +135,13 @@ class TreeStructure:
                     index1 += 1
 
             self.all_genomes: [GenomeInString] = [GenomeInString(None)] * (
-                        self.number_of_leaves + self.number_of_ancestors)
+                    self.number_of_leaves + self.number_of_ancestors)
 
             for i in range(len(ancestor_genome_string)):
                 self.all_genomes[i] = GenomeInString(ancestor_genome_string[i].chromosomes)
 
             self.all_paths: [PGMPathForAGenome] = [PGMPathForAGenome(None)] * (
-                        self.number_of_leaves + self.number_of_ancestors)
+                    self.number_of_leaves + self.number_of_ancestors)
 
             for i in range(len(ancestor_genome_string)):
                 self.all_paths[i] = PGMPathForAGenome(self.get_pgm_path(self.all_genomes[i].chromosomes, i))
@@ -183,7 +184,7 @@ class TreeStructure:
         Relation between leaves
         """
         relation: [[int]] = [[0] * (self.number_of_leaves + self.number_of_ancestors)] * (
-                    self.number_of_leaves + self.number_of_ancestors)
+                self.number_of_leaves + self.number_of_ancestors)
 
         for i in range(len(self.leaves)):
             for j in range(len(self.leaves[i])):

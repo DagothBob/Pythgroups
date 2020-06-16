@@ -15,15 +15,16 @@ class PGMPath:
     """
     Attributes
     ----------
-    head
+    head : int
         Head gene
-    tail
+    tail : int
         Tail gene
-    genome_head
+    genome_head : int
         Genome for the head gene
-    genome_tail
+    genome_tail : int
         Genome for the tail gene
     """
+
     def __init__(self, head: int, tail: int, ghead: int, gtail: int):
         """
         Constructor
@@ -56,7 +57,7 @@ class PGMPath:
         path2
             Second path to connect
         pathl
-            TODO: Figure out what this means
+            Path used for connecting two paths
         which_genome
             Which genome this path belongs to
 

@@ -102,11 +102,11 @@ class SmallPhylogeny:
     """
     Attributes
     ----------
-    tree
+    tree : TreeStructure
         TreeStructure
-    priorities
+    priorities : [Priority]
         List of priorities
-    to_replace
+    to_replace : int
         Which to replace
     """
 
@@ -524,7 +524,8 @@ class SmallPhylogeny:
 
         return current_max
 
-    def get_new_choice_structure(self, median_index: int, choice_structure_index: int, index_from: int, tail: int):
+    def get_new_choice_structure(self, median_index: int, choice_structure_index: int, index_from: int, tail: int) -> \
+            [Optional[ChoiceStructure]]:
         """
         Gets new ChoiceStructure in some time that isn't 2 steps
 
@@ -762,6 +763,9 @@ class SmallPhylogeny:
         return temp
 
     def get_result(self):
+        """
+        Gets the result of the small phylogeny operation
+        """
         self.group_pathgroup_into_priorities()
 
         best_choice_structure: [int] = self.find_the_best_choice_structure()
@@ -777,6 +781,16 @@ class SmallPhylogeny:
             best_choice_structure = self.find_the_best_choice_structure()
 
     def add_gray_edge(self, ancestor: int, gray_edge: PGMPath):
+        """
+        Adds a gray edge object and updates self
+
+        Parameters
+        ----------
+        ancestor
+            Which ancestor to use
+        gray_edge
+            Temporary variable used in calling function
+        """
         if gray_edge.head >= 0 and gray_edge.tail >= 0:
             self.tree.medians[ancestor].gray_edge[self.tree.medians[ancestor].gray_edge_index] = gray_edge
             self.tree.medians[ancestor].gray_edge_index += 1
@@ -784,6 +798,18 @@ class SmallPhylogeny:
         self.update_all(ancestor, gray_edge.head - 1, gray_edge)
 
     def update_all(self, median_index: int, choice_structure_index: int, path_l: PGMPath):
+        """
+        Updates internal data
+
+        Parameters
+        ----------
+        median_index
+            Index of the current median candidate
+        choice_structure_index
+            Index of the current ChoiceStructure
+        path_l
+            Used for combining paths
+        """
         new_fragment: [PGMFragment] = self.get_created_fragment(median_index, path_l.head, path_l.tail)
         self.get_new_fragment_list(new_fragment, median_index)
 
@@ -849,6 +875,16 @@ class SmallPhylogeny:
                 self.update_priority(which_ancestor, tail3 - 1)
 
     def update_priority(self, median_index: int, choice_structure_index: int):
+        """
+        Updates a priority for the given median
+
+        Parameters
+        ----------
+        median_index
+            Index of the current median candidate
+        choice_structure_index
+            Index of the current ChoiceStructure
+        """
         if self.tree.medians[median_index].choice_structures[choice_structure_index] is not None:
             old_priority: int = self.tree.medians[median_index].choice_structures[choice_structure_index].priority
             old_position: int = self.tree.medians[median_index].choice_structures[choice_structure_index].position
@@ -867,6 +903,14 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index].position = new_position
 
     def find_the_best_choice_structure(self) -> [int]:
+        """
+        Finds the best choice structure
+
+        Returns
+        -------
+        [int]
+            Result of the operation
+        """
         result: [int] = [0] * 2
         result[0] = -1
         result[1] = -1

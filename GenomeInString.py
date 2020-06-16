@@ -11,9 +11,10 @@ class GenomeInString:
     """
     Attributes
     ----------
-    chromosomes
+    chromosomes : [str]
         List of chromosomes expressed as strings
     """
+
     def __init__(self, chromosomes: [str]):
         """
         Constructor
