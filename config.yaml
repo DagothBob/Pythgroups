@@ -1,0 +1,9 @@
+# Tree structure in Newick format
+tree_structure: "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)"
+
+# Directory of the aligned genome data file
+genome_file: "[directory]"
+
+# Genome reconstruction algorithm (not in use currently)
+# algorithm: "GenomeAliquoting"
+...
