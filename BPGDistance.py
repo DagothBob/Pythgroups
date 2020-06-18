@@ -159,10 +159,8 @@ class BPGDistance:
                 first_character: str = gene[0]  # Sign indicating gene is head-tail or tail-head
 
                 if first_character == "-":
-                    node1: str = gene[1:]
-                    node1.join("h")
-                    node2: str = gene[1:]
-                    node2.join("t")
+                    node1: str = insert_character(gene[1:], len(gene[1:]), "h")
+                    node2: str = insert_character(gene[1:], len(gene[1:]), "t")
                     self.gene_ints[index1] = index1 + 1
                     self.gene_strs1 = insert_character(self.gene_strs1, index1, node2)
 
@@ -170,10 +168,8 @@ class BPGDistance:
                     self.gene_ints[index1] = index1 + 1
                     self.gene_strs1 = insert_character(self.gene_strs1, index1, node1)
                 else:
-                    node1: str = gene
-                    node1.join("t")
-                    node2: str = gene
-                    node2.join("h")
+                    node1: str = insert_character(gene, len(gene), "t")
+                    node2: str = insert_character(gene, len(gene), "h")
                     self.gene_ints[index1] = index1 + 1
                     self.gene_strs1 = insert_character(self.gene_strs1, index1, node1)
 
@@ -215,15 +211,11 @@ class BPGDistance:
                 first_character: str = genes[i][0, 1]  # Sign indicating gene is head-tail or tail-head
 
                 if first_character == "-":
-                    node1: str = genes[i][1:]
-                    node1.join('h')
-                    node2: str = genes[i][1:]
-                    node2.join('t')
+                    node1: str = insert_character(genes[i][1:], len(genes[i][1:]), "h")
+                    node2: str = insert_character(genes[i][1:], len(genes[i][1:]), "t")
                 else:
-                    node1: str = genes[i]
-                    node1.join('t')
-                    node2: str = genes[i]
-                    node2.join('h')
+                    node1: str = insert_character(genes[i], len(genes[i]), "t")
+                    node2: str = insert_character(genes[i], len(genes[i]), "h")
 
                 node1_int: int = self.get_node_int(node1, node)
                 node2_int: int = self.get_node_int(node2, node)
