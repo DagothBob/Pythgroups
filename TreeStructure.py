@@ -133,10 +133,8 @@ class TreeStructure:
                     node2: str
 
                     if first_character == '-':
-                        node1 = gene[1:]
-                        node1.join('h')
-                        node2 = gene[1:]
-                        node2.join('t')
+                        node1 = insert_character(gene[1:], len(gene[1:]), "h")
+                        node2 = insert_character(gene[1:], len(gene[1:]), "t")
 
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node2
@@ -144,10 +142,8 @@ class TreeStructure:
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node1
                     else:
-                        node1 = gene
-                        node1.join('t')
-                        node2 = gene
-                        node2.join('h')
+                        node1 = insert_character(gene, len(gene), "t")
+                        node2 = insert_character(gene, len(gene), "h")
 
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node1
@@ -253,15 +249,11 @@ class TreeStructure:
                 node2: str
 
                 if first_character == '-':
-                    node1 = genes[j][1:]
-                    node1.join('h')
-                    node2 = genes[j][1:]
-                    node2.join('t')
+                    node1 = insert_character(genes[j][1:], len(genes[j][1:]), "h")
+                    node2 = insert_character(genes[j][1:], len(genes[j][1:]), "t")
                 else:
-                    node1 = genes[j]
-                    node1.join('t')
-                    node2 = genes[j]
-                    node2.join('h')
+                    node1 = insert_character(genes[j], len(genes[j]), "t")
+                    node2 = insert_character(genes[j], len(genes[j]), "h")
 
                 node1_int: int = self.find_node_int(node1)
                 node2_int: int = self.find_node_int(node2)

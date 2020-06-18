@@ -90,9 +90,9 @@ class BPGDistance:
         Genome to compare to the first
     gene_ints : [int]
         Integer values of genes
-    gene_strs1 : str
+    gene_strs1 : [str]
         String representation for genes in genome 1
-    gene_strs2 : str
+    gene_strs2 : [str]
         String representation for genes in genome 2
     genome_paths1 : [BPGPath]
         Paths for combining into cycles in genome 1
@@ -117,15 +117,15 @@ class BPGDistance:
         index2: int = 0
         num_genes1: int = 0
         num_genes2: int = 0
-        self.genome1: str = " " * len(genome1)  # Genome 1 as String
-        self.genome2: str = " " * len(genome2)  # Genome 2 as String
+        self.genome1: [str] = [" "] * len(genome1)  # Genome 1 as String
+        self.genome2: [str] = [" "] * len(genome2)  # Genome 2 as String
 
         for chromosome in genome1:
             genes: [str] = split_at_whitespace(chromosome)
 
             if len(genes) != 0:
                 num_genes1 += len(genes)
-                self.genome1 = insert_character(self.genome1, index1, chromosome)
+                self.genome1[index1] = chromosome
                 index1 += 1
 
         for chromosome in genome2:
@@ -133,15 +133,15 @@ class BPGDistance:
 
             if len(genes) != 0:
                 num_genes2 += len(genes)
-                self.genome2 = insert_character(self.genome2, index2, chromosome)
+                self.genome2[index2] = chromosome
                 index2 += 1
 
         if num_genes1 == num_genes2:  # Algorithm requires genomes are equal length
             self.gene_number: int = num_genes1  # Number of genes
 
         self.gene_ints: [int] = [0] * (self.gene_number * 2)  # Integer values for genes
-        self.gene_strs1: str = " " * (self.gene_number * 2)  # String representation of genes (genome 1)
-        self.gene_strs2: str = " " * (self.gene_number * 2)  # String representation of genes (genome 2)
+        self.gene_strs1: [str] = [" "] * (self.gene_number * 2)  # String representation of genes (genome 1)
+        self.gene_strs2: [str] = [" "] * (self.gene_number * 2)  # String representation of genes (genome 2)
         self.genome_paths1: [BPGPath] = []  # Paths for combining into cycles (genome 1)
         self.genome_paths2: [BPGPath] = []  # Paths for combining into cycles (genome 2)
         self.distance: int = 0  # Distance
@@ -162,20 +162,20 @@ class BPGDistance:
                     node1: str = insert_character(gene[1:], len(gene[1:]), "h")
                     node2: str = insert_character(gene[1:], len(gene[1:]), "t")
                     self.gene_ints[index1] = index1 + 1
-                    self.gene_strs1 = insert_character(self.gene_strs1, index1, node2)
+                    self.gene_strs1[index1] = node2
 
                     index1 += 1
                     self.gene_ints[index1] = index1 + 1
-                    self.gene_strs1 = insert_character(self.gene_strs1, index1, node1)
+                    self.gene_strs1[index1] = node1
                 else:
                     node1: str = insert_character(gene, len(gene), "t")
                     node2: str = insert_character(gene, len(gene), "h")
                     self.gene_ints[index1] = index1 + 1
-                    self.gene_strs1 = insert_character(self.gene_strs1, index1, node1)
+                    self.gene_strs1[index1] = node1
 
                     index1 += 1
                     self.gene_ints[index1] = index1 + 1
-                    self.gene_strs1 = insert_character(self.gene_strs1, index1, node2)
+                    self.gene_strs1[index1] = node2
 
                 index1 += 1
 
@@ -208,7 +208,7 @@ class BPGDistance:
             pre_node: int = 0
 
             for i in range(len(genes)):
-                first_character: str = genes[i][0, 1]  # Sign indicating gene is head-tail or tail-head
+                first_character: str = genes[i][0]  # Sign indicating gene is head-tail or tail-head
 
                 if first_character == "-":
                     node1: str = insert_character(genes[i][1:], len(genes[i][1:]), "h")
