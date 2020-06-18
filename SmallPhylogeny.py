@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
@@ -7,7 +7,7 @@ from Priority import Priority
 from TreeStructure import TreeStructure
 
 
-def check_temp_list(temp: [ChoiceStructure], ancestor_median: int, index_from: int) -> int:
+def check_temp_list(temp: List[ChoiceStructure], ancestor_median: int, index_from: int) -> int:
     """
     Checks for valid genome and head value
 
@@ -104,7 +104,7 @@ class SmallPhylogeny:
     ----------
     tree : TreeStructure
         TreeStructure
-    priorities : [Priority]
+    priorities : List[Priority]
         List of priorities
     to_replace : int
         Which to replace
@@ -120,7 +120,7 @@ class SmallPhylogeny:
             TreeStructure
         """
         self.tree: TreeStructure = tree_structure
-        self.priorities: [Priority] = []
+        self.priorities: List[Priority] = []
         self.to_replace: int = 0
 
         priority_size: int = (self.tree.number_of_ancestors * (self.tree.gene_number + 500)) * 2
@@ -254,13 +254,14 @@ class SmallPhylogeny:
         if cycle_now == 3:
             return 0
 
-        created_fragment: [PGMFragment] = self.get_created_fragment(median_index, index_from, tail)
+        created_fragment: List[PGMFragment] = self.get_created_fragment(median_index, index_from, tail)
         self.get_new_fragment_list(created_fragment, median_index)
-        created_choice_structure: [ChoiceStructure] = self.get_new_choice_structure(median_index,
-                                                                                    choice_structure_index, index_from,
-                                                                                    tail)
+        created_choice_structure: List[ChoiceStructure] = self.get_new_choice_structure(median_index,
+                                                                                        choice_structure_index,
+                                                                                        index_from,
+                                                                                        tail)
 
-        look_ahead_cycles: [int] = self.count_all_look_ahead_cycles(created_choice_structure)
+        look_ahead_cycles: List[int] = self.count_all_look_ahead_cycles(created_choice_structure)
         max_cycle_look_ahead: int = look_ahead_cycles[0]
         how_many_more_cycles: int = look_ahead_cycles[1]
 
@@ -342,7 +343,7 @@ class SmallPhylogeny:
 
         return result
 
-    def get_created_fragment(self, median_index: int, node1: int, node2: int) -> [PGMFragment]:
+    def get_created_fragment(self, median_index: int, node1: int, node2: int) -> List[PGMFragment]:
         """
         Returns PGMFragments based on given nodes, as well as the ancestor fragment of both of them
 
@@ -360,7 +361,7 @@ class SmallPhylogeny:
         [PGMFragment]
             Both node fragments + their ancestor fragment
         """
-        result: [PGMFragment] = []
+        result: List[PGMFragment] = []
 
         if node1 > 0 and node2 > 0:
             result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node1]))
@@ -374,7 +375,7 @@ class SmallPhylogeny:
 
         return result
 
-    def get_new_fragment_list(self, created_fragment: [PGMFragment], median_index: int):
+    def get_new_fragment_list(self, created_fragment: List[PGMFragment], median_index: int):
         """
         Sets the instance fragment list for performing small phylogeny operations
 
@@ -394,7 +395,7 @@ class SmallPhylogeny:
             self.tree.medians[median_index].fragments[created_fragment[2].end2] = PGMFragment(created_fragment[2].end2,
                                                                                               created_fragment[2].end1)
 
-    def count_all_look_ahead_cycles(self, created_choice_structures: [ChoiceStructure]) -> [int]:
+    def count_all_look_ahead_cycles(self, created_choice_structures: List[ChoiceStructure]) -> List[int]:
         """
         Counts all look ahead cycles for the set of ChoiceStructures
 
@@ -408,7 +409,7 @@ class SmallPhylogeny:
         [int]
             Counts of look ahead cycles for each ChoiceStructure
         """
-        result: [int] = []
+        result: List[int] = []
         max_cycle: int = 1
         total: int = 0
 
@@ -431,7 +432,7 @@ class SmallPhylogeny:
 
         return result
 
-    def count_2_steps_look_ahead_cycle(self, created_choice_structures: [ChoiceStructure], max_cycle: int) -> int:
+    def count_2_steps_look_ahead_cycle(self, created_choice_structures: List[ChoiceStructure], max_cycle: int) -> int:
         """
         Counts look ahead cycles in 2 steps
 
@@ -525,7 +526,7 @@ class SmallPhylogeny:
         return current_max
 
     def get_new_choice_structure(self, median_index: int, choice_structure_index: int, index_from: int, tail: int) -> \
-            [Optional[ChoiceStructure]]:
+            List[Optional[ChoiceStructure]]:
         """
         Gets new ChoiceStructure in some time that isn't 2 steps
 
@@ -565,7 +566,7 @@ class SmallPhylogeny:
         path_2_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][1]
         path_3_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][2]
 
-        temp: [Optional[ChoiceStructure]] = [None] * 12
+        temp: List[Optional[ChoiceStructure]] = [None] * 12
 
         if path_1_1.head != path_1_2.tail or path_1_1.tail != path_1_2.head or \
                 path_1_1.genome_head != path_1_2.genome_tail or path_1_1.genome_tail != path_1_2.genome_head:
@@ -583,7 +584,7 @@ class SmallPhylogeny:
             if choice_structure is not None:
                 new_choice_structure_number += 1
 
-        result: [Optional[ChoiceStructure]] = [None] * new_choice_structure_number
+        result: List[Optional[ChoiceStructure]] = [None] * new_choice_structure_number
 
         if len(result) >= 0:
             result[:len(result)] = temp.copy()
@@ -592,7 +593,7 @@ class SmallPhylogeny:
 
     def get_new_choice_structure_2_step(self, index_from: int, tail: int, current_genome: int,
                                         ancestor_choice_structure: ChoiceStructure,
-                                        new_choice_structures: [ChoiceStructure]) -> [ChoiceStructure]:
+                                        new_choice_structures: List[ChoiceStructure]) -> List[ChoiceStructure]:
         """
         Gets a new set of ChoiceStructures in 2 steps
 
@@ -651,7 +652,7 @@ class SmallPhylogeny:
         path_2_genome: int = self.tree.leaves[ancestor_choice_structure.for_which_genome][1]
         path_3_genome: int = self.tree.leaves[ancestor_choice_structure.for_which_genome][2]
 
-        temp: [Optional[ChoiceStructure]] = [None] * 12
+        temp: List[Optional[ChoiceStructure]] = [None] * 12
 
         if path_1_1.head != path_1_2.tail or path_1_1.tail != path_1_2.head or \
                 path_1_1.genome_head != path_1_2.genome_tail or path_1_1.genome_tail != path_1_2.genome_head:
@@ -669,15 +670,16 @@ class SmallPhylogeny:
             if choice_structure is not None:
                 new_choice_structure_number += 1
 
-        result: [Optional[ChoiceStructure]] = [None] * new_choice_structure_number
+        result: List[Optional[ChoiceStructure]] = [None] * new_choice_structure_number
 
         if len(result) >= 0:
             result[:len(result)] = temp.copy()
 
         return result
 
-    def get_new_choice_structure_based_on_path(self, new_path1: PGMPath, temp: [ChoiceStructure], for_which_genome: int,
-                                               median_index: int) -> [ChoiceStructure]:
+    def get_new_choice_structure_based_on_path(self, new_path1: PGMPath, temp: List[ChoiceStructure],
+                                               for_which_genome: int,
+                                               median_index: int) -> List[ChoiceStructure]:
         """
         Gets a new ChoiceStructure based on given PGMPath
 
@@ -768,7 +770,7 @@ class SmallPhylogeny:
         """
         self.group_pathgroup_into_priorities()
 
-        best_choice_structure: [int] = self.find_the_best_choice_structure()
+        best_choice_structure: List[int] = self.find_the_best_choice_structure()
 
         while best_choice_structure[0] != -1:
             priority: int = best_choice_structure[0]
@@ -810,7 +812,7 @@ class SmallPhylogeny:
         path_l
             Used for combining paths
         """
-        new_fragment: [PGMFragment] = self.get_created_fragment(median_index, path_l.head, path_l.tail)
+        new_fragment: List[PGMFragment] = self.get_created_fragment(median_index, path_l.head, path_l.tail)
         self.get_new_fragment_list(new_fragment, median_index)
 
         self.priorities[self.tree.medians[median_index].choice_structures[path_l.head - 1].priority].remove(
@@ -818,8 +820,9 @@ class SmallPhylogeny:
         self.priorities[self.tree.medians[median_index].choice_structures[path_l.tail - 1].priority].remove(
             self.tree.medians[median_index].choice_structures[path_l.tail - 1].position)
 
-        new_choice_structure: [ChoiceStructure] = self.get_new_choice_structure(median_index, choice_structure_index,
-                                                                                path_l.head, path_l.tail)
+        new_choice_structure: List[ChoiceStructure] = self.get_new_choice_structure(median_index,
+                                                                                    choice_structure_index,
+                                                                                    path_l.head, path_l.tail)
 
         for choice_structure in new_choice_structure:
             for_which_genome: int = choice_structure.for_which_genome
@@ -902,16 +905,16 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index].priority = priority
                 self.tree.medians[median_index].choice_structures[choice_structure_index].position = new_position
 
-    def find_the_best_choice_structure(self) -> [int]:
+    def find_the_best_choice_structure(self) -> List[int]:
         """
         Finds the best choice structure
 
         Returns
         -------
-        [int]
+        List[int]
             Result of the operation
         """
-        result: [int] = [0] * 2
+        result: List[int] = [0] * 2
         result[0] = -1
         result[1] = -1
 

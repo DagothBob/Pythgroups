@@ -1,3 +1,5 @@
+from typing import List
+
 from PGMPath import PGMPath
 
 """                         
@@ -14,11 +16,11 @@ class PGMPathForAGenome:
     """
     Attributes
     ----------
-    paths : [PGMPath]
+    paths : List[PGMPath]
         PGMPaths for the genome
     """
 
-    def __init__(self, paths: [PGMPath]):
+    def __init__(self, paths: List[PGMPath]):
         """
         Constructor
 
@@ -27,4 +29,4 @@ class PGMPathForAGenome:
         paths
             PGMPaths for the genome
         """
-        self.paths: [PGMPath] = paths
+        self.paths: List[PGMPath] = paths

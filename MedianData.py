@@ -44,7 +44,7 @@ def get_gene_next_node(end1: int) -> int:
     return end1 + 1
 
 
-def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> Optional[int]:
+def find_gray_edge_node(end1: int, gray_edge: List[PGMPath]) -> Optional[int]:
     """
     Find the gray edge end that matches the given fragment end
 
@@ -71,7 +71,7 @@ def find_gray_edge_node(end1: int, gray_edge: [PGMPath]) -> Optional[int]:
     return None
 
 
-def get_next_path(start_pos: int, paths: [PGMPath]) -> Optional[PGMPath]:
+def get_next_path(start_pos: int, paths: List[PGMPath]) -> Optional[PGMPath]:
     """
     Returns the first path it finds in paths. Renamed from getAPath() for accuracy
 
@@ -142,15 +142,15 @@ class MedianData:
         List of each median
     """
 
-    def __init__(self, paths1: [PGMPath],
-                 paths2: [PGMPath],
-                 paths3: [PGMPath],
+    def __init__(self, paths1: List[PGMPath],
+                 paths2: List[PGMPath],
+                 paths3: List[PGMPath],
                  gene_num: int,
                  which_genome: int,
                  genome1: int,
                  genome2: int,
                  genome3: int,
-                 node_strings: [str]):
+                 node_strings: List[str]):
         """
         Constructor
 
@@ -175,17 +175,17 @@ class MedianData:
         node_strings : [str]
             String representation of each node
         """
-        self.three_genome_paths: [[PGMPath]] = [paths1, paths2, paths3]
-        self.three_genomes: [int] = [genome1, genome2, genome3]
+        self.three_genome_paths: List[List[PGMPath]] = [paths1, paths2, paths3]
+        self.three_genomes: List[int] = [genome1, genome2, genome3]
         self.gene_num: int = gene_num
         self.which_genome: int = which_genome
-        self.node_strings: [str] = node_strings
+        self.node_strings: List[str] = node_strings
 
-        self.gray_edge: [PGMPath] = List[PGMPath]
+        self.gray_edge: [PGMPath] = []
         self.gray_edge_index: int = 0
-        self.fragments: [PGMFragment] = List[PGMFragment]
-        self.choice_structures: [ChoiceStructure] = List[ChoiceStructure]
-        self.medians: [str] = List[str]
+        self.fragments: [Optional[PGMFragment]] = []
+        self.choice_structures: [ChoiceStructure] = []
+        self.medians: List[str] = []
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -229,7 +229,7 @@ class MedianData:
         d3 = self.get_distance(median.three_genome_paths[2], self.gray_edge)
         return d1 + d2 + d3
 
-    def get_distance(self, p1: [PGMPath], p2: [PGMPath]) -> int:
+    def get_distance(self, p1: List[PGMPath], p2: List[PGMPath]) -> int:
         """
         Gets the distance between two sets of paths
 
@@ -248,7 +248,7 @@ class MedianData:
         """
 
         cycle_count, good_path_count, chr_count = 0, 0, 0
-        paths1 = List[PGMPath]
+        paths1 = []
 
         # Populates paths1 based on the heads and tails of each path in p1
         # where negative values are set to -1
@@ -378,14 +378,14 @@ class MedianData:
 
         for i in range(0, len(self.fragments)):
             if self.fragments[i] is not None:
-                other_frag = self.fragments[i].end2
+                other_frag: int = self.fragments[i].end2
                 self.fragments[other_frag] = None
 
-        gene_index = 0
+        gene_index: int = 0
         for frag in self.fragments:
             if frag is not None:
-                start_index = frag.end1
-                end_index = frag.end2
+                start_index: int = frag.end1
+                end_index: int = frag.end2
 
                 node_str = self.node_strings[frag.end1 - 1]
                 if node_str.endswith("h"):
