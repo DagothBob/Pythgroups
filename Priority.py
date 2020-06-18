@@ -5,6 +5,7 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 
 Author: Oskar Jensen
 """
+from typing import List
 
 
 class Priority:
@@ -21,9 +22,9 @@ class Priority:
         'better or worse' - Unknown
     size : int
         Size of each array in this class
-    cs_indexes : int[]
+    cs_indexes : List[int]
         Position of choice structures
-    median_indexes : int[]
+    median_indexes : List[int]
         Position of medians (ancestors)
     empty_start : int
         Starting empty position
@@ -33,13 +34,13 @@ class Priority:
         Starting taken position
     taken_end : int
         Ending taken position
-    empty_previous : int[]
+    empty_previous : List[int]
         Previous empty values
-    empty_next : int[]
+    empty_next : List[int]
         Next empty values
-    taken_previous : int[]
+    taken_previous : List[int]
         Previous taken values
-    taken_next : int[]
+    taken_next : List[int]
         Next taken values
 
     """
@@ -48,12 +49,12 @@ class Priority:
         self.cn: int = cycle_now
         self.bcla: int = best_cycle_look_ahead
         self.bw: int = better_or_worse
-        self.cs_indexes: [int] = []
-        self.median_indexes: [int] = []
-        self.empty_previous: [int] = []
-        self.empty_next: [int] = []
-        self.taken_previous: [int] = []
-        self.taken_next: [int] = []
+        self.cs_indexes: List[int] = []
+        self.median_indexes: List[int] = []
+        self.empty_previous: List[int] = []
+        self.empty_next: List[int] = []
+        self.taken_previous: List[int] = []
+        self.taken_next: List[int] = []
 
         # Initializes all the arrays to various default values
         for i in range(0, size):

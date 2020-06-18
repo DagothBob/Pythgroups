@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List, Optional
 
 from GenomeInString import GenomeInString
 
@@ -42,7 +43,7 @@ def insert_character(s: str, i: int, c: str) -> str:
     return s[:i] + c + s[(i + 1):]
 
 
-def split_at_whitespace(strings: str) -> [str]:
+def split_at_whitespace(strings: str) -> List[str]:
     """
     Strips, then splits, a string, then strips the substrings again
 
@@ -56,7 +57,7 @@ def split_at_whitespace(strings: str) -> [str]:
     [str]
         Set of cleaned-up strings
     """
-    result: [str] = []
+    result: List[str] = []
 
     for string in strings.strip().split(" "):
         if string.strip() != "":
@@ -104,21 +105,21 @@ class DCJOperations:
         Highest number of chromosomes in either genome
     min_chromosome_number : int
         Lower number of chromosomes in either genome
-    gene_node1 : [[int]]
+    gene_node1 : List[List[int]]
         First gene node for performing DCJ operations
-    gene_node2 : [[int]]
+    gene_node2 : List[List[int]]
         Second gene node for performing DCJ operations
-    chromosome_in_gene_node1 : [[int]]
+    chromosome_in_gene_node1 : List[List[int]]
         Chromosome for first gene node
-    chromosome_in_gene_node2 : [[int]]
+    chromosome_in_gene_node2 : List[List[int]]
         Chromosome for second gene node
-    gene_node_in_string : [str]
+    gene_node_in_string : List[str]
         String representation for both gene nodes
-    touched_chromosome : [int]
+    touched_chromosome : List[int]
         Current chromosome being updated
     """
 
-    def __init__(self, genome1: [str], genome2: [str]):
+    def __init__(self, genome1: List[str], genome2: List[str]):
         """
         Constructor
 
@@ -138,13 +139,13 @@ class DCJOperations:
         self.min_chromosome_number: int = 0
 
         # For each row, use GeneNodeAttributes to index
-        self.gene_node1: [[int]] = [[0]]
-        self.gene_node2: [[int]] = [[0]]
+        self.gene_node1: List[List[int]] = [[0]]
+        self.gene_node2: List[List[int]] = [[0]]
 
-        self.chromosome_in_gene_node1: [[int]] = [[0]]
-        self.chromosome_in_gene_node2: [[int]] = [[0]]
-        self.gene_node_in_string: [str] = [" "]
-        self.touched_chromosome: [int] = [0]
+        self.chromosome_in_gene_node1: List[List[int]] = [[0]]
+        self.chromosome_in_gene_node2: List[List[int]] = [[0]]
+        self.gene_node_in_string: List[str] = [" "]
+        self.touched_chromosome: List[int] = [0]
 
     def initial_value(self):
         """
@@ -155,12 +156,12 @@ class DCJOperations:
 
         # Split genome1 into genes and save the number of them
         for i in range(len(self.genome1.chromosomes)):
-            genes: [str] = split_at_whitespace(self.genome1.chromosomes)
+            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
             gene_number1 += len(genes)
 
         # Split genome2 into genes and save the number of them
         for i in range(len(self.genome2.chromosomes)):
-            genes: [str] = split_at_whitespace(self.genome2.chromosomes)
+            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
             gene_number2 += len(genes)
 
         self.gene_number = gene_number1
@@ -174,7 +175,7 @@ class DCJOperations:
 
         # Split each chromosome of genome1 into genes and save genes into gene_node1 and chromosome_in_gene_node1
         for i in range(len(self.genome1.chromosomes)):
-            genes: [str] = split_at_whitespace(self.genome1.chromosomes[i])
+            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
             self.chromosome_in_gene_node1[i] = [0 * (len(genes) * 2)]
 
             for j in range(len(genes)):
@@ -219,7 +220,7 @@ class DCJOperations:
 
         # Split each chromosome of genome2 into genes and save genes into gene_node2 and chromosome_in_gene_node2
         for i in range(len(self.genome2.chromosomes)):
-            genes: [str] = split_at_whitespace(self.genome2.chromosomes[i])
+            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
             pre_node_index: int = -1
             self.chromosome_in_gene_node2[i] = [0] * (len(genes) * 2)
 
@@ -277,7 +278,7 @@ class DCJOperations:
 
         return -1
 
-    def get_genome_in_string(self, node_list: [[int]]) -> GenomeInString:
+    def get_genome_in_string(self, node_list: List[List[int]]) -> GenomeInString:
         """
         Creates a GenomeInString from the given list of nodes
 
@@ -291,7 +292,7 @@ class DCJOperations:
         GenomeInString
             New GenomeInString
         """
-        chromosome: [str] = [" " * len(node_list)]
+        chromosome: List[str] = [" " * len(node_list)]
 
         for i in range(len(node_list)):
             chromosome[i] = ""
@@ -310,8 +311,8 @@ class DCJOperations:
 
         return GenomeInString(chromosome)
 
-    def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: [int],
-                   number_of_operations: int) -> [GenomeInString]:
+    def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: List[int],
+                   number_of_operations: int) -> List[Optional[GenomeInString]]:
         """
         Performs a DCJ operation
 
@@ -333,7 +334,7 @@ class DCJOperations:
         [GenomeInString]
             New list of GenomeInStrings after operations performed
         """
-        all_steps: [GenomeInString] = [GenomeInString(None)] * number_of_operations
+        all_steps: List[Optional[GenomeInString]] = [None] * number_of_operations
         step_index: int = 0
         current_operation: int = 0
 
@@ -345,7 +346,7 @@ class DCJOperations:
 
         while current_operation < number_of_operations and more:
             more = False
-            operation: [int] = self.expand_all_operations(types_of_operation, which_chromosome)
+            operation: List[int] = self.expand_all_operations(types_of_operation, which_chromosome)
 
             if operation[OperationOptions.CHROMOSOME1] != -1:
                 if operation[OperationOptions.TYPE_OF_OPERATION] == 1:
@@ -368,14 +369,14 @@ class DCJOperations:
                 current_operation += 1
                 more = True
 
-        result: [GenomeInString] = [GenomeInString(None)] * step_index
+        result: List[Optional[GenomeInString]] = [None] * step_index
 
         if len(result) >= 0:
             result[:len(result)] = all_steps.copy()
 
         return result
 
-    def update_all_values(self, operation: [int], which_chromosome: int):
+    def update_all_values(self, operation: List[int], which_chromosome: int):
         """
         Updates instance attributes based on the operation
 
@@ -397,7 +398,7 @@ class DCJOperations:
             start_node: int = self.gene_node1[operation[OperationOptions.NODE3]][GeneNodeAttributes.CHROMOSOME_POSITION]
             end_node: int = self.gene_node1[operation[OperationOptions.NODE2]][GeneNodeAttributes.CHROMOSOME_POSITION]
             chromosome_here: int = operation[OperationOptions.CHROMOSOME1]
-            new_chromosome_here: [int] = [0] * len(self.chromosome_in_gene_node1[chromosome_here])
+            new_chromosome_here: List[int] = [0] * len(self.chromosome_in_gene_node1[chromosome_here])
 
             if start_node >= 0:
                 self.chromosome_in_gene_node1[chromosome_here] = new_chromosome_here.copy()[:start_node]
@@ -422,8 +423,8 @@ class DCJOperations:
                 lengtha = self.gene_node1[operation[OperationOptions.NODE1]][GeneNodeAttributes.CHROMOSOME_POSITION] + 1
 
             lengthb: int = length1 - lengtha
-            new_chromosome1: [int] = [0]
-            new_chromosome2: [int] = [0]
+            new_chromosome1: List[int] = [0]
+            new_chromosome2: List[int] = [0]
 
             if operation[OperationOptions.OPERATION_SUBTYPE] == 1:
                 lengthc: int = 0
@@ -497,8 +498,8 @@ class DCJOperations:
             length1: int = self.gene_node1[operation[OperationOptions.NODE1]][
                                GeneNodeAttributes.CHROMOSOME_POSITION] + 1
             length2: int = length - length1
-            new_chromosome1: [int] = [0] * length1
-            new_chromosome2: [int] = [0] * length2
+            new_chromosome1: List[int] = [0] * length1
+            new_chromosome2: List[int] = [0] * length2
 
             if length1 >= 0:
                 new_chromosome1[:length1] = self.chromosome_in_gene_node1[
@@ -509,7 +510,7 @@ class DCJOperations:
                                                 operation[OperationOptions.CHROMOSOME1]].copy()[
                                             length1:]
 
-            chromosome_in_gene_node1_temp: [[int]] = [[0] * (len(self.chromosome_in_gene_node1) + 1)]
+            chromosome_in_gene_node1_temp: List[List[int]] = [[0] * (len(self.chromosome_in_gene_node1) + 1)]
 
             chromosome_in_gene_node1_temp[:len(self.chromosome_in_gene_node1)] = self.chromosome_in_gene_node1.copy()
 
@@ -525,7 +526,7 @@ class DCJOperations:
             length1: int = len(self.chromosome_in_gene_node1[chromosome1])
             length2: int = len(self.chromosome_in_gene_node1[chromosome2])
             length: int = length1 + length2
-            new_chromosome: [int] = [0] * length
+            new_chromosome: List[int] = [0] * length
 
             if operation[OperationOptions.OPERATION_SUBTYPE] == 1:
                 for i in range(length2):
@@ -565,7 +566,7 @@ class DCJOperations:
                         self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] >= chromosome2:
                     self.gene_node1[i][1] = self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] - 1
 
-            chromosome_in_gene_node1_temp: [[int]] = [[0] * (len(self.chromosome_in_gene_node1) - 1)]
+            chromosome_in_gene_node1_temp: List[List[int]] = [[0] * (len(self.chromosome_in_gene_node1) - 1)]
             index: int = 0
 
             for ints in self.chromosome_in_gene_node1:
@@ -593,7 +594,7 @@ class DCJOperations:
                 OperationOptions.NODE3]
 
     # Renamed from findAOperation() for accuracy
-    def expand_all_operations(self, types_of_operation: [int], which_chromosome: int) -> [int]:
+    def expand_all_operations(self, types_of_operation: List[int], which_chromosome: int) -> List[int]:
         """
         Turn the list of given operation types into a list of operation attributes
 
@@ -609,7 +610,7 @@ class DCJOperations:
         [int]
             List of operation attributes
         """
-        result: [int] = [0] * 8
+        result: List[int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
         for operation in types_of_operation:
@@ -621,7 +622,7 @@ class DCJOperations:
         return result
 
     # Renamed from findATypeOperation() for accuracy
-    def get_operation_attributes(self, which_chromosome: int, operation_type: int) -> [int]:
+    def get_operation_attributes(self, which_chromosome: int, operation_type: int) -> List[int]:
         """
         Gets a list of operation attributes for given operation type
 
@@ -637,7 +638,7 @@ class DCJOperations:
         [int]
             List of operation attributes
         """
-        result: [int] = [0] * 8
+        result: List[int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
         if (operation_type == OperationTypes.FUSION and
@@ -802,7 +803,7 @@ class DCJOperations:
 
         elif operation_type == OperationTypes.INVERSION:
             if which_chromosome > -1:
-                operation: [int] = self.get_reversal(which_chromosome)
+                operation: List[int] = self.get_reversal(which_chromosome)
 
                 if operation[OperationOptions.CHROMOSOME1] != -1:
                     return operation
@@ -810,13 +811,13 @@ class DCJOperations:
             if which_chromosome < 0:
                 for c in range(len(self.touched_chromosome)):
                     if self.touched_chromosome[c] == 0:
-                        operation: [int] = self.get_reversal(c)
+                        operation: List[int] = self.get_reversal(c)
 
                         if operation[OperationOptions.CHROMOSOME1] != -1:
                             return operation
         elif operation_type == OperationTypes.TRANSLOCATION:
             if which_chromosome > -1:
-                operation: [int] = self.get_translocation(which_chromosome, which_chromosome)
+                operation: List[int] = self.get_translocation(which_chromosome, which_chromosome)
 
                 if operation[OperationOptions.CHROMOSOME1] != -1:
                     return operation
@@ -824,14 +825,14 @@ class DCJOperations:
             if which_chromosome < 0:
                 for c in range(len(self.touched_chromosome) - 1):
                     if self.touched_chromosome[c] == 0:
-                        operation: [int] = self.get_translocation(c, which_chromosome)
+                        operation: List[int] = self.get_translocation(c, which_chromosome)
 
                         if operation[OperationOptions.CHROMOSOME1] != -1:
                             return operation
 
         return result
 
-    def get_reversal(self, chromosome: int) -> [int]:  # Renamed from findReversal() for clarity
+    def get_reversal(self, chromosome: int) -> List[int]:  # Renamed from findReversal() for clarity
         """
         Gets the reversal of a given chromosome
 
@@ -845,7 +846,7 @@ class DCJOperations:
         [int]
             List of result attributes
         """
-        result: [int] = [0] * 8
+        result: List[int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
         for i in range(len(self.chromosome_in_gene_node1[chromosome]) // 2):
@@ -902,7 +903,7 @@ class DCJOperations:
         return result
 
     # Renamed from findTranslocation() for clarity
-    def get_translocation(self, chromosome: int, which_chromosome: int) -> [int]:
+    def get_translocation(self, chromosome: int, which_chromosome: int) -> List[int]:
         """
         Gets the translocation of a given chromosome
 
@@ -918,7 +919,7 @@ class DCJOperations:
         [int]
             List of result attributes
         """
-        result: [int] = [0] * 8
+        result: List[int] = [0] * 8
         result[OperationOptions.CHROMOSOME1] = -1
 
         for i in range((len(self.chromosome_in_gene_node1[chromosome]) // 2) + 1):
