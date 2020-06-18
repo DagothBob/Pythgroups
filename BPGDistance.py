@@ -172,8 +172,8 @@ class BPGDistance:
                     self.gene_number * 2)  # String representation of genes (genome 1)
         self.node_strs2: List[Optional[str]] = [None] * (
                     self.gene_number * 2)  # String representation of genes (genome 2)
-        self.genome_paths1: List[BPGPath] = []  # Paths for combining into cycles (genome 1)
-        self.genome_paths2: List[BPGPath] = []  # Paths for combining into cycles (genome 2)
+        self.genome_paths1: List[Optional[BPGPath]] = []  # Paths for combining into cycles (genome 1)
+        self.genome_paths2: List[Optional[BPGPath]] = []  # Paths for combining into cycles (genome 2)
         self.distance: int = 0  # Distance
 
     def graph_init(self):
