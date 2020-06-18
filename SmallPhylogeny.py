@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
+from PGMFragment import combine
 from PGMPath import PGMPath
 from Priority import Priority
 from TreeStructure import TreeStructure
@@ -368,10 +369,14 @@ class SmallPhylogeny:
             result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node2]))
 
             ancestor_line: PGMPath = PGMPath(node1, node2, 1, 1)
-            ancestor_fragment: PGMFragment = self.tree.medians[median_index].fragments[node1].combine(
-                ancestor_line, self.tree.medians[median_index].fragments[node1],
-                self.tree.medians[median_index].fragments[node2])
-            result.append(ancestor_fragment)
+
+            if self.tree.medians[median_index].fragments[node1] is not None:
+                ancestor_fragment: PGMFragment = combine(
+                    ancestor_line,
+                    self.tree.medians[median_index].fragments[node1],
+                    self.tree.medians[median_index].fragments[node2])
+
+                result.append(ancestor_fragment)
 
         return result
 

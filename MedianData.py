@@ -136,7 +136,7 @@ class MedianData:
         Index of the gray edge
     self.fragments : [PGMFragment]
         List of each fragment
-    self.choice_structures : [ChoiceStructure]
+    self.choice_structures : [Optional[ChoiceStructure]]
         List of each choice structure
     self.medians : [str]
         List of each median
@@ -184,7 +184,7 @@ class MedianData:
         self.gray_edge: List[PGMPath] = []
         self.gray_edge_index: int = 0
         self.fragments: List[Optional[PGMFragment]] = []
-        self.choice_structures: List[ChoiceStructure] = []
+        self.choice_structures: List[Optional[ChoiceStructure]] = []
         self.medians: List[str] = []
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
