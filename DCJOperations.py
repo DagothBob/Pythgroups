@@ -42,6 +42,29 @@ def insert_character(s: str, i: int, c: str) -> str:
     return s[:i] + c + s[(i + 1):]
 
 
+def split_at_whitespace(strings: str) -> [str]:
+    """
+    Strips, then splits, a string, then strips the substrings again
+
+    Parameters
+    ----------
+    strings
+        List of strings to operate on
+
+    Returns
+    -------
+    [str]
+        Set of cleaned-up strings
+    """
+    result: [str] = []
+
+    for string in strings.strip().split(" "):
+        if string.strip() != "":
+            result.append(string.strip())
+
+    return result
+
+
 class GeneNodeAttributes(Enum):
     ADJACENCY: int = 0
     CHROMOSOMES_INDEX: int = 1
@@ -132,12 +155,12 @@ class DCJOperations:
 
         # Split genome1 into genes and save the number of them
         for i in range(len(self.genome1.chromosomes)):
-            genes: [str] = self.genome1.chromosomes.split(' ')
+            genes: [str] = split_at_whitespace(self.genome1.chromosomes)
             gene_number1 += len(genes)
 
         # Split genome2 into genes and save the number of them
         for i in range(len(self.genome2.chromosomes)):
-            genes: [str] = self.genome2.chromosomes.split(' ')
+            genes: [str] = split_at_whitespace(self.genome2.chromosomes)
             gene_number2 += len(genes)
 
         self.gene_number = gene_number1
@@ -151,7 +174,7 @@ class DCJOperations:
 
         # Split each chromosome of genome1 into genes and save genes into gene_node1 and chromosome_in_gene_node1
         for i in range(len(self.genome1.chromosomes)):
-            genes: [str] = self.genome1.chromosomes[i].split(' ')
+            genes: [str] = split_at_whitespace(self.genome1.chromosomes[i])
             self.chromosome_in_gene_node1[i] = [0 * (len(genes) * 2)]
 
             for j in range(len(genes)):
@@ -196,7 +219,7 @@ class DCJOperations:
 
         # Split each chromosome of genome2 into genes and save genes into gene_node2 and chromosome_in_gene_node2
         for i in range(len(self.genome2.chromosomes)):
-            genes: [str] = self.genome2.chromosomes[i].split(' ')
+            genes: [str] = split_at_whitespace(self.genome2.chromosomes[i])
             pre_node_index: int = -1
             self.chromosome_in_gene_node2[i] = [0] * (len(genes) * 2)
 

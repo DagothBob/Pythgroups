@@ -28,6 +28,29 @@ def insert_character(s: str, i: int, c: str) -> str:
     return s[:i] + c + s[(i + 1):]
 
 
+def split_at_whitespace(strings: str) -> [str]:
+    """
+    Strips, then splits, a string, then strips the substrings again
+
+    Parameters
+    ----------
+    strings
+        List of strings to operate on
+
+    Returns
+    -------
+    [str]
+        Set of cleaned-up strings
+    """
+    result: [str] = []
+
+    for string in strings.strip().split(" "):
+        if string.strip() != "":
+            result.append(string.strip())
+
+    return result
+
+
 class TreeStructure:
     """
     Attributes
@@ -102,7 +125,7 @@ class TreeStructure:
             index1: int = 0
 
             for chromosome in genome1:
-                genes: [str] = chromosome.split(' ')
+                genes: [str] = split_at_whitespace(chromosome)
 
                 for gene in genes:
                     first_character: str = gene[0:1]
@@ -221,7 +244,7 @@ class TreeStructure:
         null_node: int = -1
 
         for chromosome in genome:
-            genes: [str] = chromosome.split(' ')
+            genes: [str] = split_at_whitespace(chromosome)
             pre_node: int = 0
 
             for j in range(len(genes)):

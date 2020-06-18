@@ -57,6 +57,29 @@ def is_valid_cycle(edge1: int, edge2: int) -> bool:
     return (edge2 / 2) * 2 != edge2
 
 
+def split_at_whitespace(strings: str) -> [str]:
+    """
+    Strips, then splits, a string, then strips the substrings again
+
+    Parameters
+    ----------
+    strings
+        List of strings to operate on
+
+    Returns
+    -------
+    [str]
+        Set of cleaned-up strings
+    """
+    result: [str] = []
+
+    for string in strings.strip().split(" "):
+        if string.strip() != "":
+            result.append(string.strip())
+
+    return result
+
+
 class BPGDistance:
     """
     Attributes
@@ -97,20 +120,20 @@ class BPGDistance:
         self.genome1: str = " " * len(genome1)  # Genome 1 as String
         self.genome2: str = " " * len(genome2)  # Genome 2 as String
 
-        for gene in genome1:
-            genes: [str] = gene.split(' ')
+        for chromosome in genome1:
+            genes: [str] = split_at_whitespace(chromosome)
 
             if len(genes) != 0:
                 num_genes1 += len(genes)
-                self.genome1 = insert_character(self.genome1, index1, gene)
+                self.genome1 = insert_character(self.genome1, index1, chromosome)
                 index1 += 1
 
-        for gene in genome2:
-            genes: [str] = gene.split(' ')
+        for chromosome in genome2:
+            genes: [str] = split_at_whitespace(chromosome)
 
             if len(genes) != 0:
                 num_genes2 += len(genes)
-                self.genome2 = insert_character(self.genome2, index2, gene)
+                self.genome2 = insert_character(self.genome2, index2, chromosome)
                 index2 += 1
 
         if num_genes1 == num_genes2:  # Algorithm requires genomes are equal length
@@ -129,8 +152,8 @@ class BPGDistance:
         """
         index1: int = 0
 
-        for g_string in self.genome1:
-            genes: [str] = g_string.split(' ')
+        for chromosome in self.genome1:
+            genes: [str] = split_at_whitespace(chromosome)
 
             for gene in genes:
                 first_character: str = gene[0]  # Sign indicating gene is head-tail or tail-head
@@ -184,8 +207,8 @@ class BPGDistance:
         null_node: int = -node
         path1: [BPGPath] = [BPGPath(None, None, None, None)] * ((self.gene_number * 2) + 1)
 
-        for gene in genome:
-            genes: [str] = gene.split(' ')
+        for chromosome in genome:
+            genes: [str] = split_at_whitespace(chromosome)
             pre_node: int = 0
 
             for i in range(len(genes)):
