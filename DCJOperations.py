@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from typing import List, Optional
 
 from GenomeInString import GenomeInString
@@ -66,21 +66,21 @@ def split_at_whitespace(strings: str) -> List[str]:
     return result
 
 
-class GeneNodeAttributes(Enum):
+class GeneNodeAttributes(IntEnum):
     ADJACENCY: int = 0
     CHROMOSOMES_INDEX: int = 1
     CHROMOSOME_POSITION: int = 2
     LINKED_ADJACENCY: int = 3
 
 
-class OperationTypes(Enum):
+class OperationTypes(IntEnum):
     INVERSION: int = 1
     TRANSLOCATION: int = 2
     FISSION: int = 3
     FUSION: int = 4
 
 
-class OperationOptions(Enum):
+class OperationOptions(IntEnum):
     CHROMOSOME1: int = 0
     CHROMOSOME2: int = 1
     NODE1: int = 2
@@ -144,7 +144,7 @@ class DCJOperations:
 
         self.chromosome_in_gene_node1: List[List[int]] = [[0]]
         self.chromosome_in_gene_node2: List[List[int]] = [[0]]
-        self.gene_node_in_string: List[str] = [" "]
+        self.gene_node_in_string: List[List[str]] = [[" "]]
         self.touched_chromosome: List[int] = [0]
 
     def initial_value(self):
@@ -165,18 +165,18 @@ class DCJOperations:
             gene_number2 += len(genes)
 
         self.gene_number = gene_number1
-        self.gene_node_in_string = [" " * (self.gene_number * 2)] * 2
-        self.gene_node1 = [[0] * (self.gene_number * 2)] * 3
-        self.gene_node2 = [[0] * (self.gene_number * 2)] * 3
-        self.chromosome_in_gene_node1 = [[0] * len(self.genome1.chromosomes)]
-        self.chromosome_in_gene_node2 = [[0] * len(self.genome2.chromosomes)]
+        self.gene_node_in_string = [[""] * 2] * (self.gene_number * 2)
+        self.gene_node1 = [[0] * 3] * (self.gene_number * 2)
+        self.gene_node2 = [[0] * 3] * (self.gene_number * 2)
+        self.chromosome_in_gene_node1 = [[0]] * len(self.genome1.chromosomes)
+        self.chromosome_in_gene_node2 = [[0]] * len(self.genome2.chromosomes)
 
         index: int = 0
 
         # Split each chromosome of genome1 into genes and save genes into gene_node1 and chromosome_in_gene_node1
         for i in range(len(self.genome1.chromosomes)):
             genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
-            self.chromosome_in_gene_node1[i] = [0 * (len(genes) * 2)]
+            self.chromosome_in_gene_node1[i] = [0] * (len(genes) * 2)
 
             for j in range(len(genes)):
                 sign: str = "+"
@@ -187,17 +187,17 @@ class DCJOperations:
                     genome_name = genes[j][1:]
 
                 if sign == "+":
-                    insert_character(self.gene_node_in_string[index], 0, genome_name)
-                    insert_character(self.gene_node_in_string[index], 1, "t")
+                    self.gene_node_in_string[index][0] = genome_name
+                    self.gene_node_in_string[index][1] = "t"
                     index += 1
-                    insert_character(self.gene_node_in_string[index], 0, genome_name)
-                    insert_character(self.gene_node_in_string[index], 1, "h")
+                    self.gene_node_in_string[index][0] = genome_name
+                    self.gene_node_in_string[index][1] = "h"
                 else:
-                    insert_character(self.gene_node_in_string[index], 0, genome_name)
-                    insert_character(self.gene_node_in_string[index], 1, "h")
+                    self.gene_node_in_string[index][0] = genome_name
+                    self.gene_node_in_string[index][1] = "h"
                     index += 1
-                    insert_character(self.gene_node_in_string[index], 0, genome_name)
-                    insert_character(self.gene_node_in_string[index], 1, "t")
+                    self.gene_node_in_string[index][0] = genome_name
+                    self.gene_node_in_string[index][1] = "t"
 
                 index += 1
 

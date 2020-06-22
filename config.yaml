@@ -2,7 +2,7 @@
 tree_structure: "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)"
 
 # Directory of the aligned genome data file
-genome_file: "genomes.txt"
+genome_file: "genomes_bad.txt"
 
 # Genome reconstruction algorithm (not in use currently)
 # algorithm: "GenomeAliquoting"

@@ -292,13 +292,13 @@ class BPGDistance:
         """
         if gene_int == 1:
             for i in range(len(self.node_strs1)):
-                if self.node_strs1[i] is not None and self.node_strs1 == gene_str:
+                if self.node_strs1[i] is not None and self.node_strs1[i] == gene_str:
                     self.node_strs1[i] = None
                     return i + 1
 
         if gene_int == 2:
             for i in range(len(self.node_strs2)):
-                if self.node_strs2[i] is not None and self.node_strs2 == gene_str:
+                if self.node_strs2[i] is not None and self.node_strs2[i] == gene_str:
                     self.node_strs2[i] = None
                     return i + 1
 
