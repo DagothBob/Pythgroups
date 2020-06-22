@@ -104,7 +104,7 @@ class TreeStructure:
         self.number_of_ancestors: int = number_of_ancestors
         self.number_of_leaves: int = number_of_leaves
         self.gene_number: int = gene_number
-        self.leaves: List[List[int]] = [[-1] * (self.number_of_ancestors + self.number_of_leaves)] * 3
+        self.leaves: List[List[int]] = [[-1] * 3] * (self.number_of_ancestors + self.number_of_leaves)
         self.medians: List[Optional[MedianData]] = [None] * self.number_of_ancestors
         self.node_int: List[int] = [0] * (self.gene_number * 2)
         self.node_string: List[str] = [" "] * (self.gene_number * 2)
