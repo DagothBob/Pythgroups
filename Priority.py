@@ -49,17 +49,17 @@ class Priority:
         self.cn: int = cycle_now
         self.bcla: int = best_cycle_look_ahead
         self.bw: int = better_or_worse
-        self.cs_indexes: List[int] = []
-        self.median_indexes: List[int] = []
-        self.empty_previous: List[int] = []
-        self.empty_next: List[int] = []
-        self.taken_previous: List[int] = []
-        self.taken_next: List[int] = []
+        self.cs_indexes: List[int] = list()
+        self.median_indexes: List[int] = list()
+        self.empty_previous: List[int] = list()
+        self.empty_next: List[int] = list()
+        self.taken_previous: List[int] = list()
+        self.taken_next: List[int] = list()
 
         # Initializes all the arrays to various default values
         for i in range(0, size):
             self.taken_previous[i] = 0  # These two arrays are filled in so
-            self.taken_next[i] = 0  # that their sizes match the others
+            self.taken_next[i] = 0      # that their sizes match the others
             self.cs_indexes[i] = -1
             self.median_indexes[i] = -1
             self.empty_previous[i] = i - 1

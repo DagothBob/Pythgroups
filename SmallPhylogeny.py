@@ -121,8 +121,8 @@ class SmallPhylogeny:
             TreeStructure
         """
         self.tree: TreeStructure = tree_structure
-        self.priorities: List[Priority] = []
-        self.to_replace: int = 0
+        self.priorities: List[Priority] = list()
+        self.to_replace: int = int()
 
         priority_size: int = (self.tree.number_of_ancestors * (self.tree.gene_number + 500)) * 2
         self.priorities.append(Priority(3, 0, 0, priority_size))
@@ -362,7 +362,7 @@ class SmallPhylogeny:
         [PGMFragment]
             Both node fragments + their ancestor fragment
         """
-        result: List[PGMFragment] = []
+        result: List[PGMFragment] = list()
 
         if node1 > 0 and node2 > 0:
             result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node1]))
@@ -414,7 +414,7 @@ class SmallPhylogeny:
         [int]
             Counts of look ahead cycles for each ChoiceStructure
         """
-        result: List[int] = []
+        result: List[int] = list()
         max_cycle: int = 1
         total: int = 0
 
@@ -571,7 +571,7 @@ class SmallPhylogeny:
         path_2_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][1]
         path_3_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][2]
 
-        temp: List[Optional[ChoiceStructure]] = [None] * 12
+        temp: List[Optional[ChoiceStructure]] = [None for _ in range(12)]
 
         if path_1_1.head != path_1_2.tail or path_1_1.tail != path_1_2.head or \
                 path_1_1.genome_head != path_1_2.genome_tail or path_1_1.genome_tail != path_1_2.genome_head:
@@ -589,7 +589,7 @@ class SmallPhylogeny:
             if choice_structure is not None:
                 new_choice_structure_number += 1
 
-        result: List[Optional[ChoiceStructure]] = [None] * new_choice_structure_number
+        result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
 
         if len(result) >= 0:
             result[:len(result)] = temp.copy()
@@ -620,7 +620,7 @@ class SmallPhylogeny:
         Set of new ChoiceStructures
         """
         if tail <= 0:
-            return []
+            return list()
 
         path_1_1: PGMPath = ancestor_choice_structure.genome_1_path
         path_2_1: PGMPath = ancestor_choice_structure.genome_2_path
@@ -657,7 +657,7 @@ class SmallPhylogeny:
         path_2_genome: int = self.tree.leaves[ancestor_choice_structure.for_which_genome][1]
         path_3_genome: int = self.tree.leaves[ancestor_choice_structure.for_which_genome][2]
 
-        temp: List[Optional[ChoiceStructure]] = [None] * 12
+        temp: List[Optional[ChoiceStructure]] = [None for _ in range(12)]
 
         if path_1_1.head != path_1_2.tail or path_1_1.tail != path_1_2.head or \
                 path_1_1.genome_head != path_1_2.genome_tail or path_1_1.genome_tail != path_1_2.genome_head:
@@ -675,7 +675,7 @@ class SmallPhylogeny:
             if choice_structure is not None:
                 new_choice_structure_number += 1
 
-        result: List[Optional[ChoiceStructure]] = [None] * new_choice_structure_number
+        result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
 
         if len(result) >= 0:
             result[:len(result)] = temp.copy()
@@ -919,7 +919,7 @@ class SmallPhylogeny:
         List[int]
             Result of the operation
         """
-        result: List[int] = [0] * 2
+        result: List[int] = [int(), int()]
         result[0] = -1
         result[1] = -1
 

@@ -142,8 +142,8 @@ class BPGDistance:
         index2: int = 0
         num_genes1: int = 0
         num_genes2: int = 0
-        self.genome1: List[str] = [" "] * len(genome1)  # Genome 1 as String
-        self.genome2: List[str] = [" "] * len(genome2)  # Genome 2 as String
+        self.genome1: List[str] = [str() for _ in range(len(genome1))]  # Genome 1 as String
+        self.genome2: List[str] = [str() for _ in range(len(genome2))]  # Genome 2 as String
 
         for chromosome in genome1:
             genes: List[str] = split_at_whitespace(chromosome)
@@ -167,14 +167,12 @@ class BPGDistance:
             print("Different numbers of genes in both genomes. Exiting.\n")
             exit(1)
 
-        self.node_ints: List[int] = [0] * (self.gene_number * 2)  # Integer values for genes
-        self.node_strs1: List[Optional[str]] = [None] * (
-                    self.gene_number * 2)  # String representation of genes (genome 1)
-        self.node_strs2: List[Optional[str]] = [None] * (
-                    self.gene_number * 2)  # String representation of genes (genome 2)
-        self.genome_paths1: List[Optional[BPGPath]] = []  # Paths for combining into cycles (genome 1)
-        self.genome_paths2: List[Optional[BPGPath]] = []  # Paths for combining into cycles (genome 2)
-        self.distance: int = 0  # Distance
+        self.node_ints: List[int] = [int() for _ in range((self.gene_number * 2))]
+        self.node_strs1: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
+        self.node_strs2: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
+        self.genome_paths1: List[Optional[BPGPath]] = list()
+        self.genome_paths2: List[Optional[BPGPath]] = list()
+        self.distance: int = int()
 
     def graph_init(self):
         """
@@ -231,7 +229,7 @@ class BPGDistance:
             A list of BPGPaths
         """
         null_node: int = -node
-        path1: List[Optional[BPGPath]] = [None] * ((self.gene_number * 2) + 1)
+        path1: List[Optional[BPGPath]] = [None for _ in range(((self.gene_number * 2) + 1))]
 
         for chromosome in genome:
             genes: List[str] = split_at_whitespace(chromosome)
@@ -253,23 +251,21 @@ class BPGDistance:
                 node2_int: int = self.get_node_int(node2, node)
 
                 if i == 0:
-                    path1[node1_int] = BPGPath(node1_int, null_node, node, node)  # PyCharm warns about this erroneously
+                    path1[node1_int] = BPGPath(node1_int, null_node, node, node)
                     pre_node: int = node2_int
                     null_node -= 2
 
                 if i != 0 and i != len(genes) - 1:
-                    path1[node1_int] = BPGPath(node1_int, pre_node, node, node)  # PyCharm warns about this erroneously
-                    path1[pre_node] = BPGPath(pre_node, node1_int, node, node)  # PyCharm warns about this erroneously
+                    path1[node1_int] = BPGPath(node1_int, pre_node, node, node)
+                    path1[pre_node] = BPGPath(pre_node, node1_int, node, node)
                     pre_node: int = node2_int
 
                 if i == len(genes) - 1:
                     if len(genes) != 1:
-                        path1[pre_node] = BPGPath(pre_node, node1_int, node,
-                                                  node)  # PyCharm warns about this erroneously
-                        path1[node1_int] = BPGPath(node1_int, pre_node, node,
-                                                   node)  # PyCharm warns about this erroneously
+                        path1[pre_node] = BPGPath(pre_node, node1_int, node, node)
+                        path1[node1_int] = BPGPath(node1_int, pre_node, node, node)
 
-                    path1[node2_int] = BPGPath(node2_int, null_node, node, node)  # PyCharm warns about this erroneously
+                    path1[node2_int] = BPGPath(node2_int, null_node, node, node)
                     null_node -= 2
 
         return path1

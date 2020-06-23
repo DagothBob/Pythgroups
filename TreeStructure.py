@@ -42,7 +42,7 @@ def split_at_whitespace(strings: str) -> List[str]:
     [str]
         Set of cleaned-up strings
     """
-    result: List[str] = []
+    result: List[str] = list()
 
     for string in strings.strip().split(" "):
         if string.strip() != "":
@@ -104,16 +104,16 @@ class TreeStructure:
         self.number_of_ancestors: int = number_of_ancestors
         self.number_of_leaves: int = number_of_leaves
         self.gene_number: int = gene_number
-        self.leaves: List[List[int]] = [[-1] * 3] * (self.number_of_ancestors + self.number_of_leaves)
-        self.medians: List[Optional[MedianData]] = [None] * self.number_of_ancestors
-        self.node_int: List[int] = [0] * (self.gene_number * 2)
-        self.node_string: List[str] = [" "] * (self.gene_number * 2)
+        self.leaves: List[List[int]] = [[-1, -1, -1] for _ in range((self.number_of_ancestors + self.number_of_leaves))]
+        self.medians: List[Optional[MedianData]] = [None for _ in range(self.number_of_ancestors)]
+        self.node_int: List[int] = [int() for _ in range((self.gene_number * 2))]
+        self.node_string: List[str] = [str() for _ in range((self.gene_number * 2))]
 
         if ancestor_genome_string is None:
             self.node_int[:] = node_ints.copy()[:]
             self.node_string[:] = node_strings.copy()[:]
 
-            self.all_paths: List[Optional[PGMPathForAGenome]] = [None] * len(paths)
+            self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths))]
 
             for i in range(len(paths)):
                 self.all_paths[i] = PGMPathForAGenome(paths[i].paths)
@@ -153,14 +153,14 @@ class TreeStructure:
 
                     index1 += 1
 
-            self.all_genomes: List[Optional[GenomeInString]] = [None] * (
-                    self.number_of_leaves + self.number_of_ancestors)
+            self.all_genomes: List[Optional[GenomeInString]] = [
+                None for _ in range((self.number_of_leaves + self.number_of_ancestors))]
 
             for i in range(len(ancestor_genome_string)):
                 self.all_genomes[i] = GenomeInString(ancestor_genome_string[i].chromosomes)
 
-            self.all_paths: List[Optional[PGMPathForAGenome]] = [None] * (
-                    self.number_of_leaves + self.number_of_ancestors)
+            self.all_paths: List[Optional[PGMPathForAGenome]] = [
+                None for _ in range((self.number_of_leaves + self.number_of_ancestors))]
 
             for i in range(len(ancestor_genome_string)):
                 self.all_paths[i] = PGMPathForAGenome(self.get_pgm_path(self.all_genomes[i].chromosomes, i))
@@ -202,8 +202,8 @@ class TreeStructure:
         -------
         Relation between leaves
         """
-        relation: List[List[int]] = [[0] * (self.number_of_leaves + self.number_of_ancestors)] * (
-                self.number_of_leaves + self.number_of_ancestors)
+        relation: List[List[int]] = [[int() for _ in range((self.number_of_leaves + self.number_of_ancestors))]
+                                     for _ in range((self.number_of_leaves + self.number_of_ancestors))]
 
         for i in range(len(self.leaves)):
             for j in range(len(self.leaves[i])):
@@ -229,14 +229,14 @@ class TreeStructure:
             List of PGMPaths for the genome
         """
         if genome is None:
-            path2: List[Optional[PGMPath]] = [None] * ((2 * self.gene_number) + 1)
+            path2: List[Optional[PGMPath]] = [None for _ in range((2 * self.gene_number) + 1)]
 
             for i in range(1, len(path2)):
                 path2[i] = PGMPath(i, 0, which_genome, -1)
 
             return path2
 
-        path1: List[Optional[PGMPath]] = [None] * ((2 * self.gene_number) + 1)
+        path1: List[Optional[PGMPath]] = [None for _ in range((2 * self.gene_number) + 1)]
         null_node: int = -1
 
         for chromosome in genome:
