@@ -68,7 +68,7 @@ class MedianIteration:
             List of the string representations of each node
         """
         self.leaf_num: int = leaf_num
-        self.changed: List[int] = [1] * ancestor_num
+        self.changed: List[int] = [1 for _ in range(ancestor_num)]
         self.gene_num: int = gene_num
         self.leaves: List[List[int]] = [row[:] for row in leaves]  # 2D array copy
         self.all_paths: List[PGMPathForAGenome] = all_paths.copy()

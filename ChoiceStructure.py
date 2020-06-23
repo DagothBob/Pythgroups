@@ -39,10 +39,10 @@ class ChoiceStructure:
         """
         Constructor
         """
-        self.index_from: int = 0
-        self.for_which_genome: int = 0
-        self.priority: int = 0
-        self.position: int = 0
+        self.index_from: int = int()
+        self.for_which_genome: int = int()
+        self.priority: int = int()
+        self.position: int = int()
         self.genome_1_path: Optional[PGMPath] = None
         self.genome_2_path: Optional[PGMPath] = None
         self.genome_3_path: Optional[PGMPath] = None

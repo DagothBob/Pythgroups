@@ -181,11 +181,11 @@ class MedianData:
         self.which_genome: int = which_genome
         self.node_strings: List[str] = node_strings
 
-        self.gray_edge: List[PGMPath] = []
-        self.gray_edge_index: int = 0
-        self.fragments: List[Optional[PGMFragment]] = []
-        self.choice_structures: List[Optional[ChoiceStructure]] = []
-        self.medians: List[str] = []
+        self.gray_edge: List[PGMPath] = list()
+        self.gray_edge_index: int = int()
+        self.fragments: List[Optional[PGMFragment]] = list()
+        self.choice_structures: List[Optional[ChoiceStructure]] = list()
+        self.medians: List[str] = list()
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -248,7 +248,7 @@ class MedianData:
         """
 
         cycle_count, good_path_count, chr_count = 0, 0, 0
-        paths1 = []
+        paths1 = list()
 
         # Populates paths1 based on the heads and tails of each path in p1
         # where negative values are set to -1
