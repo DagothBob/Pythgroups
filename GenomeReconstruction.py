@@ -1,18 +1,14 @@
-import sys
+from io import StringIO
+from typing import List, Dict, Optional
+
 import yaml
+from Bio import Phylo
+from Bio.Phylo.Newick import Tree, Clade
+from networkx import Graph
 
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
 from GenomeInString import GenomeInString
-
-import networkx as nx
-from networkx import Graph
-from Bio import Phylo
-from Bio.Phylo.Newick import Tree, Clade
-from io import StringIO
-from typing import List, Dict, TextIO, Type, Optional
-from enum import Enum
-
 
 """
  Driver program for Pythgroups
@@ -240,14 +236,14 @@ def get_algorithm(alg: str) -> str:
     # Essentially a switch statement
     return {
         "SmallPhylogeny": small_phylogeny(),
-        "GenomeAliquoting": genome_aliquoting()
-        #"DCJRearrangements": dcj_rearrangements()
+        "GenomeAliquoting": genome_aliquoting(),
+        "DCJRearrangements": dcj_rearrangements()
     }.get(alg, "Algorithm doesn't exist")
 
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    output = get_algorithm("SmallPhylogeny")
+    output = get_algorithm("DCJRearrangements")
     print(output)
 
 

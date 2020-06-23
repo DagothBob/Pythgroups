@@ -2,8 +2,8 @@
 # example: "(ancestor:0(B.rapa:26,B.oleracea:28,B.nigra:70))"
 tree_structure: "(e(o,f(c,d),g(a,b)))"
 
-# Directory of the aligned genome data file
-genome_file: "genomes_bad.txt"
+# Path to the aligned genome data file
+genome_file: "[Path]"
 
 # Genome reconstruction algorithm (not in use currently)
 # algorithm: "GenomeAliquoting"
