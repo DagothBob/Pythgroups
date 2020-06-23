@@ -5,9 +5,12 @@ from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
 from GenomeInString import GenomeInString
 
+import networkx as nx
+from networkx import Graph
 from Bio import Phylo
+from Bio.Phylo.Newick import Tree, Clade
 from io import StringIO
-from typing import List, Dict, TextIO
+from typing import List, Dict, TextIO, Type, Optional
 from enum import Enum
 
 
@@ -26,44 +29,19 @@ from enum import Enum
  Author: Oskar Jensen
 """
 
-
-def small_phylogeny() -> str:
-    """
-    Reconstructs the ancestor(s) of known modern genomes given an unrooted binary phylogenetic tree
-    using the Pathgroups algorithm.
-
-    Returns
-    -------
-
-    """
-    config_file = open("config.yaml", "r")
-    config_data = yaml.safe_load(config_file)
-    tree = Phylo.read(StringIO(config_data.get("tree_structure")), "newick")
-    genome_file = open(config_data.get("genome_file"), "r")
-
-    return "--Tree structure--\n" + str(tree) + "\n\n--Genome file--\n" + genome_file.read()
+CONFIG_DIR = "config.yaml"
+CONFIG_GENOME_FILE = "genome_file"
+CONFIG_TREE_STRUCTURE = "tree_structure"
 
 
-def genome_aliquoting() -> str:
-    """
-    See the 2010 paper, section 2.5
-
-    Returns
-    -------
-
-    """
-
-    return "Hello yes this is genome aliquoting"
-
-
-def parse_genomes(genome_file: TextIO) -> Dict[str, List[str]]:
+def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
     """
     Parses the genome data from a file into a dictionary containing each genome and their chromosomes
 
     Parameters
     ----------
-    genome_file : TextIO
-        text file containing all the genomes and their chromosomes
+    config_dir : str
+        Directory of the config file from which to get the genome file directory
 
     Returns
     -------
@@ -71,6 +49,9 @@ def parse_genomes(genome_file: TextIO) -> Dict[str, List[str]]:
         A dictionary containing each genome's chromosomes,
         where keys are genome headers and values are lists of chromosomes
     """
+    config_file = open(config_dir, "r")
+    config_data = yaml.safe_load(config_file)
+    genome_file = open(config_data.get(CONFIG_GENOME_FILE))
     genomes: Dict[str, List[str]] = {}
     line: str = genome_file.readline()
     header: str = ""
@@ -93,6 +74,110 @@ def parse_genomes(genome_file: TextIO) -> Dict[str, List[str]]:
     return genomes
 
 
+def parse_tree(config_dir: str) -> Optional[Tree]:
+    """
+    Parses the newick tree structure given in config.yaml
+
+    Parameters
+    ----------
+    config_dir : str
+        Directory of config.yaml containing the tree structure
+
+    Returns
+    -------
+    Optional[Tree]
+        Tree object converted from the newick tree found in the yaml file
+    """
+    config_file = open(config_dir, "r")
+    config_data = yaml.safe_load(config_file)
+    return Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
+
+
+def parse_medians(graph: Graph) -> Dict[Clade, List[Clade]]:
+    """
+    Given a tree converted into a graph, parse the medians (ie nodes with 3 neighbours)
+
+    Parameters
+    ----------
+    graph : Graph
+        Graph to parse medians from
+
+    Returns
+    -------
+    Dict[Clade, List[Clade]]
+        Key: median to reconstruct, value: list of 3 neighbouring clades
+    """
+    medians = {}
+    for node in graph.nodes:
+        neighbours = [n for n in graph.neighbors(node)]
+        if (len(neighbours)) == 3:
+            for neighbour in neighbours:
+                if node not in medians.keys():
+                    medians[node] = []
+                medians[node].append(neighbour)
+        # TODO: Exception handling for illegal tree structures (eg. node with > 3 neighbours)
+
+    return medians
+
+
+def graph_from_phylo_tree(tree: Tree) -> Graph:
+    """
+    Converts a tree into a networkx graph by getting all its nonterminals
+    and adding edges between them and their subclades
+
+    Parameters
+    ----------
+    tree : Tree
+        Tree object to convert into a graph
+
+    Returns
+    -------
+    Graph
+        A graph object converted from the tree
+    """
+    graph: Graph = Graph()
+    nonterminals: List[Clade] = tree.get_nonterminals()
+    for nt in nonterminals:
+        if nt.name is not None and len(nt.clades) > 0:
+            for clade in nt.clades:
+                graph.add_edge(nt, clade)
+
+    return graph
+
+
+def small_phylogeny() -> str:
+    """
+    Reconstructs the ancestor(s) of known modern genomes given an unrooted binary phylogenetic tree
+    using the Pathgroups algorithm.
+
+    Returns
+    -------
+
+    """
+    tree: Tree = parse_tree(CONFIG_DIR)
+    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
+    graph: Graph = graph_from_phylo_tree(tree)
+    medians: Dict[Clade, List[Clade]] = parse_medians(graph)
+    for m, n in medians.items():
+        print("median: " + str(m) + ", neighbours: " + str(n))
+
+    Phylo.draw_ascii(tree)
+
+    return "Tree: " + str(tree)
+
+
+def genome_aliquoting() -> str:
+    """
+    See the 2010 paper, section 2.5
+
+    Returns
+    -------
+
+    """
+
+    return "Hello yes this is genome aliquoting"
+
+
 def dcj_rearrangements():
     """
     Performs double cut-and-join (DCJ) operations until the source genome matches the target genome,
@@ -101,10 +186,7 @@ def dcj_rearrangements():
     Performs DCJ operations on the first 2 genomes found in the genome file
     """
     # Create the dictionary of genomes from the input file
-    config_file = open("config.yaml", "r")
-    config_data = yaml.safe_load(config_file)
-    genome_file = open(config_data.get("genome_file"), "r")
-    genomes: Dict[str, List[str]] = parse_genomes(genome_file)
+    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
 
     # Get the first 2 genomes from the input file
     values_view = genomes.values()
@@ -158,14 +240,15 @@ def get_algorithm(alg: str) -> str:
     # Essentially a switch statement
     return {
         "SmallPhylogeny": small_phylogeny(),
-        "GenomeAliquoting": genome_aliquoting(),
-        "DCJRearrangements": dcj_rearrangements()
+        "GenomeAliquoting": genome_aliquoting()
+        #"DCJRearrangements": dcj_rearrangements()
     }.get(alg, "Algorithm doesn't exist")
 
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    output = get_algorithm("DCJRearrangements")
+    output = get_algorithm("SmallPhylogeny")
+    print(output)
 
 
 if __name__ == '__main__':
