@@ -1,5 +1,6 @@
-from PGMPath import PGMPath
+from typing import List
 
+from PGMPath import PGMPath
 
 """                         
  Used in TreeStructure, MedianIteration, PGMPath 
@@ -15,10 +16,11 @@ class PGMPathForAGenome:
     """
     Attributes
     ----------
-    paths
+    paths : List[PGMPath]
         PGMPaths for the genome
     """
-    def __init__(self, paths: [PGMPath]):
+
+    def __init__(self, paths: List[PGMPath]):
         """
         Constructor
 
@@ -27,4 +29,4 @@ class PGMPathForAGenome:
         paths
             PGMPaths for the genome
         """
-        self.paths: [PGMPath] = paths
+        self.paths: List[PGMPath] = paths

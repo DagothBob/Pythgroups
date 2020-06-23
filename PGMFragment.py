@@ -17,11 +17,12 @@ class PGMFragment:
     """
     Attributes
     ----------
-    end1
+    end1 : int
         One end of the fragment
-    end2
+    end2 : int
         Other end of the fragment
     """
+
     def __init__(self, end1: int, end2: int):
         """
         Constructor
@@ -37,7 +38,7 @@ class PGMFragment:
         self.end2: int = end2
 
     @classmethod
-    def from_fragment(cls, fragment: PGMFragment):
+    def from_fragment(cls, fragment: PGMFragment) -> PGMFragment:
         """
         Construct new PGMFragment from existing one
 

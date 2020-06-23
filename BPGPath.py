@@ -14,16 +14,17 @@ class BPGPath:
     """
     Attributes
     ----------
-    head
+    head : int
         Head gene of the path
-    tail
+    tail : int
         Tail gene of the path
-    genome_head
+    genome_head : int
         Genome identifier for the head gene
-    genome_tail
+    genome_tail : int
         Genome identifier for the tail gene
     """
-    def __init__(self, head: int or None, tail: int or None, ghead: int or None, gtail: int or None):
+
+    def __init__(self, head: int, tail: int, ancestor_head: int, ancestor_tail: int):
         """
         Constructor
 
@@ -33,18 +34,37 @@ class BPGPath:
             Head gene
         tail
             Tail gene
-        ghead
+        ancestor_head
             Genome which gene head belongs to
-        gtail
+        ancestor_tail
             Genome which gene tail belongs to
         """
-        if head is None or tail is None or ghead is None or gtail is None:
-            return
-        else:
-            self.head = head
-            self.tail = tail
-            self.genome_head = ghead
-            self.genome_tail = gtail
+        self.head: int = head
+        self.tail: int = tail
+        self.genome_head: int = ancestor_head
+        self.genome_tail: int = ancestor_tail
+
+    @classmethod
+    def from_path(cls, path: BPGPath) -> BPGPath:
+        """
+        Constructs BPGPath from existing one
+
+        Parameters
+        ----------
+        path
+            To construct from
+
+        Returns
+        -------
+        BPGPath
+            New path
+        """
+        head: int = path.head
+        tail: int = path.tail
+        genome_head: int = path.genome_head
+        genome_tail: int = path.genome_tail
+
+        return cls(head, tail, genome_head, genome_tail)
 
     def __str__(self) -> str:
         """

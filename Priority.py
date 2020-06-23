@@ -1,5 +1,3 @@
-
-
 """
 Priority for use in the PathGroups Algorithm
 
@@ -7,10 +5,12 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 
 Author: Oskar Jensen
 """
+from typing import List
 
 
 class Priority:
-    """ Based on the priority system described in 'On the PATHGROUPS approach to rapid small phylogeny'
+    """
+    Based on the priority system described in 'On the PATHGROUPS approach to rapid small phylogeny'
 
     Attributes
     ----------
@@ -22,9 +22,9 @@ class Priority:
         'better or worse' - Unknown
     size : int
         Size of each array in this class
-    cs_indexes : int[]
+    cs_indexes : List[int]
         Position of choice structures
-    median_indexes : int[]
+    median_indexes : List[int]
         Position of medians (ancestors)
     empty_start : int
         Starting empty position
@@ -34,13 +34,13 @@ class Priority:
         Starting taken position
     taken_end : int
         Ending taken position
-    empty_previous : int[]
+    empty_previous : List[int]
         Previous empty values
-    empty_next : int[]
+    empty_next : List[int]
         Next empty values
-    taken_previous : int[]
+    taken_previous : List[int]
         Previous taken values
-    taken_next : int[]
+    taken_next : List[int]
         Next taken values
 
     """
@@ -49,27 +49,27 @@ class Priority:
         self.cn: int = cycle_now
         self.bcla: int = best_cycle_look_ahead
         self.bw: int = better_or_worse
-        self.cs_indexes: [int] = []
-        self.median_indexes: [int] = []
-        self.empty_previous: [int] = []
-        self.empty_next: [int] = []
-        self.taken_previous: [int] = []
-        self.taken_next: [int] = []
+        self.cs_indexes: List[int] = []
+        self.median_indexes: List[int] = []
+        self.empty_previous: List[int] = []
+        self.empty_next: List[int] = []
+        self.taken_previous: List[int] = []
+        self.taken_next: List[int] = []
 
         # Initializes all the arrays to various default values
         for i in range(0, size):
-            self.taken_previous[i] = 0   # These two arrays are filled in so
-            self.taken_next[i] = 0       # that their sizes match the others
+            self.taken_previous[i] = 0  # These two arrays are filled in so
+            self.taken_next[i] = 0  # that their sizes match the others
             self.cs_indexes[i] = -1
             self.median_indexes[i] = -1
             self.empty_previous[i] = i - 1
             self.empty_next[i] = i + 1
         self.empty_next[size - 1] = -1  # last entry set to -1
 
-        self.empty_start = 0
-        self.empty_end = size - 1
-        self.taken_start = -1
-        self.taken_end = -1
+        self.empty_start: int = 0
+        self.empty_end: int = size - 1
+        self.taken_start: int = -1
+        self.taken_end: int = -1
 
     def insert(self, cs_index: int, which_ancestor: int) -> int:
         """ Insert a choice structure position into the Priority object

@@ -1,3 +1,6 @@
+from typing import List
+
+
 """
  GenomeInString class for use in various classes
 
@@ -11,10 +14,11 @@ class GenomeInString:
     """
     Attributes
     ----------
-    chromosomes
+    chromosomes : [str]
         List of chromosomes expressed as strings
     """
-    def __init__(self, chromosomes: [str]):
+
+    def __init__(self, chromosomes: List[str]):
         """
         Constructor
 
@@ -23,4 +27,4 @@ class GenomeInString:
         chromosomes
             Chromosomes to construct from
         """
-        self.chromosomes: [str] = chromosomes
+        self.chromosomes: List[str] = chromosomes

@@ -2,8 +2,9 @@ from random import random
 from typing import List
 
 from MedianData import MedianData
-from PGMPathForAGenome import PGMPathForAGenome
 from PGMPath import PGMPath
+from PGMPathForAGenome import PGMPathForAGenome
+from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
 
 """
@@ -22,30 +23,30 @@ class MedianIteration:
     ----------
     leaf_num : int
         Number of leaves in the tree
-    changed : [int]
+    changed : List[int]
         List of changed ancestors. Unsure of what its purpose is, as it's not used anywhere meaningfully.
     gene_num : int
         Total number of genes in the tree
-    leaves : [[int]]
+    leaves : List[List[int]]
         List of each leaf for each genome in the tree (in relation to the median)
-    all_paths : [PGMPathForAGenome]
+    all_paths : List[PGMPathForAGenome]
         List of all paths for each genome in the tree
-    medians : [MedianData]
+    medians : List[MedianData]
         List of all medians in the tree
-    nodes_int : [int]
+    nodes_int : List[int]
         List of the integer representations of each node
-    nodes_str : [str]
+    nodes_str : List[str]
         List of the string representations of each node
     """
 
     def __init__(self, leaf_num: int,
                  ancestor_num: int,
                  gene_num: int,
-                 leaves: [[int]],
-                 all_paths: [PGMPathForAGenome],
-                 medians: [MedianData],
-                 nodes_int: [int],
-                 nodes_str: [str]):
+                 leaves: List[List[int]],
+                 all_paths: List[PGMPathForAGenome],
+                 medians: List[MedianData],
+                 nodes_int: List[int],
+                 nodes_str: List[str]):
         """
         Parameters
         ----------
@@ -55,28 +56,28 @@ class MedianIteration:
             Number of ancestors (medians) in the tree
         gene_num : int
             Total number of genes in the tree
-        leaves : [[int]]
+        leaves : List[List[int]]
             List of each leaf for each genome in the tree (in relation to the median)
-        all_paths : [PGMPathForAGenome]
+        all_paths : List[PGMPathForAGenome]
             List of all paths for each genome in the tree
-        medians : [MedianData]
+        medians : List[MedianData]
             List of all medians in the tree
-        nodes_int : [int]
+        nodes_int : List[int]
             List of the integer representations of each node
-        nodes_str : [str]
+        nodes_str : List[str]
             List of the string representations of each node
         """
         self.leaf_num: int = leaf_num
-        self.changed: [int] = [1] * ancestor_num
+        self.changed: List[int] = [1] * ancestor_num
         self.gene_num: int = gene_num
-        self.leaves: [[int]] = [row[:] for row in leaves]  # 2D array copy
-        self.all_paths: [PGMPathForAGenome] = all_paths.copy()
-        self.medians: [MedianData] = medians.copy()
-        self.nodes_int: [int] = nodes_int.copy()
-        self.nodes_str: [str] = nodes_str.copy()
+        self.leaves: List[List[int]] = [row[:] for row in leaves]  # 2D array copy
+        self.all_paths: List[PGMPathForAGenome] = all_paths.copy()
+        self.medians: List[MedianData] = medians.copy()
+        self.nodes_int: List[int] = nodes_int.copy()
+        self.nodes_str: List[str] = nodes_str.copy()
 
-    def median_total_distance(self, median_paths: [PGMPath], paths1: [PGMPath],
-                              paths2: [PGMPath], paths3: [PGMPath]) -> int:
+    def median_total_distance(self, median_paths: List[PGMPath], paths1: List[PGMPath],
+                              paths2: List[PGMPath], paths3: List[PGMPath]) -> int:
         """
         Returns the sum of all distances between the paths of the given median and three leaves
         Renamed from countTotalDistance
@@ -116,7 +117,7 @@ class MedianIteration:
             Total number of optimization runs
         """
         p1 = prob_threshold_top  # Probability threshold for when total_dis == dis_before
-        p2 = 0                   # Probability threshold for when total_dis > dis_before
+        p2 = 0  # Probability threshold for when total_dis > dis_before
 
         # Each optimization run
         for turn in range(0, runs):
@@ -127,9 +128,9 @@ class MedianIteration:
                 leaf3 = self.leaves[i + self.leaf_num][2]
 
                 dis_before = self.median_total_distance(self.all_paths[i + self.leaf_num].paths,
-                                                        self.all_paths[leaf1],
-                                                        self.all_paths[leaf2],
-                                                        self.all_paths[leaf3])
+                                                        self.all_paths[leaf1].paths,
+                                                        self.all_paths[leaf2].paths,
+                                                        self.all_paths[leaf3].paths)
                 aps = List[PGMPathForAGenome]  # Local copy of all_paths containing the given leaves
                 aps[0] = self.all_paths[leaf1]
                 aps[1] = self.all_paths[leaf2]
@@ -143,9 +144,9 @@ class MedianIteration:
                     if aps[2].paths[t] is not None:
                         aps[2].paths[t] = PGMPath(aps[2].paths[t].head, aps[2].paths[t].tail, 2, 2)
 
-                ts = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int)
-                sp = object()   # Will be SmallPhylogeny(ts)
-                # sp.get_result() TODO: Waiting on implementation of SmallPhylogeny
+                ts = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int, None)
+                sp = SmallPhylogeny(ts)
+                sp.get_result()
 
                 # Specifies thresholds to meet to perform optimizations
                 total_dis = ts.medians[0].gray_edge_total_distance(ts.medians[0])

@@ -17,23 +17,24 @@ class ChoiceStructure:
     """
     Attributes
     ----------
-    index_from
+    index_from : int
         Object instance identifier
-    for_which_genome
+    for_which_genome : int
         For which genome this structure refers to
-    priority
+    priority : int
         Priority level for makeCycles algorithm
-    position
+    position : int
         Position of the choice structure in Priority's cs_index
-    genome_1_path
+    genome_1_path : Optional[PGMPath]
         Path for genome 1
-    genome_2_path
+    genome_2_path : Optional[PGMPath]
         Path for genome 2
-    genome_3_path
+    genome_3_path : Optional[PGMPath]
         Path for genome 3
-    gray_edge
+    gray_edge : Optional[PGMPath]
         Used when updating paths and priorities in the makeCycles algorithm
     """
+
     def __init__(self):
         """
         Constructor
