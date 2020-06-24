@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import IntEnum
 from typing import List, Optional
 
@@ -80,6 +81,11 @@ class OperationTypes(IntEnum):
     FUSION: int = 4
 
 
+class TranslocationSubtypes(IntEnum):
+    ADCB: int = 1
+    AnCnBD: int = 2
+
+
 class OperationOptions(IntEnum):
     CHROMOSOME1: int = 0
     CHROMOSOME2: int = 1
@@ -151,8 +157,8 @@ class DCJOperations:
         """
         Initializer
         """
-        gene_number1: int = int()
-        gene_number2: int = int()
+        gene_number1: int = 0
+        gene_number2: int = 0
 
         # Split genome1 into genes and save the number of them
         for i in range(len(self.genome1.chromosomes)):
@@ -165,7 +171,6 @@ class DCJOperations:
             gene_number2 += len(genes)
 
         self.gene_number = gene_number1
-        # self.gene_node_in_string.len = self.gene_number * 2
         self.gene_node_in_string = [[str(), str()] for _ in range((self.gene_number * 2))]
         self.gene_node1 = [[int(), int(), int()] for _ in range((self.gene_number * 2))]
         self.gene_node2 = [[int(), int(), int()] for _ in range((self.gene_number * 2))]
@@ -233,22 +238,22 @@ class DCJOperations:
                     sign = "-"
                     genome_name = genes[j][1:]
 
-                genome_node_string1: str = insert_character(genome_name, len(genome_name) - 1, "t")
-                genome_node_string2: str = insert_character(genome_name, len(genome_name) - 1, "h")
+                genome_node_string1: str = insert_character(genome_name, len(genome_name), "t")
+                genome_node_string2: str = insert_character(genome_name, len(genome_name), "h")
 
                 if sign == "-":
-                    genome_node_string1 = insert_character(genome_name, len(genome_name) - 1, "h")
-                    genome_node_string2 = insert_character(genome_name, len(genome_name) - 1, "t")
+                    genome_node_string1 = insert_character(genome_name, len(genome_name), "h")
+                    genome_node_string2 = insert_character(genome_name, len(genome_name), "t")
 
                 genome_node_index1: int = self.get_node_index(genome_node_string1)
                 genome_node_index2: int = self.get_node_index(genome_node_string2)
 
-                self.gene_node2[genome_node_index1 - 2][1] = i
-                self.gene_node2[genome_node_index2 - 1][1] = i
-                self.gene_node2[genome_node_index1 - 2][2] = j * 2
-                self.gene_node2[genome_node_index2 - 1][2] = (j * 2) + 1
-                self.chromosome_in_gene_node2[i][j * 2] = genome_node_index1 - 2
-                self.chromosome_in_gene_node2[i][(j * 2) + 1] = genome_node_index2 - 1
+                self.gene_node2[genome_node_index1][GeneNodeAttributes.CHROMOSOMES_INDEX] = i
+                self.gene_node2[genome_node_index2][GeneNodeAttributes.CHROMOSOMES_INDEX] = i
+                self.gene_node2[genome_node_index1][GeneNodeAttributes.CHROMOSOME_POSITION] = j * 2
+                self.gene_node2[genome_node_index2][GeneNodeAttributes.CHROMOSOME_POSITION] = (j * 2) + 1
+                self.chromosome_in_gene_node2[i][j * 2] = genome_node_index1
+                self.chromosome_in_gene_node2[i][(j * 2) + 1] = genome_node_index2
 
                 self.gene_node2[genome_node_index1][0] = pre_node_index
 
@@ -350,15 +355,15 @@ class DCJOperations:
             operation: List[int] = self.expand_all_operations(types_of_operation, which_chromosome)
 
             if operation[OperationOptions.CHROMOSOME1] != -1:
-                if operation[OperationOptions.TYPE_OF_OPERATION] == 1:
+                if operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.INVERSION:
                     print("Inversion: " + str(operation[OperationOptions.CHROMOSOME1]) + "\n")
-                if operation[OperationOptions.TYPE_OF_OPERATION] == 2:
+                elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.TRANSLOCATION:
                     print("Translocation: " + str(operation[OperationOptions.CHROMOSOME1]) + " " + str(
                         operation[OperationOptions.CHROMOSOME2]) + "\n")
-                if operation[OperationOptions.TYPE_OF_OPERATION] == 3:
+                elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.FISSION:
                     print("Fission: " + str(operation[OperationOptions.CHROMOSOME1]) + " " + str(
                         operation[OperationOptions.CHROMOSOME2]) + "\n")
-                if operation[OperationOptions.TYPE_OF_OPERATION] == 4:
+                elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.FUSION:
                     print("Fusion: " + str(operation[OperationOptions.CHROMOSOME1]) + " " + str(
                         operation[OperationOptions.CHROMOSOME2]) + "\n")
 
@@ -373,7 +378,7 @@ class DCJOperations:
         result: List[Optional[GenomeInString]] = [None for _ in range(step_index)]
 
         if len(result) >= 0:
-            result[:len(result)] = all_steps.copy()
+            result[:len(result)] = deepcopy(all_steps)
 
         return result
 
@@ -401,7 +406,7 @@ class DCJOperations:
             chromosome_here: int = operation[OperationOptions.CHROMOSOME1]
             new_chromosome_here: List[int] = [int() for _ in range(len(self.chromosome_in_gene_node1[chromosome_here]))]
 
-            new_chromosome_here[:start_node] = self.chromosome_in_gene_node1[chromosome_here][:start_node].copy()
+            new_chromosome_here[:start_node] = deepcopy(self.chromosome_in_gene_node1[chromosome_here][:start_node])
 
             for i in range(start_node, end_node + 1):
                 new_chromosome_here[i] = self.chromosome_in_gene_node1[chromosome_here][end_node - i + start_node]
@@ -422,10 +427,10 @@ class DCJOperations:
                 lengtha = self.gene_node1[operation[OperationOptions.NODE1]][GeneNodeAttributes.CHROMOSOME_POSITION] + 1
 
             lengthb: int = length1 - lengtha
-            new_chromosome1: List[int] = [0]
-            new_chromosome2: List[int] = [0]
+            new_chromosome1: List[int] = list()
+            new_chromosome2: List[int] = list()
 
-            if operation[OperationOptions.OPERATION_SUBTYPE] == 1:
+            if operation[OperationOptions.OPERATION_SUBTYPE] == TranslocationSubtypes.ADCB:
                 lengthc: int = 0
 
                 if operation[OperationOptions.NODE4] != -1:
@@ -437,21 +442,21 @@ class DCJOperations:
                 new_chromosome2 = [int() for _ in range(lengthc + lengthb)]
 
                 if lengtha >= 0:
-                    new_chromosome1[:lengtha] = self.chromosome_in_gene_node1[
-                        operation[OperationOptions.CHROMOSOME1]].copy()
+                    new_chromosome1[:lengtha] = deepcopy(self.chromosome_in_gene_node1[
+                        operation[OperationOptions.CHROMOSOME1]])
 
                 if lengthd >= 0:
-                    new_chromosome1[lengtha:lengthd] = self.chromosome_in_gene_node1[
-                                                           operation[OperationOptions.CHROMOSOME2]].copy()[lengthc:]
+                    new_chromosome1[lengtha:lengthd] = deepcopy(self.chromosome_in_gene_node1[
+                                                           operation[OperationOptions.CHROMOSOME2]])[lengthc:]
 
                 if lengthc >= 0:
-                    new_chromosome2[:lengthc] = self.chromosome_in_gene_node1[
-                        operation[OperationOptions.CHROMOSOME2]].copy()
+                    new_chromosome2[:lengthc] = deepcopy(self.chromosome_in_gene_node1[
+                        operation[OperationOptions.CHROMOSOME2]])
 
                 if lengthb >= 0:
-                    new_chromosome2[lengthc:lengthb] = self.chromosome_in_gene_node1[
-                                                           operation[OperationOptions.CHROMOSOME1]].copy()[lengtha:]
-            elif operation[OperationOptions.OPERATION_SUBTYPE] == 2:
+                    new_chromosome2[lengthc:lengthb] = deepcopy(self.chromosome_in_gene_node1[
+                                                           operation[OperationOptions.CHROMOSOME1]])[lengtha:]
+            elif operation[OperationOptions.OPERATION_SUBTYPE] == TranslocationSubtypes.AnCnBD:
                 lengthc: int = 0
 
                 if operation[OperationOptions.NODE2] != -1:
@@ -462,22 +467,21 @@ class DCJOperations:
                 new_chromosome1 = [int() for _ in range(lengtha + lengthc)]
                 new_chromosome2 = [int() for _ in range(lengthb + lengthd)]
 
-                if lengtha >= 0:
-                    new_chromosome1[:lengtha] = self.chromosome_in_gene_node1[
-                        operation[OperationOptions.CHROMOSOME1]].copy()
+                for i in range(lengtha):
+                    new_chromosome1[i] = deepcopy(
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][i])
 
                 for i in range(lengthc):
-                    new_chromosome1[i + lengtha] = \
-                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][
-                            lengthc - i - 1]
+                    new_chromosome1[i + lengtha] = deepcopy(
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][lengthc - i - 1])
 
                 for i in range(lengthb):
-                    new_chromosome2[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][
-                        length1 - i - 1]
+                    new_chromosome2[i] = deepcopy(
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][length1 - i - 1])
 
-                if lengthd >= 0:
-                    new_chromosome2[lengthb:lengthd] = self.chromosome_in_gene_node1[
-                                                           operation[OperationOptions.CHROMOSOME2]].copy()[lengthc:]
+                for i in range(lengthd):
+                    new_chromosome2[i + lengthb] = deepcopy(
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][i + lengthc])
 
             for i in range(len(new_chromosome1)):
                 self.gene_node1[new_chromosome1[i]][GeneNodeAttributes.CHROMOSOMES_INDEX] = operation[
@@ -501,25 +505,24 @@ class DCJOperations:
             new_chromosome2: List[int] = [int() for _ in range(length2)]
 
             if length1 >= 0:
-                new_chromosome1[:length1] = self.chromosome_in_gene_node1[
-                    operation[OperationOptions.CHROMOSOME1]].copy()
+                new_chromosome1[:length1] = deepcopy(self.chromosome_in_gene_node1[
+                                                         operation[OperationOptions.CHROMOSOME1]])
 
             if length2 >= 0:
-                new_chromosome2[:length2] = self.chromosome_in_gene_node1[
-                                                operation[OperationOptions.CHROMOSOME1]].copy()[
-                                            length1:]
+                new_chromosome2[:length2] = deepcopy(self.chromosome_in_gene_node1[
+                                                         operation[OperationOptions.CHROMOSOME1]])[length1:]
 
             chromosome_in_gene_node1_temp: List[List[int]] = [
                 [int()] for _ in range((len(self.chromosome_in_gene_node1) + 1))]
 
-            chromosome_in_gene_node1_temp[:len(self.chromosome_in_gene_node1)] = self.chromosome_in_gene_node1.copy()
+            chromosome_in_gene_node1_temp[:len(self.chromosome_in_gene_node1)] = deepcopy(self.chromosome_in_gene_node1)
 
             chromosome_in_gene_node1_temp[operation[OperationOptions.CHROMOSOME1]] = new_chromosome1
             chromosome_in_gene_node1_temp[len(self.chromosome_in_gene_node1)] = new_chromosome2
 
             self.chromosome_in_gene_node1 = [[int()] for _ in range(len(chromosome_in_gene_node1_temp))]
 
-            self.chromosome_in_gene_node1[:len(chromosome_in_gene_node1_temp)] = chromosome_in_gene_node1_temp.copy()
+            self.chromosome_in_gene_node1[:len(chromosome_in_gene_node1_temp)] = deepcopy(chromosome_in_gene_node1_temp)
         elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.FUSION:
             chromosome1: int = operation[OperationOptions.CHROMOSOME1]
             chromosome2: int = operation[OperationOptions.CHROMOSOME2]
@@ -532,15 +535,15 @@ class DCJOperations:
                 for i in range(length2):
                     new_chromosome[i] = self.chromosome_in_gene_node1[chromosome2][length2 - i]
 
-                new_chromosome[length2:length1] = self.chromosome_in_gene_node1[chromosome1].copy()
+                new_chromosome[length2:length1] = deepcopy(self.chromosome_in_gene_node1[chromosome1])
             elif operation[OperationOptions.OPERATION_SUBTYPE] == 2:
-                new_chromosome[:length2] = self.chromosome_in_gene_node1[chromosome2].copy()
-                new_chromosome[length2:length1] = self.chromosome_in_gene_node1[chromosome1].copy()
+                new_chromosome[:length2] = deepcopy(self.chromosome_in_gene_node1[chromosome2])
+                new_chromosome[length2:length1] = deepcopy(self.chromosome_in_gene_node1[chromosome1])
             elif operation[OperationOptions.OPERATION_SUBTYPE] == 3:
-                new_chromosome[:length1] = self.chromosome_in_gene_node1[chromosome1].copy()
-                new_chromosome[length1:length2] = self.chromosome_in_gene_node1[chromosome2].copy()
+                new_chromosome[:length1] = deepcopy(self.chromosome_in_gene_node1[chromosome1])
+                new_chromosome[length1:length2] = deepcopy(self.chromosome_in_gene_node1[chromosome2])
             elif operation[OperationOptions.OPERATION_SUBTYPE] == 4:
-                new_chromosome[:length1] = self.chromosome_in_gene_node1[chromosome1].copy()
+                new_chromosome[:length1] = deepcopy(self.chromosome_in_gene_node1[chromosome1])
 
                 for i in range(length2):
                     new_chromosome[i + length1] = self.chromosome_in_gene_node1[chromosome2][length2 - i]

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from sys import exit
 from typing import Optional, List
 
@@ -207,7 +208,7 @@ class BPGDistance:
 
                 index1 += 1
 
-        self.node_strs2 = self.node_strs1.copy()
+        self.node_strs2 = deepcopy(self.node_strs1)
 
         self.genome_paths1 = self.get_paths(self.genome1, 1)
         self.genome_paths2 = self.get_paths(self.genome2, 2)

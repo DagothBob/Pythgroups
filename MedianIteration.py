@@ -1,3 +1,4 @@
+from copy import deepcopy
 from random import random
 from typing import List
 
@@ -71,10 +72,10 @@ class MedianIteration:
         self.changed: List[int] = [1 for _ in range(ancestor_num)]
         self.gene_num: int = gene_num
         self.leaves: List[List[int]] = [row[:] for row in leaves]  # 2D array copy
-        self.all_paths: List[PGMPathForAGenome] = all_paths.copy()
-        self.medians: List[MedianData] = medians.copy()
-        self.nodes_int: List[int] = nodes_int.copy()
-        self.nodes_str: List[str] = nodes_str.copy()
+        self.all_paths: List[PGMPathForAGenome] = deepcopy(all_paths)
+        self.medians: List[MedianData] = deepcopy(medians)
+        self.nodes_int: List[int] = deepcopy(nodes_int)
+        self.nodes_str: List[str] = deepcopy(nodes_str)
 
     def median_total_distance(self, median_paths: List[PGMPath], paths1: List[PGMPath],
                               paths2: List[PGMPath], paths3: List[PGMPath]) -> int:

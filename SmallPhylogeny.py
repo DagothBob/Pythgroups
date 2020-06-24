@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional, List
 
 from ChoiceStructure import ChoiceStructure
@@ -592,7 +593,7 @@ class SmallPhylogeny:
         result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
 
         if len(result) >= 0:
-            result[:len(result)] = temp.copy()
+            result[:len(result)] = deepcopy(temp)
 
         return result
 
@@ -678,7 +679,7 @@ class SmallPhylogeny:
         result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
 
         if len(result) >= 0:
-            result[:len(result)] = temp.copy()
+            result[:len(result)] = deepcopy(temp)
 
         return result
 
