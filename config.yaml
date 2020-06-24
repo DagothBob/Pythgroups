@@ -3,7 +3,7 @@
 tree_structure: "(e(o,f(c,d),g(a,b)))"
 
 # Path to the aligned genome data file
-genome_file: "genomes.txt"
+genome_file: "[Path]"
 
 # Genome reconstruction algorithm (not in use currently)
 # algorithm: "GenomeAliquoting"
