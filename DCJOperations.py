@@ -369,18 +369,12 @@ class DCJOperations:
 
                 self.update_all_values(operation, which_chromosome)
 
-                genome_here: GenomeInString = self.get_genome_in_string(self.chromosome_in_gene_node1)
-                all_steps[step_index] = genome_here
+                all_steps[step_index] = self.get_genome_in_string(self.chromosome_in_gene_node1)
                 step_index += 1
                 current_operation += 1
                 more = True
 
-        result: List[Optional[GenomeInString]] = [None for _ in range(step_index)]
-
-        if len(result) >= 0:
-            result[:len(result)] = deepcopy(all_steps)
-
-        return result
+        return deepcopy(all_steps)[:step_index]
 
     def update_all_values(self, operation: List[int], which_chromosome: int):
         """
@@ -406,13 +400,14 @@ class DCJOperations:
             chromosome_here: int = operation[OperationOptions.CHROMOSOME1]
             new_chromosome_here: List[int] = [int() for _ in range(len(self.chromosome_in_gene_node1[chromosome_here]))]
 
-            new_chromosome_here[:start_node] = deepcopy(self.chromosome_in_gene_node1[chromosome_here][:start_node])
+            for i in range(start_node):
+                new_chromosome_here[i] = self.chromosome_in_gene_node1[chromosome_here][i]
 
             for i in range(start_node, end_node + 1):
                 new_chromosome_here[i] = self.chromosome_in_gene_node1[chromosome_here][end_node - i + start_node]
 
-            new_chromosome_here[end_node + 1:len(new_chromosome_here)] = self.chromosome_in_gene_node1[chromosome_here][
-                                                                         end_node + 1:len(new_chromosome_here)]
+            for i in range(end_node + 1, len(new_chromosome_here)):
+                new_chromosome_here[i] = self.chromosome_in_gene_node1[chromosome_here][i]
 
             for i in range(start_node, end_node + 1):
                 self.gene_node1[new_chromosome_here[i]][GeneNodeAttributes.CHROMOSOME_POSITION] = i
@@ -441,21 +436,19 @@ class DCJOperations:
                 new_chromosome1 = [int() for _ in range(lengtha + lengthd)]
                 new_chromosome2 = [int() for _ in range(lengthc + lengthb)]
 
-                if lengtha >= 0:
-                    new_chromosome1[:lengtha] = deepcopy(self.chromosome_in_gene_node1[
-                        operation[OperationOptions.CHROMOSOME1]])
+                for i in range(lengtha):
+                    new_chromosome1[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][i]
 
-                if lengthd >= 0:
-                    new_chromosome1[lengtha:lengthd] = deepcopy(self.chromosome_in_gene_node1[
-                                                           operation[OperationOptions.CHROMOSOME2]])[lengthc:]
+                for i in range(lengthd):
+                    new_chromosome1[i + lengtha] = \
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][i + lengthc]
 
-                if lengthc >= 0:
-                    new_chromosome2[:lengthc] = deepcopy(self.chromosome_in_gene_node1[
-                        operation[OperationOptions.CHROMOSOME2]])
+                for i in range(lengthc):
+                    new_chromosome2[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]][i]
 
-                if lengthb >= 0:
-                    new_chromosome2[lengthc:lengthb] = deepcopy(self.chromosome_in_gene_node1[
-                                                           operation[OperationOptions.CHROMOSOME1]])[lengtha:]
+                for i in range(lengthb):
+                    new_chromosome2[i + lengthc] = \
+                        self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][i + lengtha]
             elif operation[OperationOptions.OPERATION_SUBTYPE] == TranslocationSubtypes.AnCnBD:
                 lengthc: int = 0
 
