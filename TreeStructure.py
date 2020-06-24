@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional, List
 
 from GenomeInString import GenomeInString
@@ -77,9 +78,9 @@ class TreeStructure:
                  number_of_ancestors: int,
                  number_of_leaves: int,
                  gene_number: int,
-                 paths: List[PGMPathForAGenome],
-                 node_strings: List[str],
-                 node_ints: List[int],
+                 paths: Optional[List[PGMPathForAGenome]],
+                 node_strings: Optional[List[str]],
+                 node_ints: Optional[List[int]],
                  ancestor_genome_string: Optional[List[GenomeInString]]):
         """
         Constructor
@@ -110,8 +111,8 @@ class TreeStructure:
         self.node_string: List[str] = [str() for _ in range((self.gene_number * 2))]
 
         if ancestor_genome_string is None:
-            self.node_int[:] = node_ints.copy()[:]
-            self.node_string[:] = node_strings.copy()[:]
+            self.node_int[:] = deepcopy(node_ints)[:]
+            self.node_string[:] = deepcopy(node_strings)[:]
 
             self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths))]
 
