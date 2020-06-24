@@ -206,9 +206,11 @@ def dcj_rearrangements():
         if len(rearrange_state) > 0:
             more = True
             for genome in rearrange_state:
+                index: int = 0
                 print("*******")
-                for i in range(0, len(genome.chromosomes)):
-                    print("Chromosome " + str(i) + "\n" + genome.chromosomes[i])
+                for chromosome in genome.chromosomes:
+                    print("Chromosome " + str(index) + "\n" + chromosome)
+                    index += 1
 
             new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
             bpg_dist = BPGDistance(new_genome.chromosomes, genome2)
