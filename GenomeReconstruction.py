@@ -9,6 +9,9 @@ from networkx import Graph
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
 from GenomeInString import GenomeInString
+from TreeStructure import TreeStructure
+from SmallPhylogeny import SmallPhylogeny
+from MedianIteration import MedianIteration
 
 """
  Driver program for Pythgroups
@@ -116,6 +119,39 @@ def parse_medians(graph: Graph) -> Dict[Clade, List[Clade]]:
     return medians
 
 
+def count_genes(genomes: Dict[str, List[str]]) -> int:
+    """
+    Counts the number of genes in each chromosome.
+    Genomes must all have the same number of genes as compared to the first genome in genomes
+
+    Parameters
+    ----------
+    genomes : Dict[str, List[str]]
+        Dictionary of all the genomes as produced from parse_genomes()
+
+    Returns
+    -------
+    int
+        The number of genes in each genome
+    """
+    count: int = 0
+    final_count: int = 0
+    for genome, chromosomes in genomes.items():
+        count = 0
+        for chromosome in chromosomes:
+            count += len(chromosome.strip().split(" "))
+
+        # Each genome must have the same number of genes (as compared to the first genome in genomes)
+        if genome == list(genomes.keys())[0]:
+            final_count = count
+        elif final_count != count:
+            print("Different numbers of genes in the genomes (check [{}] or the first genome for anomalies). \
+                    Exiting.\n".format(genome))
+            exit(1)
+
+    return final_count
+
+
 def graph_from_phylo_tree(tree: Tree) -> Graph:
     """
     Converts a tree into a networkx graph by getting all its nonterminals
@@ -154,11 +190,21 @@ def small_phylogeny() -> str:
     genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
     graph: Graph = graph_from_phylo_tree(tree)
     medians: Dict[Clade, List[Clade]] = parse_medians(graph)
-    for m, n in medians.items():
-        print("median: " + str(m) + ", neighbours: " + str(n))
 
-    Phylo.draw_ascii(tree)
+    num_ancestor = len(tree.get_nonterminals())
+    num_leaves = len(tree.get_terminals())
+    num_genes = count_genes(genomes)
+    all_genomes: List[GenomeInString] = []
+    for chromosomes in genomes.values():
+        all_genomes.insert(0, GenomeInString(chromosomes))
 
+    # TODO: Either need a constructor with these 4 parameters or how to get the info for the existing constructor
+    """
+    ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, all_genomes)
+
+    for median, neighbours in medians.items():
+        ts.set_tree_structure(int(median.name), int(neighbours[0].name), int(neighbours[1].name), int(neighbours[2].name))
+    """
     return "Tree: " + str(tree)
 
 
