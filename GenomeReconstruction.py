@@ -1,10 +1,5 @@
-from io import StringIO
-from typing import List, Dict, Optional
-
+import sys
 import yaml
-from Bio import Phylo
-from Bio.Phylo.Newick import Tree, Clade
-from networkx import Graph
 
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
@@ -12,6 +7,18 @@ from GenomeInString import GenomeInString
 from TreeStructure import TreeStructure
 from SmallPhylogeny import SmallPhylogeny
 from MedianIteration import MedianIteration
+from PGMPathForAGenome import PGMPathForAGenome
+from PGMPath import PGMPath
+
+import networkx as nx
+from networkx import Graph
+from Bio import Phylo
+from Bio.Phylo.Newick import Tree, Clade
+from io import StringIO
+from typing import List, Dict, TextIO, Type, Optional
+from enum import Enum
+from copy import copy, deepcopy
+
 
 """
  Driver program for Pythgroups
@@ -198,14 +205,71 @@ def small_phylogeny() -> str:
     for chromosomes in genomes.values():
         all_genomes.insert(0, GenomeInString(chromosomes))
 
-    # TODO: Either need a constructor with these 4 parameters or how to get the info for the existing constructor
-    """
-    ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, all_genomes)
+    ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
     for median, neighbours in medians.items():
-        ts.set_tree_structure(int(median.name), int(neighbours[0].name), int(neighbours[1].name), int(neighbours[2].name))
-    """
-    return "Tree: " + str(tree)
+        ts.set_tree_structure(int(median.name), int(neighbours[0].name),
+                              int(neighbours[1].name), int(neighbours[2].name))
+
+    sp: SmallPhylogeny = SmallPhylogeny(ts)
+
+    for i in range(0, len(ts.medians)):
+        ts.medians[i].get_ancestors()
+        print("before optimization, reconstructed ancestors")
+        for j in range(0, len(ts.medians[i].medians)):
+            print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
+
+    reconstructed_paths: List[PGMPathForAGenome] = []
+
+    # Leaf paths added first
+    if ts.number_of_leaves >= 0:
+        reconstructed_paths = [ts.all_paths[i] for i in range(0, ts.number_of_leaves)]
+
+    # Ancestor paths added second
+    for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
+        reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(ts.medians[i - ts.number_of_leaves].medians, i)))
+
+    relation: List[List[int]] = ts.get_relation()
+    reconstructed_dist: int = 0
+    before_optimization: str = ""
+    for i in range(0, len(relation) - 1):
+        for j in range(i + 1, len(relation)):
+            if relation[i][j] == 2 or relation[j][i] == 2:
+                p1: List[PGMPath] = reconstructed_paths[i].paths
+                p2: List[PGMPath] = reconstructed_paths[j].paths
+                cur_dist: int = ts.medians[0].get_distance(p1, p2)
+                reconstructed_dist += cur_dist
+                before_optimization += "  d({r},{c})={d}".format(r=str(i), c=str(j), d=str(cur_dist))
+
+    print("before optimization:\n" + before_optimization)
+    print("total distance: " + str(reconstructed_dist))
+
+    # Section 4: optimize the result
+
+    mi: MedianIteration = MedianIteration(ts.number_of_leaves, ts.number_of_ancestors, ts.gene_number,
+                                          ts.leaves, reconstructed_paths, ts.medians, ts.node_int, ts.node_string)
+    mi.optimize_result(1, 50)
+    after_optimization: str = ""
+    optimized_dist: int = 0
+    for i in range(0, len(relation) - 1):
+        for j in range(i + 1, len(relation)):
+            if relation[i][j] == 2 or relation[j][i] == 2:
+                p1: List[PGMPath] = reconstructed_paths[i].paths
+                p2: List[PGMPath] = reconstructed_paths[j].paths
+                cur_dist: int = ts.medians[0].get_distance(p1, p2)
+                optimized_dist += cur_dist
+                after_optimization += "  d({r},{c})={d}".format(r=str(i), c=str(j), d=str(cur_dist))
+
+    print("after optimization:\n" + after_optimization)
+    print("total distance: " + str(optimized_dist))
+
+    for i in range(0, len(ts.medians)):
+        ts.medians[i].get_ancestors()
+        print("reconstructed ancestors:")
+        for j in range(0, len(ts.medians[i].medians)):
+            print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
+
+    return ""
 
 
 def genome_aliquoting() -> str:
@@ -252,11 +316,9 @@ def dcj_rearrangements():
         if len(rearrange_state) > 0:
             more = True
             for genome in rearrange_state:
-                index: int = 0
                 print("*******")
-                for chromosome in genome.chromosomes:
-                    print("Chromosome " + str(index) + "\n" + chromosome)
-                    index += 1
+                for i in range(0, len(genome.chromosomes)):
+                    print("Chromosome " + str(i) + "\n" + genome.chromosomes[i])
 
             new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
             bpg_dist = BPGDistance(new_genome.chromosomes, genome2)
@@ -291,7 +353,7 @@ def get_algorithm(alg: str) -> str:
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    output = get_algorithm("DCJRearrangements")
+    output = get_algorithm("SmallPhylogeny")
     print(output)
 
 
