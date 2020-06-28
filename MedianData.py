@@ -175,27 +175,30 @@ class MedianData:
         node_strings : [str]
             String representation of each node
         """
+
         self.three_genome_paths: List[List[PGMPath]] = [paths1, paths2, paths3]
         self.three_genomes: List[int] = [genome1, genome2, genome3]
         self.gene_num: int = gene_num
         self.which_genome: int = which_genome
         self.node_strings: List[str] = node_strings
 
+        fragment_size = self.gene_num * 2 + 1
+        cs_size = math.ceil(self.gene_num * 2 + 1)
+
         self.gray_edge: List[PGMPath] = list()
         self.gray_edge_index: int = int()
-        self.fragments: List[Optional[PGMFragment]] = list()
-        self.choice_structures: List[Optional[ChoiceStructure]] = list()
-        self.medians: List[str] = list()
+        self.fragments: List[Optional[PGMFragment]] = [None for _ in range(0, fragment_size)]
+        self.choice_structures: List[Optional[ChoiceStructure]] = [None for _ in range(0, cs_size)]
+        self.medians: List[str]
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
-        fragment_size = self.gene_num * 2 + 1
         for i in range(0, math.trunc(fragment_size / 2)):
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
             self.fragments[2 * i + 2] = PGMFragment(2 * i + 2, 2 * i + 1)
 
         cs_index = 0
-        for i in range(1, math.ceil(self.gene_num * 2 + 1)):
+        for i in range(1, cs_size):
             cs = ChoiceStructure()
             cs.index_from = i
             cs.genome_1_path = self.three_genome_paths[0][i]
@@ -375,11 +378,15 @@ class MedianData:
         Fills medians[] with all the genome's medians (ancestors),
         which are formatted for the purpose of printing to screen.
         """
-
+        median_chr = 0
         for i in range(0, len(self.fragments)):
             if self.fragments[i] is not None:
                 other_frag: int = self.fragments[i].end2
                 self.fragments[other_frag] = None
+        for frag in self.fragments:
+            if frag is not None:
+                median_chr += 1
+        self.medians = [str() for _ in range(0, median_chr)]
 
         gene_index: int = 0
         for frag in self.fragments:
