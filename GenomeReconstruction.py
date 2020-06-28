@@ -40,6 +40,37 @@ CONFIG_GENOME_FILE = "genome_file"
 CONFIG_TREE_STRUCTURE = "tree_structure"
 
 
+class GenomeNode:
+    """
+    Represents a node in the networkx graph, containing additional information like a unique integer identifier
+
+    Attributes
+    ----------
+    name : str
+        Name of the genome
+    neighbors : List[int]
+        The genome_ids of this genome's neighbors
+    genome_id : int
+        Integer identifier for this genome
+    """
+    def __init__(self, name: str, neighbors: List[int], genome_id: int):
+        """
+        Constructor
+
+        Attributes
+        ----------
+        name : str
+            Name of the genome
+        neighbors : List[int]
+            The genome_ids of this genome's neighbors
+        genome_id : int
+            Integer identifier for this genome
+        """
+        self.name: str = name
+        self.neighbors: List[int] = neighbors
+        self.genome_id: int = genome_id
+
+
 def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
     """
     Parses the genome data from a file into a dictionary containing each genome and their chromosomes
@@ -99,31 +130,70 @@ def parse_tree(config_dir: str) -> Optional[Tree]:
     return Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
 
 
-def parse_medians(graph: Graph) -> Dict[Clade, List[Clade]]:
+def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
     """
-    Given a tree converted into a graph, parse the medians (ie nodes with 3 neighbours)
+    Get the median nodes from a list of GenomeNodes
 
     Parameters
     ----------
-    graph : Graph
-        Graph to parse medians from
+    graph_nodes : List[GenomeNode]
+        List of GraphNodes to parse the medians from
 
     Returns
     -------
     Dict[Clade, List[Clade]]
-        Key: median to reconstruct, value: list of 3 neighbouring clades
+        Key: median to reconstruct, value: list of 3 neighboring clades
     """
-    medians = {}
-    for node in graph.nodes:
-        neighbours = [n for n in graph.neighbors(node)]
-        if (len(neighbours)) == 3:
-            for neighbour in neighbours:
-                if node not in medians.keys():
-                    medians[node] = []
-                medians[node].append(neighbour)
-        # TODO: Exception handling for illegal tree structures (eg. node with > 3 neighbours)
+    medians: List[GenomeNode] = []
+    for node in graph_nodes:
+        if (len(node.neighbors)) == 3:
+            medians.append(GenomeNode(node.name, node.neighbors, node.genome_id))
+        # TODO: Exception handling for illegal tree structures (eg. node with > 3 neighbors)
 
     return medians
+
+
+def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
+    """
+    Converts a tree into a networkx graph consisting of GenomeNode representations of each node
+
+    Parameters
+    ----------
+    tree : Tree
+        Tree object to convert into a graph
+
+    Returns
+    -------
+    List[GenomeNode]
+        A list of GenomeNodes representing each node, their neighbors, and their unique IDs
+    """
+    terminals = tree.get_terminals()
+    nonterminals = tree.get_nonterminals()
+    graph_indexes = {}
+    node_index = 0
+    for t in terminals:
+        graph_indexes[t.name] = node_index
+        node_index += 1
+    for nt in nonterminals:
+        if nt.name is not None and len(nt.clades) > 0:
+            graph_indexes[nt.name] = node_index
+            node_index += 1
+
+    graph: Graph = Graph()
+    for nt in nonterminals:
+        if nt.name is not None and len(nt.clades) > 0:
+            for clade in nt.clades:
+                graph.add_edge(nt.name, clade.name)
+
+    graph_nodes = []
+    for node in graph:
+        genome_id = graph_indexes[node]
+        neighbor_ids = []
+        for neighbor in graph.neighbors(node):
+            neighbor_ids.append(graph_indexes[neighbor])
+        graph_nodes.append(GenomeNode(node, neighbor_ids, genome_id))
+
+    return graph_nodes
 
 
 def count_genes(genomes: Dict[str, List[str]]) -> int:
@@ -141,10 +211,9 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     int
         The number of genes in each genome
     """
-    count: int = 0
     final_count: int = 0
     for genome, chromosomes in genomes.items():
-        count = 0
+        count: int = 0
         for chromosome in chromosomes:
             count += len(chromosome.strip().split(" "))
 
@@ -159,31 +228,6 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     return final_count
 
 
-def graph_from_phylo_tree(tree: Tree) -> Graph:
-    """
-    Converts a tree into a networkx graph by getting all its nonterminals
-    and adding edges between them and their subclades
-
-    Parameters
-    ----------
-    tree : Tree
-        Tree object to convert into a graph
-
-    Returns
-    -------
-    Graph
-        A graph object converted from the tree
-    """
-    graph: Graph = Graph()
-    nonterminals: List[Clade] = tree.get_nonterminals()
-    for nt in nonterminals:
-        if nt.name is not None and len(nt.clades) > 0:
-            for clade in nt.clades:
-                graph.add_edge(nt, clade)
-
-    return graph
-
-
 def small_phylogeny() -> str:
     """
     Reconstructs the ancestor(s) of known modern genomes given an unrooted binary phylogenetic tree
@@ -195,8 +239,8 @@ def small_phylogeny() -> str:
     """
     tree: Tree = parse_tree(CONFIG_DIR)
     genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
-    graph: Graph = graph_from_phylo_tree(tree)
-    medians: Dict[Clade, List[Clade]] = parse_medians(graph)
+    genome_nodes: List[GenomeNode] = genome_nodes_from_tree(tree)
+    median_nodes: List[GenomeNode] = parse_medians(genome_nodes)
 
     num_ancestor = len(tree.get_nonterminals())
     num_leaves = len(tree.get_terminals())
@@ -207,11 +251,13 @@ def small_phylogeny() -> str:
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
-    for median, neighbours in medians.items():
-        ts.set_tree_structure(int(median.name), int(neighbours[0].name),
-                              int(neighbours[1].name), int(neighbours[2].name))
+    for median in median_nodes:
+        print(str(median.genome_id) + str(median.neighbors))
+        ts.set_tree_structure(median.genome_id, median.neighbors[0],
+                              median.neighbors[1], median.neighbors[2])
 
     sp: SmallPhylogeny = SmallPhylogeny(ts)
+    sp.get_result()
 
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
