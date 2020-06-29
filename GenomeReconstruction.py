@@ -228,13 +228,10 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     return final_count
 
 
-def small_phylogeny() -> str:
+def small_phylogeny():
     """
     Reconstructs the ancestor(s) of known modern genomes given an unrooted binary phylogenetic tree
     using the Pathgroups algorithm.
-
-    Returns
-    -------
 
     """
     tree: Tree = parse_tree(CONFIG_DIR)
@@ -315,19 +312,14 @@ def small_phylogeny() -> str:
         for j in range(0, len(ts.medians[i].medians)):
             print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
 
-    return ""
 
-
-def genome_aliquoting() -> str:
+def genome_aliquoting():
     """
     See the 2010 paper, section 2.5
 
-    Returns
-    -------
-
     """
 
-    return "Hello yes this is genome aliquoting"
+    print("This is genome aliquoting")
 
 
 def dcj_rearrangements():
@@ -375,7 +367,7 @@ def dcj_rearrangements():
             dcj.initial_value()
 
 
-def get_algorithm(alg: str) -> str:
+def get_algorithm(alg: str):
     """
     Calls the appropriate function based on the user input.
 
@@ -383,24 +375,26 @@ def get_algorithm(alg: str) -> str:
     ----------
     alg : str
         User input, the name of the desired algorithm
-
-    Returns
-    -------
-    function
-        The appropriate function based on the user input, or an error if the algorithm is invalid
     """
-    # Essentially a switch statement
-    return {
-        "SmallPhylogeny": small_phylogeny(),
-        "GenomeAliquoting": genome_aliquoting(),
-        "DCJRearrangements": dcj_rearrangements()
-    }.get(alg, "Algorithm doesn't exist")
+    if alg == "SmallPhylogeny":
+        small_phylogeny()
+    elif alg == "GenomeAliquoting":
+        genome_aliquoting()
+    elif alg == "DCJRearrangements":
+        dcj_rearrangements()
+    else:
+        print("Algorithm not supported by this program. Supported algorithms:\n" +
+              "- SmallPhylogeny\n" +
+              "- GenomeAliquoting\n" +
+              "- DCJRearrangements\n\n" +
+              "Exiting.")
+        exit(1)
 
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    output = get_algorithm("SmallPhylogeny")
-    print(output)
+    algorithm = "DCJRearrangements"
+    get_algorithm(algorithm)
 
 
 if __name__ == '__main__':
