@@ -171,8 +171,8 @@ class BPGDistance:
         self.node_ints: List[int] = [int() for _ in range((self.gene_number * 2))]
         self.node_strs1: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
         self.node_strs2: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
-        self.genome_paths1: List[Optional[BPGPath]] = list()
-        self.genome_paths2: List[Optional[BPGPath]] = list()
+        self.genome_paths1: Optional[List[Optional[BPGPath]]] = None
+        self.genome_paths2: Optional[List[Optional[BPGPath]]] = None
         self.distance: int = int()
 
     def graph_init(self):
