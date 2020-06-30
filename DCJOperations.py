@@ -145,13 +145,13 @@ class DCJOperations:
         self.min_chromosome_number: int = int()
 
         # For each row, use GeneNodeAttributes to index
-        self.gene_node1: List[Optional[List[int]]] = list(list())
-        self.gene_node2: List[Optional[List[int]]] = list(list())
+        self.gene_node1: Optional[List[Optional[List[int]]]] = None
+        self.gene_node2: Optional[List[Optional[List[int]]]] = None
 
-        self.chromosome_in_gene_node1: List[Optional[List[int]]] = list(list())
-        self.chromosome_in_gene_node2: List[Optional[List[int]]] = list(list())
-        self.gene_node_in_string: List[List[str]] = list(list(str()))
-        self.touched_chromosome: List[int] = list()
+        self.chromosome_in_gene_node1: Optional[List[Optional[List[int]]]] = None
+        self.chromosome_in_gene_node2: Optional[List[Optional[List[int]]]] = None
+        self.gene_node_in_string: Optional[List[List[str]]] = None
+        self.touched_chromosome: Optional[List[int]] = None
 
     def initial_value(self):
         """
@@ -846,29 +846,30 @@ class DCJOperations:
         result: List[int] = [int() for _ in range(8)]
         result[OperationOptions.CHROMOSOME1] = -1
 
-        for i in range(len(self.chromosome_in_gene_node1[chromosome]) // 2):
-            node1: int = -1
+        for i in range(int(len(self.chromosome_in_gene_node1[chromosome]) / 2)):
+            node1: int
 
-            if i != 0:
-                node1 = self.chromosome_in_gene_node1[chromosome][(2 * i) - 1]
+            if i == 0:
+                node1 = -1
+            else:
+                node1 = self.chromosome_in_gene_node1[chromosome][(i * 2) - 1]
 
-            node2: int = self.chromosome_in_gene_node1[chromosome][2 * i]
+            node2: int = self.chromosome_in_gene_node1[chromosome][i * 2]
 
-            if node1 != -1 and self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != node2 or \
-                    node2 != -1 and self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != node1:
-                node3: int = -1
+            if node1 != 1 and self.gene_node2[node1][0] != node2 or node2 != -1 and self.gene_node2[node2][0] != node1:
+                node3: int
 
-                if node1 != -1:
-                    node3 = self.gene_node2[node1][GeneNodeAttributes.ADJACENCY]
+                if node1 == -1:
+                    node3 = -1
+                else:
+                    node3 = self.gene_node2[node1][0]
 
-                node4: int = self.gene_node2[node2][GeneNodeAttributes.ADJACENCY]
+                node4: int = self.gene_node2[node2][0]
 
-                if (node3 != -1 and self.gene_node1[node3][GeneNodeAttributes.CHROMOSOMES_INDEX] == chromosome) and \
-                        (self.gene_node1[node3][GeneNodeAttributes.CHROMOSOME_POSITION] > (2 * i)):
-                    node5: int = self.gene_node1[node3][GeneNodeAttributes.ADJACENCY]
+                if node3 != -1 and self.gene_node1[node3][1] == chromosome and self.gene_node1[node3][2] > int(i * 2):
+                    node5: int = self.gene_node1[node3][0]
 
-                    if node5 == -1 or self.gene_node1[node3][GeneNodeAttributes.CHROMOSOME_POSITION] < \
-                            self.gene_node1[node5][GeneNodeAttributes.CHROMOSOME_POSITION]:
+                    if (node5 == -1) or (self.gene_node1[node3][2] < self.gene_node1[node5][2]):
                         result[OperationOptions.CHROMOSOME1] = chromosome
                         result[OperationOptions.CHROMOSOME2] = chromosome
                         result[OperationOptions.NODE1] = node1
@@ -876,16 +877,13 @@ class DCJOperations:
                         result[OperationOptions.NODE3] = node2
                         result[OperationOptions.NODE4] = node5
                         result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.INVERSION
-                        result[OperationOptions.OPERATION_SUBTYPE] = 1
+                        result[OperationOptions.OPERATION_SUBTYPE] = TranslocationSubtypes.ADCB
 
                         return result
+                elif node4 != -1 and self.gene_node1[node4][1] == chromosome and self.gene_node1[node4][2] > int(i * 2):
+                    node6: int = self.gene_node1[node4][0]
 
-                if (node4 != -1 and self.gene_node1[node4][GeneNodeAttributes.CHROMOSOMES_INDEX] == chromosome) and \
-                        (self.gene_node1[node4][GeneNodeAttributes.CHROMOSOME_POSITION] > (2 * i)):
-                    node6: int = self.gene_node1[node4][GeneNodeAttributes.ADJACENCY]
-
-                    if node6 != -1 or self.gene_node1[node6][GeneNodeAttributes.CHROMOSOME_POSITION] < \
-                            self.gene_node1[node4][GeneNodeAttributes.CHROMOSOME_POSITION]:
+                    if node6 != -1 and self.gene_node1[node6][2] < self.gene_node1[node4][2]:
                         result[OperationOptions.CHROMOSOME1] = chromosome
                         result[OperationOptions.CHROMOSOME2] = chromosome
                         result[OperationOptions.NODE1] = node1
@@ -893,7 +891,7 @@ class DCJOperations:
                         result[OperationOptions.NODE3] = node2
                         result[OperationOptions.NODE4] = node4
                         result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.INVERSION
-                        result[OperationOptions.OPERATION_SUBTYPE] = 1
+                        result[OperationOptions.OPERATION_SUBTYPE] = TranslocationSubtypes.ADCB
 
                         return result
 

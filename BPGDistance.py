@@ -54,10 +54,10 @@ def is_valid_cycle(edge1: int, edge2: int) -> bool:
     if edge1 >= 0 or edge2 >= 0:
         return False
 
-    if (edge1 / 2) * 2 != edge1:
+    if int(edge1 / 2) * 2 != edge1:
         return True
 
-    return (edge2 / 2) * 2 != edge2
+    return int(edge2 / 2) * 2 != edge2
 
 
 def split_at_whitespace(strings: str) -> List[str]:
@@ -171,8 +171,8 @@ class BPGDistance:
         self.node_ints: List[int] = [int() for _ in range((self.gene_number * 2))]
         self.node_strs1: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
         self.node_strs2: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
-        self.genome_paths1: List[Optional[BPGPath]] = list()
-        self.genome_paths2: List[Optional[BPGPath]] = list()
+        self.genome_paths1: Optional[List[Optional[BPGPath]]] = None
+        self.genome_paths2: Optional[List[Optional[BPGPath]]] = None
         self.distance: int = int()
 
     def graph_init(self):
@@ -185,26 +185,28 @@ class BPGDistance:
             genes: List[str] = split_at_whitespace(chromosome)
 
             for gene in genes:
-                first_character: str = gene[0]  # Sign indicating gene is head-tail or tail-head
+                first_character: str = deepcopy(gene[0])  # Sign indicating gene is head-tail or tail-head
+                node1: str
+                node2: str
 
                 if first_character == "-":
-                    node1: str = insert_character(gene[1:], len(gene[1:]), "h")
-                    node2: str = insert_character(gene[1:], len(gene[1:]), "t")
+                    node1 = insert_character(gene[1:], len(gene[1:]), "h")
+                    node2 = insert_character(gene[1:], len(gene[1:]), "t")
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node2  # PyCharm warns about this erroneously
+                    self.node_strs1[index1] = node2
 
                     index1 += 1
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node1  # PyCharm warns about this erroneously
+                    self.node_strs1[index1] = node1
                 else:
-                    node1: str = insert_character(gene, len(gene), "t")
-                    node2: str = insert_character(gene, len(gene), "h")
+                    node1 = insert_character(gene, len(gene), "t")
+                    node2 = insert_character(gene, len(gene), "h")
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node1  # PyCharm warns about this erroneously
+                    self.node_strs1[index1] = node1
 
                     index1 += 1
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node2  # PyCharm warns about this erroneously
+                    self.node_strs1[index1] = node2
 
                 index1 += 1
 
@@ -313,10 +315,6 @@ class BPGDistance:
         # Get the first path out of a list of paths with None values filtered out
         ancestor_path1: Optional[BPGPath] = get_valid_path(0, self.genome_paths1)
 
-        for path in self.genome_paths1:
-            if path is not None:
-                ancestor_path1 = BPGPath.from_path(path)
-
         while ancestor_path1 is not None:
             node1: int = ancestor_path1.head
             node2: int = ancestor_path1.tail
@@ -355,9 +353,9 @@ class BPGDistance:
                     self.genome_paths2[l_node2] = None
                 elif l_node2 > 0 and l_node2 != node_small:
                     a_path2: BPGPath = self.genome_paths1[l_node2]
-                    ap2_tail: int = a_path2.tail
+                    another_node: int = a_path2.tail
 
-                    ancestor_path1 = BPGPath(ap2_tail, node_small, 1, 1)
+                    ancestor_path1 = BPGPath(another_node, node_small, 1, 1)
                     node1 = ancestor_path1.head
                     node2 = ancestor_path1.tail
 
@@ -368,10 +366,10 @@ class BPGDistance:
                         node_big = node2
                         node_small = node1
 
-                    paths1_tail: int = self.genome_paths1[l_node2].tail
+                    other_path1: int = self.genome_paths1[l_node2].tail
 
-                    if paths1_tail > 0:
-                        self.genome_paths1[paths1_tail] = None
+                    if other_path1 > 0:
+                        self.genome_paths1[other_path1] = None
 
                     self.genome_paths2[l_node1] = None
                     self.genome_paths2[l_node2] = None
