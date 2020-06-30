@@ -1,2 +1,7 @@
 *.txt
 config.yaml
+pyvenv.cfg
+
+/venv
+
+!requirements.txt
