@@ -2,6 +2,6 @@
 config.yaml
 pyvenv.cfg
 
-/venv
+venv/
 
 !requirements.txt
