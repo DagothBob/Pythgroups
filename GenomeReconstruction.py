@@ -1,24 +1,19 @@
-import sys
+from io import StringIO
+from typing import List, Dict, Optional
+
 import yaml
+from Bio import Phylo
+from Bio.Phylo.Newick import Tree, Clade
+from networkx import Graph
 
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
 from GenomeInString import GenomeInString
-from TreeStructure import TreeStructure
-from SmallPhylogeny import SmallPhylogeny
 from MedianIteration import MedianIteration
-from PGMPathForAGenome import PGMPathForAGenome
 from PGMPath import PGMPath
-
-import networkx as nx
-from networkx import Graph
-from Bio import Phylo
-from Bio.Phylo.Newick import Tree, Clade
-from io import StringIO
-from typing import List, Dict, TextIO, Type, Optional
-from enum import Enum
-from copy import copy, deepcopy
-
+from PGMPathForAGenome import PGMPathForAGenome
+from SmallPhylogeny import SmallPhylogeny
+from TreeStructure import TreeStructure
 
 """
  Driver program for Pythgroups
@@ -352,18 +347,21 @@ def dcj_rearrangements():
     cur_dist: int = bpg_dist.distance
 
     # Perform DCJ operations until distance == 0 or there are no more DCJ operations to perform (?)
-    operation_types: List[int] = [OperationTypes.INVERSION, OperationTypes.TRANSLOCATION]
+    operation_types: List[int] = [OperationTypes.INVERSION,
+                                  OperationTypes.TRANSLOCATION,
+                                  OperationTypes.FISSION,
+                                  OperationTypes.FUSION]
     dcj: DCJOperations = DCJOperations(genome1, genome2)
     dcj.initial_value()
     more: bool = True
     while cur_dist > 0 and more:
         more = False
         rearrange_state: List[GenomeInString] = dcj.get_result(1, 30, -2, operation_types, 10)
-        if len(rearrange_state) > 0:
+        if len(rearrange_state) != 0:
             more = True
             for genome in rearrange_state:
                 print("*******")
-                for i in range(0, len(genome.chromosomes)):
+                for i in range(len(genome.chromosomes)):
                     print("Chromosome " + str(i) + "\n" + genome.chromosomes[i])
 
             new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
@@ -391,7 +389,7 @@ def get_algorithm(alg: str) -> str:
     """
     # Essentially a switch statement
     return {
-        "SmallPhylogeny": small_phylogeny(),
+        #"SmallPhylogeny": small_phylogeny(),
         "GenomeAliquoting": genome_aliquoting(),
         "DCJRearrangements": dcj_rearrangements()
     }.get(alg, "Algorithm doesn't exist")
@@ -399,7 +397,7 @@ def get_algorithm(alg: str) -> str:
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    output = get_algorithm("SmallPhylogeny")
+    output = get_algorithm("DCJRearrangements")
     print(output)
 
 
