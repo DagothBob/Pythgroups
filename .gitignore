@@ -1,3 +1,8 @@
 *.txt
-config.yaml
 .idea
+config.yaml
+pyvenv.cfg
+
+venv/
+
+!requirements.txt
