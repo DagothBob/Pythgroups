@@ -86,6 +86,13 @@ class TranslocationSubtypes(IntEnum):
     AnCnBD: int = 2
 
 
+class FusionSubtypes(IntEnum):
+    TWO_REVERSED_PLUS_ONE: int = 1
+    TWO_PLUS_ONE: int = 2
+    ONE_PLUS_TWO: int = 3
+    ONE_PLUS_TWO_REVERSED: int = 4
+
+
 class OperationOptions(IntEnum):
     CHROMOSOME1: int = 0
     CHROMOSOME2: int = 1
@@ -497,25 +504,25 @@ class DCJOperations:
             new_chromosome1: List[int] = [int() for _ in range(length1)]
             new_chromosome2: List[int] = [int() for _ in range(length2)]
 
-            if length1 >= 0:
-                new_chromosome1[:length1] = deepcopy(self.chromosome_in_gene_node1[
-                                                         operation[OperationOptions.CHROMOSOME1]])
+            for i in range(length1):
+                new_chromosome1[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][i]
 
-            if length2 >= 0:
-                new_chromosome2[:length2] = deepcopy(self.chromosome_in_gene_node1[
-                                                         operation[OperationOptions.CHROMOSOME1]])[length1:]
+            for i in range(length2):
+                new_chromosome2[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][length1 + i]
 
-            chromosome_in_gene_node1_temp: List[List[int]] = [
-                [int()] for _ in range((len(self.chromosome_in_gene_node1) + 1))]
+            chromosome_in_gene_node1_temp: List[List[int]] = \
+                [list() for _ in range(len(self.chromosome_in_gene_node1) + 1)]
 
-            chromosome_in_gene_node1_temp[:len(self.chromosome_in_gene_node1)] = deepcopy(self.chromosome_in_gene_node1)
+            for i in range(len(self.chromosome_in_gene_node1)):
+                chromosome_in_gene_node1_temp[i] = self.chromosome_in_gene_node1[i]
 
             chromosome_in_gene_node1_temp[operation[OperationOptions.CHROMOSOME1]] = new_chromosome1
             chromosome_in_gene_node1_temp[len(self.chromosome_in_gene_node1)] = new_chromosome2
 
-            self.chromosome_in_gene_node1 = [[int()] for _ in range(len(chromosome_in_gene_node1_temp))]
+            self.chromosome_in_gene_node1 = [list() for _ in range(len(chromosome_in_gene_node1_temp))]
 
-            self.chromosome_in_gene_node1[:len(chromosome_in_gene_node1_temp)] = deepcopy(chromosome_in_gene_node1_temp)
+            for i in range(len(chromosome_in_gene_node1_temp)):
+                self.chromosome_in_gene_node1[i] = chromosome_in_gene_node1_temp[i]
         elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.FUSION:
             chromosome1: int = operation[OperationOptions.CHROMOSOME1]
             chromosome2: int = operation[OperationOptions.CHROMOSOME2]
@@ -638,10 +645,10 @@ class DCJOperations:
         result: List[int] = [int() for _ in range(8)]
         result[OperationOptions.CHROMOSOME1] = -1
 
-        if (operation_type == OperationTypes.FUSION and
-            len(self.chromosome_in_gene_node1) <= self.min_chromosome_number) or \
-                (operation_type == OperationTypes.FISSION and
-                 len(self.chromosome_in_gene_node1) >= self.max_chromosome_number):
+        if operation_type == OperationTypes.FUSION and \
+                len(self.chromosome_in_gene_node1) <= self.min_chromosome_number or\
+                operation_type == OperationTypes.FISSION and \
+                len(self.chromosome_in_gene_node1) >= self.max_chromosome_number:
             return result
 
         if operation_type == OperationTypes.FISSION:
@@ -653,33 +660,53 @@ class DCJOperations:
                     node3: int = self.chromosome_in_gene_node2[j][0]
                     node4: int = self.chromosome_in_gene_node2[j][len(self.chromosome_in_gene_node2[j]) - 1]
 
-                    if self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node3 or \
-                            self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node4 or \
-                            self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node3 or \
-                            self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node4:
-                        if (-1 < which_chromosome == self.gene_node1[node1][GeneNodeAttributes.CHROMOSOMES_INDEX]) \
-                                or (which_chromosome < 0 and
-                                    self.touched_chromosome[
-                                        self.gene_node1[node1][GeneNodeAttributes.CHROMOSOMES_INDEX]] == 0):
-                            result[OperationOptions.CHROMOSOME1] = self.gene_node1[node1][
-                                GeneNodeAttributes.CHROMOSOMES_INDEX]
-                            result[OperationOptions.NODE1] = node1
-                        elif (-1 < which_chromosome == self.gene_node1[node2][GeneNodeAttributes.CHROMOSOMES_INDEX]) \
-                                or (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node2]
-                                    [GeneNodeAttributes.CHROMOSOMES_INDEX]] == 0):
-                            result[OperationOptions.CHROMOSOME1] = self.gene_node1[node2][
-                                GeneNodeAttributes.CHROMOSOMES_INDEX]
-                            result[OperationOptions.NODE1] = node2
-
-                        if self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node3 or \
-                                self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node3:
-                            result[OperationOptions.NODE3] = node3
-                        elif self.gene_node1[node1][GeneNodeAttributes.ADJACENCY] == node4 or \
-                                self.gene_node1[node2][GeneNodeAttributes.ADJACENCY] == node4:
-                            result[OperationOptions.NODE3] = node4
-
+                    if self.gene_node1[node1][0] == node3 and \
+                            ((-1 < which_chromosome == self.gene_node1[node1][1]) or
+                             (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node1][1]] == 0)):
+                        result[OperationOptions.CHROMOSOME1] = self.gene_node1[node1][1]
                         result[OperationOptions.CHROMOSOME2] = len(self.chromosome_in_gene_node1)
+                        result[OperationOptions.NODE1] = node1
                         result[OperationOptions.NODE2] = -1
+                        result[OperationOptions.NODE3] = node3
+                        result[OperationOptions.NODE4] = -1
+                        result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FISSION
+                        result[OperationOptions.OPERATION_SUBTYPE] = 1
+
+                        return result
+                    elif self.gene_node1[node1][0] == node4 and \
+                            ((-1 < which_chromosome == self.gene_node1[node1][1]) or
+                             (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node1][1]] == 0)):
+                        result[OperationOptions.CHROMOSOME1] = self.gene_node1[node1][1]
+                        result[OperationOptions.CHROMOSOME2] = len(self.chromosome_in_gene_node1)
+                        result[OperationOptions.NODE1] = node1
+                        result[OperationOptions.NODE2] = -1
+                        result[OperationOptions.NODE3] = node4
+                        result[OperationOptions.NODE4] = -1
+                        result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FISSION
+                        result[OperationOptions.OPERATION_SUBTYPE] = 1
+
+                        return result
+                    elif self.gene_node1[node2][0] == node3 and \
+                            ((-1 < which_chromosome == self.gene_node1[node2][1]) or
+                             (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node2][1]] == 0)):
+                        result[OperationOptions.CHROMOSOME1] = self.gene_node1[node2][1]
+                        result[OperationOptions.CHROMOSOME2] = len(self.chromosome_in_gene_node1)
+                        result[OperationOptions.NODE1] = node2
+                        result[OperationOptions.NODE2] = -1
+                        result[OperationOptions.NODE3] = node3
+                        result[OperationOptions.NODE4] = -1
+                        result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FISSION
+                        result[OperationOptions.OPERATION_SUBTYPE] = 1
+
+                        return result
+                    elif self.gene_node1[node2][0] == node4 and \
+                            ((-1 < which_chromosome == self.gene_node1[node2][1]) or
+                             (which_chromosome < 0 and self.touched_chromosome[self.gene_node1[node2][1]] == 0)):
+                        result[OperationOptions.CHROMOSOME1] = self.gene_node1[node2][1]
+                        result[OperationOptions.CHROMOSOME2] = len(self.chromosome_in_gene_node1)
+                        result[OperationOptions.NODE1] = node2
+                        result[OperationOptions.NODE2] = -1
+                        result[OperationOptions.NODE3] = node4
                         result[OperationOptions.NODE4] = -1
                         result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FISSION
                         result[OperationOptions.OPERATION_SUBTYPE] = 1
@@ -731,32 +758,52 @@ class DCJOperations:
                     node4: int = self.chromosome_in_gene_node1[j][len(self.chromosome_in_gene_node1[j]) - 1]
 
                     if (which_chromosome < 0 and self.touched_chromosome[i] == 0 and
-                        self.touched_chromosome[j] == 0) or \
-                            (which_chromosome > -1 and (i == which_chromosome or j == which_chromosome)):
-                        if self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] == node3:
+                        self.touched_chromosome[j] == 0) or (which_chromosome > -1 and (i == which_chromosome or
+                                                                                        j == which_chromosome)):
+                        if self.gene_node2[node1][0] == node3:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node3
-                            result[OperationOptions.OPERATION_SUBTYPE] = 1
-                        elif self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] == node4:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.TWO_REVERSED_PLUS_ONE
+
+                            return result
+                        elif self.gene_node2[node1][0] == node4:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node4
-                            result[OperationOptions.OPERATION_SUBTYPE] = 2
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] == node3:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.TWO_PLUS_ONE
+
+                            return result
+                        elif self.gene_node2[node2][0] == node3:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node3
-                            result[OperationOptions.OPERATION_SUBTYPE] = 3
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] == node4:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.ONE_PLUS_TWO
+
+                            return result
+                        elif self.gene_node2[node2][0] == node4:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node4
-                            result[OperationOptions.OPERATION_SUBTYPE] = 4
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.ONE_PLUS_TWO_REVERSED
 
-                        result[OperationOptions.CHROMOSOME1] = i
-                        result[OperationOptions.CHROMOSOME2] = j
-                        result[OperationOptions.NODE3] = -1
-                        result[OperationOptions.NODE4] = -1
-                        result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
-
-                        return result
+                            return result
 
             for i in range(len(self.chromosome_in_gene_node1) - 1):
                 node1: int = self.chromosome_in_gene_node1[i][0]
@@ -767,36 +814,52 @@ class DCJOperations:
                     node4: int = self.chromosome_in_gene_node1[j][len(self.chromosome_in_gene_node1[j]) - 1]
 
                     if (which_chromosome < 0 and self.touched_chromosome[i] == 0 and
-                        self.touched_chromosome[j] == 0) or \
-                            (which_chromosome > -1 and (i == which_chromosome or j == which_chromosome)):
-                        if self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and \
-                                self.gene_node2[node3][GeneNodeAttributes.ADJACENCY] != -1:
+                        self.touched_chromosome[j] == 0) or (which_chromosome > -1 and (i == which_chromosome or
+                                                                                        j == which_chromosome)):
+                        if self.gene_node2[node1][0] != -1 and self.gene_node2[node3][0] != -1:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node3
-                            result[OperationOptions.OPERATION_SUBTYPE] = 1
-                        elif self.gene_node2[node1][GeneNodeAttributes.ADJACENCY] != -1 and \
-                                self.gene_node2[node4][GeneNodeAttributes.ADJACENCY] != -1:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.TWO_REVERSED_PLUS_ONE
+
+                            return result
+                        elif self.gene_node2[node1][0] != -1 and self.gene_node2[node4][0] != -1:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node1
                             result[OperationOptions.NODE2] = node4
-                            result[OperationOptions.OPERATION_SUBTYPE] = 2
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and \
-                                self.gene_node2[node3][GeneNodeAttributes.ADJACENCY] != -1:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.TWO_PLUS_ONE
+
+                            return result
+                        elif self.gene_node2[node2][0] != -1 and self.gene_node2[node3][0] != -1:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node3
-                            result[OperationOptions.OPERATION_SUBTYPE] = 3
-                        elif self.gene_node2[node2][GeneNodeAttributes.ADJACENCY] != -1 and \
-                                self.gene_node2[node4][GeneNodeAttributes.ADJACENCY] != -1:
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.ONE_PLUS_TWO
+
+                            return result
+                        elif self.gene_node2[node2][0] != -1 and self.gene_node2[node4][0] != -1:
+                            result[OperationOptions.CHROMOSOME1] = i
+                            result[OperationOptions.CHROMOSOME2] = j
                             result[OperationOptions.NODE1] = node2
                             result[OperationOptions.NODE2] = node4
-                            result[OperationOptions.OPERATION_SUBTYPE] = 4
+                            result[OperationOptions.NODE3] = -1
+                            result[OperationOptions.NODE4] = -1
+                            result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
+                            result[OperationOptions.OPERATION_SUBTYPE] = FusionSubtypes.ONE_PLUS_TWO_REVERSED
 
-                        result[OperationOptions.CHROMOSOME1] = i
-                        result[OperationOptions.CHROMOSOME2] = j
-                        result[OperationOptions.NODE3] = -1
-                        result[OperationOptions.NODE4] = -1
-                        result[OperationOptions.TYPE_OF_OPERATION] = OperationTypes.FUSION
-
-                        return result
+                            return result
 
         elif operation_type == OperationTypes.INVERSION:
             if which_chromosome > -1:
