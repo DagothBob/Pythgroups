@@ -1,5 +1,5 @@
 # Pythgroups
-A Python implementation of the Pathgroups algorithm for various comparative genomic problems, based on the work of Chunfang Zheng and David Sankoff.
+A Python implementation of the Pathgroups algorithm for various comparative genomic problems, based on the work of Chunfang Zheng and David Sankoff. See the [manual](./manual.md) for how to install and use Pythgroups.
 
 ## Goals
 Based on the original Java implementation of Pathgroups provided by the researchers (see References), we seek to improve its usability and readability, along with expanding its functionality, in our Python implementation. Our biggest planned improvements:
