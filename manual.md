@@ -2,7 +2,7 @@
 
 ### Without a virtual environment
 
-The simplest way to use this program is to install the dependencies directly on your machine. This can lead to clutter, but if that's fine with you, then just run the following command:
+The simplest way to use Pythgroups is to install the dependencies directly on your machine. This can lead to clutter, but if that's fine with you, then just run the following command:
 
     $ pip install -r Pythgroups/requirements.txt
 
@@ -10,17 +10,17 @@ All the dependencies will be installed directly on your machine, allowing you to
 
 ### With a virtual environment
 
-If you don’t want to install all the dependencies of this project directly on your base system, you can set up a virtual environment to install the dependencies in and run the program from. Here are the steps:
-
-The following command makes sure that you have the virtual environment software installed on your machine:
+If you don’t want to install all the dependencies of this project directly on your base system, you can set up a virtual environment to install the dependencies in and run the program from. To get started, the following command makes sure that you have the virtual environment software installed on your machine:
 
     $ pip install virtualenv
 
-Now we'll create the virtual environment folder using the following command. We recommend creating this in the Pythgroups folder, but you could technically put it anywhere you want. venv is the name of the virtual environment folder you wish to create, which can be named whatever you want, but we’ll use venv for the rest of this section.
+Now we'll create the virtual environment folder using the following command:
 
     $ python -m virtualenv Pythgroups/venv
 
-Now we are ready to activate the virtual environment with the following command.
+We recommend creating this in the Pythgroups folder, but you could technically put it anywhere you want. venv is the name of the virtual environment folder you wish to create, which can be named whatever you want, but we’ll use venv for the rest of this section.
+
+Now we are ready to activate the virtual environment with the following command:
 
     $ source Pythgroups/venv/Scripts/activate     (Mac/Linux)
     > Pythgroups\venv\Scripts\activate.bat        (Windows) 
@@ -33,7 +33,7 @@ To exit the virtual environment, simply use the exit command:
     
     (venv) $ exit
 
-Now our virtual environment is all set up! Now, whenever you want to use Pythgroups through the virtual environment, simply run the following command as described above before running Pythgroups:
+Now our virtual environment is all set up! Now, whenever you want to use Pythgroups through the virtual environment, simply run the following command as described above before using Pythgroups:
 
     $ source Pythgroups/venv/Scripts/activate     (Mac/Linux)
     > Pythgroups\venv\Scripts\activate.bat        (Windows)
@@ -62,7 +62,7 @@ genome_file: "[path]"
 
 ### GenomeReconstruction.py
 
-`GenomeReconstruction.py` is the script used to run the Pythgroups program. Note that your working directory must be in Pythgroups for it to work. Here’s a rundown of its usage:
+`GenomeReconstruction.py` is the script used to run the Pythgroups program. Note that your working directory must be in `Pythgroups` for it to work. Here’s a rundown of its usage:
 
     $ python Pythgroups/GenomeReconstruction.py [algorithm]
 
