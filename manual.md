@@ -20,7 +20,7 @@ Now we'll create the virtual environment folder using the following command:
 
     $ python -m virtualenv Pythgroups/venv
 
-We recommend creating this in the Pythgroups folder, but you could technically put it anywhere you want. venv is the name of the virtual environment folder you wish to create, which can be named whatever you want, but we’ll use venv for the rest of this section.
+We recommend creating this in the Pythgroups folder, but you could technically put it anywhere you want. `venv` is the name of the virtual environment folder you wish to create, which can be named whatever you want, but we’ll use `venv` for the rest of this section.
 
 Now we are ready to activate the virtual environment with the following command:
 
