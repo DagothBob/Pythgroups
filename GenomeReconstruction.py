@@ -35,6 +35,29 @@ CONFIG_GENOME_FILE = "genome_file"
 CONFIG_TREE_STRUCTURE = "tree_structure"
 
 
+def split_at_whitespace(strings: str) -> List[str]:
+    """
+    Strips, then splits, a string, then strips the substrings again
+
+    Parameters
+    ----------
+    strings
+        List of strings to operate on
+
+    Returns
+    -------
+    [str]
+        Set of cleaned-up strings
+    """
+    result: List[str] = []
+
+    for string in strings.strip().split(" "):
+        if string.strip() != "":
+            result.append(string.strip())
+
+    return result
+
+
 class GenomeNode:
     """
     Represents a node in the networkx graph, containing additional information like a unique integer identifier
@@ -210,7 +233,7 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     for genome, chromosomes in genomes.items():
         count: int = 0
         for chromosome in chromosomes:
-            count += len(chromosome.strip().split(" "))
+            count += len(split_at_whitespace(chromosome))
 
         # Each genome must have the same number of genes (as compared to the first genome in genomes)
         if genome == list(genomes.keys())[0]:
@@ -391,7 +414,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "DCJRearrangements"
+    algorithm = "SmallPhylogeny"
     get_algorithm(algorithm)
 
 
