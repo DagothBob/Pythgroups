@@ -1,8 +1,10 @@
-# Installation
+# Installation 
+
+Note that if you're a Linux user, the following installation steps may vary depending on your distribution, but the general principles should still apply
 
 ### Without a virtual environment
 
-The simplest way to use Pythgroups is to install the dependencies directly on your machine. This can lead to clutter, but if that's fine with you, then just run the following command:
+The simplest way to use Pythgroups is to install the dependencies directly on your machine. This may mess with other Python projects or lead to clutter, but if that's not a problem for you, then just run the following command:
 
     $ pip install -r Pythgroups/requirements.txt
 
@@ -10,7 +12,7 @@ All the dependencies will be installed directly on your machine, allowing you to
 
 ### With a virtual environment
 
-If you don’t want to install all the dependencies of this project directly on your base system, you can set up a virtual environment to install the dependencies in and run the program from. To get started, the following command makes sure that you have the virtual environment software installed on your machine:
+If you don’t want to install all the dependencies of this project directly on your base system, you can set up a virtual environment to install the dependencies in and run the program from. We recommend doing this instead to avoid conflicts with other projects on your machine. To get started, run the following command if you don't already have `virtualenv` installed on your machine:
 
     $ pip install virtualenv
 
@@ -24,6 +26,8 @@ Now we are ready to activate the virtual environment with the following command:
 
     $ source Pythgroups/venv/Scripts/activate     (Mac/Linux)
     > Pythgroups\venv\Scripts\activate.bat        (Windows) 
+
+If you're running Linux, `Scripts` may be named `bin` depending on your distribution.
 
 Note that now the virtual environment's name will show on the command line in brackets indicating that you are now running in the virtual environment. Now we can install Pythgroup's dependencies in the virtual environment with the following command:
 
