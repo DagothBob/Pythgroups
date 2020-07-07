@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from typing import Optional, List
 
 from ChoiceStructure import ChoiceStructure
@@ -100,6 +100,13 @@ def count_cycle_look_ahead(ancestor_choice_structure: Optional[ChoiceStructure])
     return 1
 
 
+def is_a_cycle(path1: PGMPath, path2: PGMPath) -> bool:
+    return path1.head == path2.tail and \
+           path1.tail == path2.head and \
+           path1.genome_head == path2.genome_tail and \
+           path1.genome_tail == path2.genome_head
+
+
 class SmallPhylogeny:
     """
     Attributes
@@ -123,15 +130,16 @@ class SmallPhylogeny:
         """
         self.tree: TreeStructure = tree_structure
         self.priorities: List[Priority] = list()
-        self.to_replace: int = int()
+        self.to_replace: int = 2
 
         priority_size: int = (self.tree.number_of_ancestors * (self.tree.gene_number + 500)) * 2
-        self.priorities.append(Priority(3, 0, 0, priority_size))
+        self.priorities.append(Priority(3, 0, 0, None, priority_size))
 
         for cn in range(2, 0, -1):
             for bcla in range(3, 0, -1):
                 for bw in range(4, -5, -1):
-                    self.priorities.append(Priority(cn, bcla, bw, priority_size))
+                    for bcla2 in range(3, 0, -1):
+                        self.priorities.append(Priority(cn, bcla, bw, bcla2, priority_size))
 
     def group_pathgroup_into_priorities(self):
         """
@@ -171,6 +179,7 @@ class SmallPhylogeny:
         tail_of3: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.tail
         ancestor_priority: int
         add_tail1: bool = False
+        add_tail2: bool = False
 
         if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path.genome_head == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path.genome_tail:
@@ -187,6 +196,7 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                     index_from, tail_of1, which_genome, which_genome)
             elif ancestor_priority == result and self.to_replace == 1:
+                result = ancestor_priority
                 self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                     index_from, tail_of1, which_genome, which_genome)
 
@@ -207,6 +217,7 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                         index_from, tail_of2, which_genome, which_genome)
                 elif ancestor_priority == result and self.to_replace == 1:
+                    result = ancestor_priority
                     self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                         index_from, tail_of2, which_genome, which_genome)
 
@@ -214,7 +225,7 @@ class SmallPhylogeny:
 
         if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_head == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_tail:
-            if (not add_tail1) or tail_of3 != tail_of1:
+            if ((not add_tail1) or tail_of3 != tail_of1) and ((not add_tail2) or tail_of3 != tail_of1):
                 ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of3)
 
                 if ancestor_priority < result:
@@ -222,6 +233,7 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                         index_from, tail_of3, which_genome, which_genome)
                 elif ancestor_priority == result and self.to_replace == 1:
+                    result = ancestor_priority
                     self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                         index_from, tail_of3, which_genome, which_genome)
 
@@ -266,8 +278,9 @@ class SmallPhylogeny:
         look_ahead_cycles: List[int] = self.count_all_look_ahead_cycles(created_choice_structure)
         max_cycle_look_ahead: int = look_ahead_cycles[0]
         how_many_more_cycles: int = look_ahead_cycles[1]
+        max_cycle_look_ahead2: int = look_ahead_cycles[2]
 
-        if len(created_fragment) != 0:
+        if len(created_fragment) != 0:  # recoverOriginalFragment()
             self.tree.medians[median_index].fragments[created_fragment[2].end1] = None
             self.tree.medians[median_index].fragments[created_fragment[2].end2] = None
             self.tree.medians[median_index].fragments[created_fragment[0].end1] = created_fragment[0]
@@ -282,10 +295,12 @@ class SmallPhylogeny:
         for cn in range(2, 0, -1):
             for bcla in range(3, 0, -1):
                 for bw in range(4, -5, -1):
-                    if cycle_now == cn and max_cycle_look_ahead == bcla and how_many_more_cycles == bw:
-                        return index
+                    for bcla2 in range(3, 0, -1):
+                        if cycle_now == cn and max_cycle_look_ahead == bcla and \
+                                how_many_more_cycles == bw and max_cycle_look_ahead2 == bcla2:
+                            return index
 
-                    index += 1
+                        index += 1
 
         return 200
 
@@ -366,8 +381,8 @@ class SmallPhylogeny:
         result: List[PGMFragment] = list()
 
         if node1 > 0 and node2 > 0:
-            result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node1]))
-            result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node2]))
+            result.append(copy(self.tree.medians[median_index].fragments[node1]))
+            result.append(copy(self.tree.medians[median_index].fragments[node2]))
 
             ancestor_line: PGMPath = PGMPath(node1, node2, 1, 1)
 
@@ -574,14 +589,11 @@ class SmallPhylogeny:
 
         temp: List[Optional[ChoiceStructure]] = [None for _ in range(12)]
 
-        if path_1_1.head != path_1_2.tail or path_1_1.tail != path_1_2.head or \
-                path_1_1.genome_head != path_1_2.genome_tail or path_1_1.genome_tail != path_1_2.genome_head:
+        if not is_a_cycle(path_1_1, path_1_2):
             temp = self.get_new_choice_structure_based_on_path(new_path1, temp, path_1_genome, median_index)
-        elif path_2_1.head != path_2_2.tail or path_2_1.tail != path_2_2.head or \
-                path_2_1.genome_head != path_2_2.genome_tail or path_2_1.genome_tail != path_2_2.genome_head:
+        elif not is_a_cycle(path_2_1, path_2_2):
             temp = self.get_new_choice_structure_based_on_path(new_path2, temp, path_2_genome, median_index)
-        elif path_3_1.head != path_3_2.tail or path_3_1.tail != path_3_2.head or \
-                path_3_1.genome_head != path_3_2.genome_tail or path_3_1.genome_tail != path_3_2.genome_head:
+        elif not is_a_cycle(path_3_1, path_3_2):
             temp = self.get_new_choice_structure_based_on_path(new_path3, temp, path_3_genome, median_index)
 
         new_choice_structure_number: int = 0
@@ -593,7 +605,7 @@ class SmallPhylogeny:
         result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
 
         if len(result) >= 0:
-            result[:len(result)] = deepcopy(temp)
+            result = deepcopy(temp)[:len(result)]
 
         return result
 
@@ -631,11 +643,11 @@ class SmallPhylogeny:
 
         for choice_structure in new_choice_structures:
             if choice_structure.index_from == tail and choice_structure.for_which_genome == current_genome:
-                new_choice_structure = ChoiceStructure.from_cs(choice_structure)
+                new_choice_structure = copy(choice_structure)
                 break
 
         if new_choice_structure is None:
-            new_choice_structure = ChoiceStructure.from_cs(
+            new_choice_structure = copy(
                 self.tree.medians[current_genome - self.tree.number_of_leaves].choice_structures[tail - 1])
 
         path_1_2: PGMPath = new_choice_structure.genome_1_path
@@ -708,11 +720,11 @@ class SmallPhylogeny:
         genome_from: int = new_path1.genome_head
         from_tail: int = new_path1.tail
         genome_tail: int = new_path1.genome_tail
-        index: int = 0
+        temp_index: int = 0
 
         for choice_structure in temp:
             if choice_structure is not None:
-                index += 1
+                temp_index += 1
 
         if index_from > 0:
             ancestor_median: int = -1
@@ -728,18 +740,19 @@ class SmallPhylogeny:
                     ancestor_median = for_which_genome
 
             if ancestor_median != -1:
-                temp_index: int = check_temp_list(temp, ancestor_median, index_from)
+                index_in_temp: int = check_temp_list(temp, ancestor_median, index_from)
 
-                if temp_index == -1 and \
-                        self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
-                            index_from - 1] is not None:
-                    temp[index] = ChoiceStructure.from_cs(
-                        self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
-                            index_from - 1])
-                    temp[index].set_new_path(new_path1)
-                    index += 1
-                elif temp_index == -1:
-                    temp[temp_index].set_new_path(new_path1)
+                if index_in_temp == -1:
+                    if check_temp_list(temp, ancestor_median, index_from) == -1 and \
+                            self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
+                                index_from - 1] is not None:
+                        temp[temp_index] = copy(self.tree.medians[
+                                                    ancestor_median - self.tree.number_of_leaves].
+                                                choice_structures[index_from - 1])
+                        temp[temp_index].set_new_path(new_path1)
+                        temp_index += 1
+                else:
+                    temp[index_in_temp].set_new_path(new_path1)
 
         if from_tail > 0:
             new_path2: PGMPath = PGMPath(from_tail, index_from, genome_tail, genome_from)
@@ -756,17 +769,18 @@ class SmallPhylogeny:
                     ancestor_median = for_which_genome
 
             if ancestor_median != -1:
-                temp_index: int = check_temp_list(temp, ancestor_median, from_tail)
+                index_in_temp: int = check_temp_list(temp, ancestor_median, from_tail)
 
-                if temp_index == -1 and \
+                if index_in_temp == -1 and \
                         self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
                             from_tail - 1] is not None:
-                    temp[index] = ChoiceStructure.from_cs(
-                        self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
-                            from_tail - 1])
-                    temp[index].set_new_path(new_path1)
-                elif temp_index == -1:
+                    temp[temp_index] = copy(self.tree.medians[
+                                                ancestor_median - self.tree.number_of_leaves].
+                                            choice_structures[from_tail - 1])
                     temp[temp_index].set_new_path(new_path2)
+                    temp_index += 1
+                elif index_in_temp == -1:
+                    temp[index_in_temp].set_new_path(new_path2)
 
         return temp
 

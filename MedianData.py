@@ -182,14 +182,14 @@ class MedianData:
         self.which_genome: int = which_genome
         self.node_strings: List[str] = node_strings
 
-        fragment_size = self.gene_num * 2 + 1
-        cs_size = math.ceil(self.gene_num * 2 + 1)
+        fragment_size: int = self.gene_num * 2 + 1
+        cs_size: int = int(self.gene_num * 2)
 
-        self.gray_edge: List[PGMPath] = list()
+        self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(paths1))]
         self.gray_edge_index: int = int()
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(0, fragment_size)]
         self.choice_structures: List[Optional[ChoiceStructure]] = [None for _ in range(0, cs_size)]
-        self.medians: List[str]
+        self.medians: Optional[List[str]] = None
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000

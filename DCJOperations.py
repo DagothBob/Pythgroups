@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from enum import IntEnum
 from typing import List, Optional
 
@@ -405,7 +405,8 @@ class DCJOperations:
             start_node: int = self.gene_node1[operation[OperationOptions.NODE3]][GeneNodeAttributes.CHROMOSOME_POSITION]
             end_node: int = self.gene_node1[operation[OperationOptions.NODE2]][GeneNodeAttributes.CHROMOSOME_POSITION]
             chromosome_here: int = operation[OperationOptions.CHROMOSOME1]
-            new_chromosome_here: List[int] = [int() for _ in range(len(self.chromosome_in_gene_node1[chromosome_here]))]
+            new_chromosome_here: Optional[List[int]] = \
+                [int() for _ in range(len(self.chromosome_in_gene_node1[chromosome_here]))]
 
             for i in range(start_node):
                 new_chromosome_here[i] = self.chromosome_in_gene_node1[chromosome_here][i]
@@ -419,7 +420,7 @@ class DCJOperations:
             for i in range(start_node, end_node + 1):
                 self.gene_node1[new_chromosome_here[i]][GeneNodeAttributes.CHROMOSOME_POSITION] = i
 
-            self.chromosome_in_gene_node1[chromosome_here] = new_chromosome_here
+            self.chromosome_in_gene_node1[chromosome_here] = copy(new_chromosome_here)
         elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.TRANSLOCATION:
             length1: int = len(self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]])
             length2: int = len(self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]])
@@ -429,8 +430,8 @@ class DCJOperations:
                 lengtha = self.gene_node1[operation[OperationOptions.NODE1]][GeneNodeAttributes.CHROMOSOME_POSITION] + 1
 
             lengthb: int = length1 - lengtha
-            new_chromosome1: List[int] = list()
-            new_chromosome2: List[int] = list()
+            new_chromosome1: Optional[List[int]] = list()
+            new_chromosome2: Optional[List[int]] = list()
 
             if operation[OperationOptions.OPERATION_SUBTYPE] == TranslocationSubtypes.ADCB:
                 lengthc: int = 0
@@ -493,16 +494,16 @@ class DCJOperations:
                     OperationOptions.CHROMOSOME2]
                 self.gene_node1[new_chromosome2[i]][GeneNodeAttributes.CHROMOSOME_POSITION] = i
 
-            self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]] = new_chromosome1
-            self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]] = new_chromosome2
+            self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]] = copy(new_chromosome1)
+            self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME2]] = copy(new_chromosome2)
         elif operation[OperationOptions.TYPE_OF_OPERATION] == OperationTypes.FISSION:
             chromosome: int = operation[OperationOptions.CHROMOSOME1]
             length: int = len(self.chromosome_in_gene_node1[chromosome])
             length1: int = self.gene_node1[operation[OperationOptions.NODE1]][
                                GeneNodeAttributes.CHROMOSOME_POSITION] + 1
             length2: int = length - length1
-            new_chromosome1: List[int] = [int() for _ in range(length1)]
-            new_chromosome2: List[int] = [int() for _ in range(length2)]
+            new_chromosome1: Optional[List[int]] = [int() for _ in range(length1)]
+            new_chromosome2: Optional[List[int]] = [int() for _ in range(length2)]
 
             for i in range(length1):
                 new_chromosome1[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][i]
@@ -510,14 +511,14 @@ class DCJOperations:
             for i in range(length2):
                 new_chromosome2[i] = self.chromosome_in_gene_node1[operation[OperationOptions.CHROMOSOME1]][length1 + i]
 
-            chromosome_in_gene_node1_temp: List[List[int]] = \
+            chromosome_in_gene_node1_temp: Optional[List[Optional[List[int]]]] = \
                 [list() for _ in range(len(self.chromosome_in_gene_node1) + 1)]
 
             for i in range(len(self.chromosome_in_gene_node1)):
                 chromosome_in_gene_node1_temp[i] = self.chromosome_in_gene_node1[i]
 
-            chromosome_in_gene_node1_temp[operation[OperationOptions.CHROMOSOME1]] = new_chromosome1
-            chromosome_in_gene_node1_temp[len(self.chromosome_in_gene_node1)] = new_chromosome2
+            chromosome_in_gene_node1_temp[operation[OperationOptions.CHROMOSOME1]] = copy(new_chromosome1)
+            chromosome_in_gene_node1_temp[len(self.chromosome_in_gene_node1)] = copy(new_chromosome2)
 
             self.chromosome_in_gene_node1 = [list() for _ in range(len(chromosome_in_gene_node1_temp))]
 
@@ -529,7 +530,7 @@ class DCJOperations:
             length1: int = len(self.chromosome_in_gene_node1[chromosome1])
             length2: int = len(self.chromosome_in_gene_node1[chromosome2])
             length: int = length1 + length2
-            new_chromosome: List[int] = [int() for _ in range(length)]
+            new_chromosome: Optional[List[int]] = [int() for _ in range(length)]
 
             if operation[OperationOptions.OPERATION_SUBTYPE] == 1:
                 for i in range(length2):
@@ -558,8 +559,8 @@ class DCJOperations:
             if chromosome1 > chromosome2:
                 chromosome_big = chromosome1
 
-            self.chromosome_in_gene_node1[chromosome_small] = new_chromosome
-            self.chromosome_in_gene_node1[chromosome_big] = [0]
+            self.chromosome_in_gene_node1[chromosome_small] = copy(new_chromosome)
+            self.chromosome_in_gene_node1[chromosome_big] = None
 
             for i in range(len(new_chromosome)):
                 self.gene_node1[new_chromosome[i]][GeneNodeAttributes.CHROMOSOME_POSITION] = i
@@ -569,8 +570,9 @@ class DCJOperations:
                         self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] >= chromosome2:
                     self.gene_node1[i][1] = self.gene_node1[i][GeneNodeAttributes.CHROMOSOMES_INDEX] - 1
 
-            chromosome_in_gene_node1_temp: List[List[int]] = [
+            chromosome_in_gene_node1_temp: Optional[List[Optional[List[int]]]] = [
                 [int()] for _ in range((len(self.chromosome_in_gene_node1) - 1))]
+
             index: int = 0
 
             for ints in self.chromosome_in_gene_node1:
@@ -579,7 +581,7 @@ class DCJOperations:
                     index += 1
 
             self.chromosome_in_gene_node1 = [[int()] for _ in range(len(chromosome_in_gene_node1_temp))]
-            self.chromosome_in_gene_node1 = chromosome_in_gene_node1_temp
+            self.chromosome_in_gene_node1 = copy(chromosome_in_gene_node1_temp)
 
         if operation[OperationOptions.NODE1] != -1:
             self.gene_node1[operation[OperationOptions.NODE1]][GeneNodeAttributes.ADJACENCY] = operation[
@@ -1018,8 +1020,8 @@ class DCJOperations:
                             sub_type = 1
 
                         result[OperationOptions.CHROMOSOME1] = chromosome
-                        result[OperationOptions.CHROMOSOME2] = self.gene_node1[node3][
-                            GeneNodeAttributes.CHROMOSOMES_INDEX]
+                        result[OperationOptions.CHROMOSOME2] = \
+                            self.gene_node1[node3][GeneNodeAttributes.CHROMOSOMES_INDEX]
                         result[OperationOptions.NODE1] = node1
                         result[OperationOptions.NODE2] = node3
                         result[OperationOptions.NODE3] = node2
@@ -1044,8 +1046,8 @@ class DCJOperations:
                             sub_type = 2
 
                         result[OperationOptions.CHROMOSOME1] = chromosome
-                        result[OperationOptions.CHROMOSOME2] = self.gene_node1[node4][
-                            GeneNodeAttributes.CHROMOSOMES_INDEX]
+                        result[OperationOptions.CHROMOSOME2] = \
+                            self.gene_node1[node4][GeneNodeAttributes.CHROMOSOMES_INDEX]
                         result[OperationOptions.NODE1] = node1
                         result[OperationOptions.NODE2] = node6
                         result[OperationOptions.NODE3] = node2
