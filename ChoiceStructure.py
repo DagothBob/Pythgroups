@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import copy
 from typing import Optional
 
 from PGMPath import PGMPath
@@ -48,8 +49,7 @@ class ChoiceStructure:
         self.genome_3_path: Optional[PGMPath] = None
         self.gray_edge: Optional[PGMPath] = None
 
-    @classmethod
-    def from_cs(cls, cs: ChoiceStructure):
+    def from_cs(self, cs: ChoiceStructure):
         """
         Constructs a new ChoiceStructure from an existing given one
 
@@ -58,14 +58,14 @@ class ChoiceStructure:
         cs
             ChoiceStructure to copy from
         """
-        cls.index_from = cs.index_from
-        cls.for_which_genome = cs.for_which_genome
-        cls.priority = cs.priority
-        cls.position = cs.position
-        cls.genome_1_path = cs.genome_1_path
-        cls.genome_2_path = cs.genome_2_path
-        cls.genome_3_path = cs.genome_3_path
-        cls.gray_edge = cs.gray_edge
+        self.index_from = cs.index_from
+        self.for_which_genome = cs.for_which_genome
+        self.priority = cs.priority
+        self.position = cs.position
+        self.genome_1_path = copy(cs.genome_1_path)
+        self.genome_2_path = copy(cs.genome_2_path)
+        self.genome_3_path = copy(cs.genome_3_path)
+        self.gray_edge = copy(cs.gray_edge)
 
     def set_new_path(self, path: PGMPath):
         """
@@ -79,10 +79,10 @@ class ChoiceStructure:
         genome_here: int = path.genome_head
 
         if genome_here == self.genome_1_path.genome_head:
-            self.genome_1_path = path
+            self.genome_1_path = copy(path)
 
         if genome_here == self.genome_2_path.genome_head:
-            self.genome_2_path = path
+            self.genome_2_path = copy(path)
 
         if genome_here == self.genome_3_path.genome_head:
-            self.genome_3_path = path
+            self.genome_3_path = copy(path)

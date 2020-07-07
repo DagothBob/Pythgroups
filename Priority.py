@@ -45,9 +45,21 @@ class Priority:
 
     """
 
-    def __init__(self, cycle_now: int, best_cycle_look_ahead: int, better_or_worse: int, size: int):
+    def __init__(self,
+                 cycle_now: int,
+                 best_cycle_look_ahead: int,
+                 better_or_worse: int,
+                 best_cycle_look_ahead2: int,
+                 size: int):
+        self.bcla: int
+
         self.cn: int = cycle_now
-        self.bcla: int = best_cycle_look_ahead
+
+        if best_cycle_look_ahead2 is not None:
+            self.bcla = best_cycle_look_ahead2
+        else:
+            self.bcla = best_cycle_look_ahead
+
         self.bw: int = better_or_worse
         self.cs_indexes: List[int] = [int() for _ in range(0, size)]
         self.median_indexes: List[int] = [int() for _ in range(0, size)]
