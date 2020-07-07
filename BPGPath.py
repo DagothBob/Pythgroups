@@ -44,6 +44,28 @@ class BPGPath:
         self.genome_head: int = ancestor_head
         self.genome_tail: int = ancestor_tail
 
+    @classmethod
+    def from_path(cls, path: BPGPath) -> BPGPath:
+        """
+        Constructs BPGPath from existing one
+
+        Parameters
+        ----------
+        path
+            To construct from
+
+        Returns
+        -------
+        BPGPath
+            New path
+        """
+        head: int = path.head
+        tail: int = path.tail
+        genome_head: int = path.genome_head
+        genome_tail: int = path.genome_tail
+
+        return cls(head, tail, genome_head, genome_tail)
+
     def __str__(self) -> str:
         """
         String override

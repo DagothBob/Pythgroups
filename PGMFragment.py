@@ -37,6 +37,21 @@ class PGMFragment:
         self.end1: int = end1
         self.end2: int = end2
 
+    @classmethod
+    def from_fragment(cls, fragment: PGMFragment) -> PGMFragment:
+        """
+        Construct new PGMFragment from existing one
+
+        Parameters
+        ----------
+        fragment
+            To construct from
+        """
+        end1 = fragment.end1
+        end2 = fragment.end2
+
+        return cls(end1, end2)
+
     def __str__(self) -> str:
         """
         String override

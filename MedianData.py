@@ -185,7 +185,7 @@ class MedianData:
         fragment_size: int = self.gene_num * 2 + 1
         cs_size: int = int(self.gene_num * 2)
 
-        self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(paths1))]
+        self.gray_edge: List[PGMPath] = list()
         self.gray_edge_index: int = int()
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(0, fragment_size)]
         self.choice_structures: List[Optional[ChoiceStructure]] = [None for _ in range(0, cs_size)]

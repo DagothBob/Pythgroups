@@ -1,4 +1,3 @@
-from copy import copy
 from typing import List
 
 
@@ -28,4 +27,4 @@ class GenomeInString:
         chromosomes
             Chromosomes to construct from
         """
-        self.chromosomes: List[str] = copy(chromosomes)
+        self.chromosomes: List[str] = chromosomes

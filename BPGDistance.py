@@ -1,4 +1,4 @@
-from copy import deepcopy, copy
+from copy import deepcopy
 from sys import exit
 from typing import Optional, List
 
@@ -101,7 +101,7 @@ def get_valid_path(start_from: int, paths: List[BPGPath]) -> Optional[BPGPath]:
     """
     for i in range(start_from, len(paths)):
         if paths[i] is not None:
-            return copy(paths[i])
+            return BPGPath.from_path(paths[i])
 
     return None
 

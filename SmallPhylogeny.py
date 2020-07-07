@@ -1,4 +1,4 @@
-from copy import deepcopy, copy
+from copy import deepcopy
 from typing import Optional, List
 
 from ChoiceStructure import ChoiceStructure
@@ -381,8 +381,8 @@ class SmallPhylogeny:
         result: List[PGMFragment] = list()
 
         if node1 > 0 and node2 > 0:
-            result.append(copy(self.tree.medians[median_index].fragments[node1]))
-            result.append(copy(self.tree.medians[median_index].fragments[node2]))
+            result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node1]))
+            result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node2]))
 
             ancestor_line: PGMPath = PGMPath(node1, node2, 1, 1)
 
@@ -643,11 +643,13 @@ class SmallPhylogeny:
 
         for choice_structure in new_choice_structures:
             if choice_structure.index_from == tail and choice_structure.for_which_genome == current_genome:
-                new_choice_structure = copy(choice_structure)
+                new_choice_structure = ChoiceStructure()
+                new_choice_structure.from_cs(choice_structure)
                 break
 
         if new_choice_structure is None:
-            new_choice_structure = copy(
+            new_choice_structure = ChoiceStructure()
+            new_choice_structure.from_cs(
                 self.tree.medians[current_genome - self.tree.number_of_leaves].choice_structures[tail - 1])
 
         path_1_2: PGMPath = new_choice_structure.genome_1_path
@@ -746,9 +748,9 @@ class SmallPhylogeny:
                     if check_temp_list(temp, ancestor_median, index_from) == -1 and \
                             self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
                                 index_from - 1] is not None:
-                        temp[temp_index] = copy(self.tree.medians[
-                                                    ancestor_median - self.tree.number_of_leaves].
-                                                choice_structures[index_from - 1])
+                        temp[temp_index] = ChoiceStructure()
+                        temp[temp_index].from_cs(self.tree.medians[ancestor_median - self.tree.number_of_leaves].
+                                                 choice_structures[index_from - 1])
                         temp[temp_index].set_new_path(new_path1)
                         temp_index += 1
                 else:
@@ -774,9 +776,10 @@ class SmallPhylogeny:
                 if index_in_temp == -1 and \
                         self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
                             from_tail - 1] is not None:
-                    temp[temp_index] = copy(self.tree.medians[
-                                                ancestor_median - self.tree.number_of_leaves].
-                                            choice_structures[from_tail - 1])
+                    temp[temp_index] = ChoiceStructure()
+                    temp[temp_index].from_cs(
+                        self.tree.medians[ancestor_median - self.tree.number_of_leaves].choice_structures[
+                            from_tail - 1])
                     temp[temp_index].set_new_path(new_path2)
                     temp_index += 1
                 elif index_in_temp == -1:

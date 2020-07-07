@@ -49,6 +49,24 @@ class ChoiceStructure:
         self.genome_3_path: Optional[PGMPath] = None
         self.gray_edge: Optional[PGMPath] = None
 
+    def from_cs(self, cs: ChoiceStructure):
+        """
+        Constructs a new ChoiceStructure from an existing given one
+
+        Parameters
+        ----------
+        cs
+            ChoiceStructure to copy from
+        """
+        self.index_from = cs.index_from
+        self.for_which_genome = cs.for_which_genome
+        self.priority = cs.priority
+        self.position = cs.position
+        self.genome_1_path = copy(cs.genome_1_path)
+        self.genome_2_path = copy(cs.genome_2_path)
+        self.genome_3_path = copy(cs.genome_3_path)
+        self.gray_edge = copy(cs.gray_edge)
+
     def set_new_path(self, path: PGMPath):
         """
         Sets instance paths to the given PGMPath if its genome matches
