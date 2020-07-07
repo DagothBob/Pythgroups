@@ -1,4 +1,3 @@
-from copy import copy
 from io import StringIO
 from typing import List, Dict, Optional
 
@@ -50,7 +49,7 @@ def split_at_whitespace(strings: str) -> List[str]:
     [str]
         Set of cleaned-up strings
     """
-    result: List[str] = list()
+    result: List[str] = []
 
     for string in strings.strip().split(" "):
         if string.strip() != "":
@@ -86,7 +85,7 @@ class GenomeNode:
             Integer identifier for this genome
         """
         self.name: str = name
-        self.neighbors: List[int] = copy(neighbors)
+        self.neighbors: List[int] = neighbors
         self.genome_id: int = genome_id
 
 
@@ -119,7 +118,7 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
 
         # Add chromosomes to the current genome until an empty line, another header, or the end of file is found
         else:
-            chromosomes: List[str] = list()
+            chromosomes: List[str] = []
             while len(line) != 0 and not line.startswith(">") and line != "\n":
                 chromosome: str = line.replace("$", "").replace("\n", "")
                 chromosomes.append(chromosome)
@@ -163,7 +162,7 @@ def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
     Dict[Clade, List[Clade]]
         Key: median to reconstruct, value: list of 3 neighboring clades
     """
-    medians: List[GenomeNode] = list()
+    medians: List[GenomeNode] = []
     for node in graph_nodes:
         if (len(node.neighbors)) == 3:
             medians.append(GenomeNode(node.name, node.neighbors, node.genome_id))
@@ -204,10 +203,10 @@ def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
             for clade in nt.clades:
                 graph.add_edge(nt.name, clade.name)
 
-    graph_nodes = list()
+    graph_nodes = []
     for node in graph:
         genome_id = graph_indexes[node]
-        neighbor_ids = list()
+        neighbor_ids = []
         for neighbor in graph.neighbors(node):
             neighbor_ids.append(graph_indexes[neighbor])
         graph_nodes.append(GenomeNode(node, neighbor_ids, genome_id))
@@ -261,9 +260,9 @@ def small_phylogeny():
     num_ancestor = len(tree.get_nonterminals())
     num_leaves = len(tree.get_terminals())
     num_genes = count_genes(genomes)
-    all_genomes: List[GenomeInString] = list()
+    all_genomes: List[GenomeInString] = []
     for chromosomes in genomes.values():
-        all_genomes.append(GenomeInString(chromosomes))
+        all_genomes.insert(0, GenomeInString(chromosomes))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
@@ -281,7 +280,7 @@ def small_phylogeny():
         for j in range(0, len(ts.medians[i].medians)):
             print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
 
-    reconstructed_paths: List[PGMPathForAGenome] = list()
+    reconstructed_paths: List[PGMPathForAGenome] = []
 
     # Leaf paths added first
     if ts.number_of_leaves >= 0:

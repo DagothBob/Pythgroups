@@ -185,7 +185,7 @@ class BPGDistance:
             genes: List[str] = split_at_whitespace(chromosome)
 
             for gene in genes:
-                first_character: str = gene[0]  # Sign indicating gene is head-tail or tail-head
+                first_character: str = deepcopy(gene[0])  # Sign indicating gene is head-tail or tail-head
                 node1: str
                 node2: str
 
@@ -342,7 +342,7 @@ class BPGDistance:
 
                     break
 
-                l_path: BPGPath = deepcopy(self.genome_paths2[node_big])
+                l_path: BPGPath = self.genome_paths2[node_big]
                 l_node1: int = l_path.head
                 l_node2: int = l_path.tail
 
@@ -352,7 +352,7 @@ class BPGDistance:
                     self.genome_paths2[l_node1] = None
                     self.genome_paths2[l_node2] = None
                 elif l_node2 > 0 and l_node2 != node_small:
-                    a_path2: BPGPath = deepcopy(self.genome_paths1[l_node2])
+                    a_path2: BPGPath = self.genome_paths1[l_node2]
                     another_node: int = a_path2.tail
 
                     ancestor_path1 = BPGPath(another_node, node_small, 1, 1)

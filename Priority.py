@@ -5,7 +5,7 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 
 Author: Oskar Jensen
 """
-from typing import List, Optional
+from typing import List
 
 
 class Priority:
@@ -45,21 +45,9 @@ class Priority:
 
     """
 
-    def __init__(self,
-                 cycle_now: int,
-                 best_cycle_look_ahead: int,
-                 better_or_worse: int,
-                 best_cycle_look_ahead2: Optional[int],
-                 size: int):
+    def __init__(self, cycle_now: int, best_cycle_look_ahead: int, better_or_worse: int, size: int):
         self.cn: int = cycle_now
-
-        self.bcla: int
-
-        if best_cycle_look_ahead2 is not None:
-            self.bcla = best_cycle_look_ahead2
-        else:
-            self.bcla = best_cycle_look_ahead
-
+        self.bcla: int = best_cycle_look_ahead
         self.bw: int = better_or_worse
         self.cs_indexes: List[int] = [int() for _ in range(0, size)]
         self.median_indexes: List[int] = [int() for _ in range(0, size)]
