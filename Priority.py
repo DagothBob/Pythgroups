@@ -55,7 +55,7 @@ class Priority:
 
         self.cn: int = cycle_now
 
-        if best_cycle_look_ahead2 is None:
+        if best_cycle_look_ahead2 is not None:
             self.bcla = best_cycle_look_ahead2
         else:
             self.bcla = best_cycle_look_ahead
