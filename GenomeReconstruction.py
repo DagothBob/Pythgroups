@@ -1,5 +1,6 @@
 import sys
 import yaml
+import GenomeParsing
 
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
@@ -318,8 +319,11 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
+    genome_data = GenomeParsing.parse_gene_file(CONFIG_DIR)
 
-    print("This is genome aliquoting")
+    pgm_data = GenomeParsing.parse_pgm_genome_data(genome_data)
+    print("{}: {}".format(min(pgm_data), pgm_data[min(pgm_data)]))
+    print("{}: {}".format(max(pgm_data), pgm_data[max(pgm_data)]))
 
 
 def dcj_rearrangements():
@@ -393,7 +397,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "DCJRearrangements"
+    algorithm = "GenomeAliquoting"
     get_algorithm(algorithm)
 
 
