@@ -1,6 +1,6 @@
 import sys
 import yaml
-import GenomeParsing
+import InputPreprocessing
 
 from BPGDistance import BPGDistance
 from DCJOperations import DCJOperations, OperationTypes
@@ -319,11 +319,13 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
-    genome_data = GenomeParsing.parse_gene_file(CONFIG_DIR)
+    gene_data = InputPreprocessing.parse_gene_file(CONFIG_DIR)
 
-    pgm_data = GenomeParsing.parse_pgm_genome_data(genome_data)
-    print("{}: {}".format(min(pgm_data), pgm_data[min(pgm_data)]))
-    print("{}: {}".format(max(pgm_data), pgm_data[max(pgm_data)]))
+    genome_data = InputPreprocessing.group_genomes(gene_data)
+
+    pathgroups_data = InputPreprocessing.to_pathgroups_format(genome_data)
+
+    print(pathgroups_data)
 
 
 def dcj_rearrangements():
