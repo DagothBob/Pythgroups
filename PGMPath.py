@@ -46,7 +46,7 @@ class PGMPath:
         self.genome_tail: int = gtail
 
     @staticmethod
-    def connect(path1: PGMPath, path2: PGMPath, pathl: PGMPath, which_genome: int) -> Optional[PGMPath]:
+    def connect(path1: PGMPath, path2: PGMPath, path_l: PGMPath, which_genome: int) -> Optional[PGMPath]:
         """
         Connect two PGMPaths
 
@@ -56,7 +56,7 @@ class PGMPath:
             First path to connect
         path2
             Second path to connect
-        pathl
+        path_l
             Path used for connecting two paths
         which_genome
             Which genome this path belongs to
@@ -66,46 +66,145 @@ class PGMPath:
         Optional[PGMPath]
             New PGMPath from the given paths or None if they are unable to be connected
         """
-        h: int = 0
-        t: int = 0
-        gh: int = 0
-        gt: int = 0
+        head: int
+        tail: int
+        genome_head: int
+        genome_tail: int
 
-        # Step 1: Assigning the new head to path 1
-        if path1.head == pathl.head or path1.head == pathl.tail:
-            h = path1.tail
-            gh = path1.genome_tail
+        if path1.head == path_l.head and path1.genome_head == path_l.genome_head and \
+                path2.head == path_l.tail and path2.genome_head == path_l.genome_tail:
+            head = path1.tail
+            genome_head = path1.genome_tail
+            tail = path2.tail
+            genome_tail = path2.genome_tail
 
-            if h == 0 and gh == -1:
-                h = path1.head
-                gh = which_genome
+            if head == 0 and genome_head == -1:
+                head = path1.head
+                genome_head = which_genome
 
-        elif path1.tail == pathl.tail or path1.tail == pathl.head:
-            h = path1.head
-            gh = path1.genome_head
+            if tail == 0 and genome_tail == -1:
+                tail = path2.head
+                genome_tail = which_genome
 
-            if h == 0 and gh == -1:
-                h = path1.tail
-                gh = which_genome
+            return PGMPath(head, tail, genome_head, genome_tail)
 
-        # Step 2: Assigning the new tail to path 2
-        if path2.head == pathl.head or path2.head == pathl.tail:
-            t = path2.tail
-            gt = path2.genome_tail
+        if path1.head == path_l.tail and path1.genome_head == path_l.genome_tail and \
+                path2.head == path_l.head and path2.genome_head == path_l.genome_head:
+            head = path1.tail
+            genome_head = path1.genome_tail
+            tail = path2.tail
+            genome_tail = path2.genome_tail
 
-            if t == 0 and gt == -1:
-                t = path2.head
-                gt = which_genome
+            if head == 0 and genome_head == -1:
+                head = path1.head
+                genome_head = which_genome
 
-        elif path2.tail == pathl.tail or path2.tail == pathl.head:
-            t = path2.head
-            gt = path2.genome_head
+            if tail == 0 and genome_tail == -1:
+                tail = path2.head
+                genome_tail = which_genome
 
-            if t == 0 and gt == -1:
-                t = path2.tail
-                gt = which_genome
+            return PGMPath(head, tail, genome_head, genome_tail)
 
-        if h == 0 and t == 0 and gh == 0 and gt == 0:
-            return None
-        else:
-            return PGMPath(h, t, gt, gh)
+        if path1.head == path_l.tail and path1.genome_head == path_l.genome_tail and \
+                path2.tail == path_l.head and path2.genome_tail == path_l.genome_head:
+            head = path1.tail
+            genome_head = path1.genome_tail
+            tail = path2.head
+            genome_tail = path2.genome_head
+
+            if head == 0 and genome_head == -1:
+                head = path1.head
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.tail
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        if path1.head == path_l.head and path1.genome_head == path_l.genome_head and \
+                path2.tail == path_l.tail and path2.genome_tail == path_l.genome_tail:
+            head = path1.tail
+            genome_head = path1.genome_tail
+            tail = path2.head
+            genome_tail = path2.genome_head
+
+            if head == 0 and genome_head == -1:
+                head = path1.head
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.tail
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        if path1.tail == path_l.head and path1.genome_tail == path_l.genome_head and \
+                path2.head == path_l.tail and path2.genome_head == path_l.genome_tail:
+            head = path1.head
+            genome_head = path1.genome_head
+            tail = path2.tail
+            genome_tail = path2.genome_tail
+
+            if head == 0 and genome_head == -1:
+                head = path1.tail
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.head
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        if path1.tail == path_l.tail and path1.genome_tail == path_l.genome_tail and \
+                path2.head == path_l.head and path2.genome_head == path_l.genome_head:
+            head = path1.head
+            genome_head = path1.genome_head
+            tail = path2.tail
+            genome_tail = path2.genome_tail
+
+            if head == 0 and genome_head == -1:
+                head = path1.tail
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.head
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        if path1.tail == path_l.head and path1.genome_tail == path_l.genome_head and \
+                path2.tail == path_l.tail and path2.genome_tail == path_l.genome_tail:
+            head = path1.head
+            genome_head = path1.genome_head
+            tail = path2.head
+            genome_tail = path2.genome_head
+
+            if head == 0 and genome_head == -1:
+                head = path1.tail
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.tail
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        if path1.tail == path_l.tail and path1.genome_tail == path_l.genome_tail and \
+                path2.tail == path_l.head and path2.genome_tail == path_l.genome_head:
+            head = path1.head
+            genome_head = path1.genome_head
+            tail = path2.head
+            genome_tail = path2.genome_head
+
+            if head == 0 and genome_head == -1:
+                head = path1.tail
+                genome_head = which_genome
+
+            if tail == 0 and genome_tail == -1:
+                tail = path2.tail
+                genome_tail = which_genome
+
+            return PGMPath(head, tail, genome_head, genome_tail)
+
+        return None

@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from typing import Optional, List
 
 from GenomeInString import GenomeInString
@@ -107,14 +107,14 @@ class TreeStructure:
         self.gene_number: int = gene_number
         self.leaves: List[List[int]] = [[-1, -1, -1] for _ in range((self.number_of_ancestors + self.number_of_leaves))]
         self.medians: List[Optional[MedianData]] = [None for _ in range(self.number_of_ancestors)]
-        self.node_int: List[int] = [int() for _ in range((self.gene_number * 2))]
-        self.node_string: List[str] = [str() for _ in range((self.gene_number * 2))]
+        self.node_int: List[int] = [int() for _ in range(self.gene_number * 2)]
+        self.node_string: List[str] = [str() for _ in range(self.gene_number * 2)]
 
         if ancestor_genome_string is None:
-            self.node_int[:] = deepcopy(node_ints)[:]
-            self.node_string[:] = deepcopy(node_strings)[:]
+            self.node_int = deepcopy(node_ints)
+            self.node_string = deepcopy(node_strings)
 
-            self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths))]
+            self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths) + 1)]
 
             for i in range(len(paths)):
                 self.all_paths[i] = PGMPathForAGenome(paths[i].paths)
@@ -129,7 +129,7 @@ class TreeStructure:
                 genes: List[str] = split_at_whitespace(chromosome)
 
                 for gene in genes:
-                    first_character: str = gene[0:1]
+                    first_character: str = copy(gene[0])
                     node1: str
                     node2: str
 
@@ -270,7 +270,8 @@ class TreeStructure:
                     path1[node1_int] = PGMPath(node1_int, pre_node, which_genome, which_genome)
                     path1[pre_node] = PGMPath(pre_node, node1_int, which_genome, which_genome)
                     pre_node = node2_int
-                elif j == len(genes) - 1:
+
+                if j == len(genes) - 1:
                     if len(genes) != 1:
                         path1[pre_node] = PGMPath(pre_node, node1_int, which_genome, which_genome)
                         path1[node1_int] = PGMPath(node1_int, pre_node, which_genome, which_genome)

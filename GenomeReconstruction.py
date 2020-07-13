@@ -262,7 +262,7 @@ def small_phylogeny():
     num_genes = count_genes(genomes)
     all_genomes: List[GenomeInString] = []
     for chromosomes in genomes.values():
-        all_genomes.insert(0, GenomeInString(chromosomes))
+        all_genomes.append(GenomeInString(chromosomes))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
