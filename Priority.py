@@ -5,7 +5,7 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 
 Author: Oskar Jensen
 """
-from typing import List
+from typing import List, Optional
 
 
 class Priority:
@@ -49,7 +49,7 @@ class Priority:
                  cycle_now: int,
                  best_cycle_look_ahead: int,
                  better_or_worse: int,
-                 best_cycle_look_ahead2: int,
+                 best_cycle_look_ahead2: Optional[int],
                  size: int):
         self.bcla: int
 
