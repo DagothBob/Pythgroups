@@ -7,7 +7,8 @@ from Bio.Phylo.Newick import Tree, Clade
 from networkx import Graph
 
 from BPGDistance import BPGDistance
-from DCJOperations import DCJOperations, OperationTypes
+from DCJOperation import OperationTypes
+from DCJRearrangement import DCJRearrangement
 from GenomeInString import GenomeInString
 from MedianIteration import MedianIteration
 from PGMPath import PGMPath
@@ -366,7 +367,7 @@ def dcj_rearrangements():
                                   OperationTypes.TRANSLOCATION,
                                   OperationTypes.FISSION,
                                   OperationTypes.FUSION]
-    dcj: DCJOperations = DCJOperations(genome1, genome2)
+    dcj: DCJRearrangement = DCJRearrangement(genome1, genome2)
     dcj.initial_value()
     more: bool = True
     while cur_dist > 0 and more:
@@ -384,7 +385,7 @@ def dcj_rearrangements():
             bpg_dist.calculate_distance()
             cur_dist = bpg_dist.distance
             print("a run, steps: " + str(len(rearrange_state)) + ", cur_dist: " + str(cur_dist))
-            dcj = DCJOperations(new_genome.chromosomes, genome2)
+            dcj = DCJRearrangement(new_genome.chromosomes, genome2)
             dcj.initial_value()
 
 
@@ -414,7 +415,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "SmallPhylogeny"
+    algorithm = "DCJRearrangements"
     get_algorithm(algorithm)
 
 

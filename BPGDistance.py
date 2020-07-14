@@ -110,69 +110,69 @@ class BPGDistance:
     """
     Attributes
     ----------
-    genome1 : [str]
+    genome_1 : [str]
         First genome for distance calculation
-    genome2 : [str]
+    genome_2 : [str]
         Genome to compare to the first
     node_ints : [int]
         Integer values of genes
-    node_strs1 : [Optional[str]]
+    node_strings_1 : [Optional[str]]
         String representation for genes in genome 1
-    node_strs2 : [Optional[str]]
+    node_strings_2 : [Optional[str]]
         String representation for genes in genome 2
-    genome_paths1 : [BPGPath]
+    genome_paths_1 : [BPGPath]
         Paths for combining into cycles in genome 1
-    genome_paths2 : [BPGPath]
+    genome_paths_2 : [BPGPath]
         Paths for combining into cycles in genome 2
     distance : int
         Integer distance between genome 1 and genome 2
     """
 
-    def __init__(self, genome1: List[str], genome2: List[str]):
+    def __init__(self, genome_1: List[str], genome_2: List[str]):
         """
         Constructor
 
         Parameters
         ----------
-        genome1
+        genome_1
             First genome for distance calculation
-        genome2
+        genome_2
             Genome to test distance from the first one
         """
         index1: int = 0
         index2: int = 0
-        num_genes1: int = 0
-        num_genes2: int = 0
-        self.genome1: List[str] = [str() for _ in range(len(genome1))]  # Genome 1 as String
-        self.genome2: List[str] = [str() for _ in range(len(genome2))]  # Genome 2 as String
+        gene_count_1: int = 0
+        gene_count_2: int = 0
+        self.genome_1: List[str] = [str() for _ in range(len(genome_1))]  # Genome 1 as String
+        self.genome_2: List[str] = [str() for _ in range(len(genome_2))]  # Genome 2 as String
 
-        for chromosome in genome1:
+        for chromosome in genome_1:
             genes: List[str] = split_at_whitespace(chromosome)
 
             if len(genes) != 0:
-                num_genes1 += len(genes)
-                self.genome1[index1] = chromosome
+                gene_count_1 += len(genes)
+                self.genome_1[index1] = chromosome
                 index1 += 1
 
-        for chromosome in genome2:
+        for chromosome in genome_2:
             genes: List[str] = split_at_whitespace(chromosome)
 
             if len(genes) != 0:
-                num_genes2 += len(genes)
-                self.genome2[index2] = chromosome
+                gene_count_2 += len(genes)
+                self.genome_2[index2] = chromosome
                 index2 += 1
 
-        if num_genes1 == num_genes2:  # Algorithm requires genomes are equal length
-            self.gene_number: int = num_genes1  # Number of genes
+        if gene_count_1 == gene_count_2:  # Algorithm requires genomes are equal length
+            self.gene_count: int = gene_count_1  # Number of genes
         else:
             print("Different numbers of genes in both genomes. Exiting.\n")
             exit(1)
 
-        self.node_ints: List[int] = [int() for _ in range((self.gene_number * 2))]
-        self.node_strs1: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
-        self.node_strs2: List[Optional[str]] = [None for _ in range((self.gene_number * 2))]
-        self.genome_paths1: Optional[List[Optional[BPGPath]]] = None
-        self.genome_paths2: Optional[List[Optional[BPGPath]]] = None
+        self.node_ints: List[int] = [int() for _ in range((self.gene_count * 2))]
+        self.node_strings_1: List[Optional[str]] = [None for _ in range((self.gene_count * 2))]
+        self.node_strings_2: List[Optional[str]] = [None for _ in range((self.gene_count * 2))]
+        self.genome_paths_1: Optional[List[Optional[BPGPath]]] = None
+        self.genome_paths_2: Optional[List[Optional[BPGPath]]] = None
         self.distance: int = int()
 
     def graph_init(self):
@@ -181,7 +181,7 @@ class BPGDistance:
         """
         index1: int = 0
 
-        for chromosome in self.genome1:
+        for chromosome in self.genome_1:
             genes: List[str] = split_at_whitespace(chromosome)
 
             for gene in genes:
@@ -193,27 +193,27 @@ class BPGDistance:
                     node1 = insert_character(gene[1:], len(gene[1:]), "h")
                     node2 = insert_character(gene[1:], len(gene[1:]), "t")
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node2
+                    self.node_strings_1[index1] = node2
 
                     index1 += 1
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node1
+                    self.node_strings_1[index1] = node1
                 else:
                     node1 = insert_character(gene, len(gene), "t")
                     node2 = insert_character(gene, len(gene), "h")
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node1
+                    self.node_strings_1[index1] = node1
 
                     index1 += 1
                     self.node_ints[index1] = index1 + 1
-                    self.node_strs1[index1] = node2
+                    self.node_strings_1[index1] = node2
 
                 index1 += 1
 
-        self.node_strs2 = deepcopy(self.node_strs1)
+        self.node_strings_2 = deepcopy(self.node_strings_1)
 
-        self.genome_paths1 = self.get_paths(self.genome1, 1)
-        self.genome_paths2 = self.get_paths(self.genome2, 2)
+        self.genome_paths_1 = self.get_paths(self.genome_1, 1)
+        self.genome_paths_2 = self.get_paths(self.genome_2, 2)
 
     def get_paths(self, genome: List[str], node: int) -> List[BPGPath]:
         """
@@ -232,7 +232,7 @@ class BPGDistance:
             A list of BPGPaths
         """
         null_node: int = -node
-        path1: List[Optional[BPGPath]] = [None for _ in range(((self.gene_number * 2) + 1))]
+        path1: List[Optional[BPGPath]] = [None for _ in range(((self.gene_count * 2) + 1))]
 
         for chromosome in genome:
             genes: List[str] = split_at_whitespace(chromosome)
@@ -290,15 +290,15 @@ class BPGDistance:
             Integer of node
         """
         if gene_int == 1:
-            for i in range(len(self.node_strs1)):
-                if self.node_strs1[i] is not None and self.node_strs1[i] == gene_str:
-                    self.node_strs1[i] = None
+            for i in range(len(self.node_strings_1)):
+                if self.node_strings_1[i] is not None and self.node_strings_1[i] == gene_str:
+                    self.node_strings_1[i] = None
                     return i + 1
 
         if gene_int == 2:
-            for i in range(len(self.node_strs2)):
-                if self.node_strs2[i] is not None and self.node_strs2[i] == gene_str:
-                    self.node_strs2[i] = None
+            for i in range(len(self.node_strings_2)):
+                if self.node_strings_2[i] is not None and self.node_strings_2[i] == gene_str:
+                    self.node_strings_2[i] = None
                     return i + 1
 
         return 0
@@ -313,7 +313,7 @@ class BPGDistance:
         good_path_number: int = 0
 
         # Get the first path out of a list of paths with None values filtered out
-        ancestor_path1: Optional[BPGPath] = get_valid_path(0, self.genome_paths1)
+        ancestor_path1: Optional[BPGPath] = get_valid_path(0, self.genome_paths_1)
 
         while ancestor_path1 is not None:
             node1: int = ancestor_path1.head
@@ -321,10 +321,10 @@ class BPGDistance:
             start: int = node1
 
             if node1 > 0:
-                self.genome_paths1[node1] = None
+                self.genome_paths_1[node1] = None
 
             if node2 > 0:
-                self.genome_paths1[node2] = None
+                self.genome_paths_1[node2] = None
 
             node_big: int = node1
             node_small: int = node2
@@ -342,17 +342,17 @@ class BPGDistance:
 
                     break
 
-                l_path: BPGPath = self.genome_paths2[node_big]
+                l_path: BPGPath = self.genome_paths_2[node_big]
                 l_node1: int = l_path.head
                 l_node2: int = l_path.tail
 
                 if l_node2 > 0 and l_node2 == node_small:
                     cycle_number += 1
                     more = False
-                    self.genome_paths2[l_node1] = None
-                    self.genome_paths2[l_node2] = None
+                    self.genome_paths_2[l_node1] = None
+                    self.genome_paths_2[l_node2] = None
                 elif l_node2 > 0 and l_node2 != node_small:
-                    a_path2: BPGPath = self.genome_paths1[l_node2]
+                    a_path2: BPGPath = self.genome_paths_1[l_node2]
                     another_node: int = a_path2.tail
 
                     ancestor_path1 = BPGPath(another_node, node_small, 1, 1)
@@ -366,20 +366,20 @@ class BPGDistance:
                         node_big = node2
                         node_small = node1
 
-                    other_path1: int = self.genome_paths1[l_node2].tail
+                    other_path1: int = self.genome_paths_1[l_node2].tail
 
                     if other_path1 > 0:
-                        self.genome_paths1[other_path1] = None
+                        self.genome_paths_1[other_path1] = None
 
-                    self.genome_paths2[l_node1] = None
-                    self.genome_paths2[l_node2] = None
-                    self.genome_paths1[l_node2] = None
+                    self.genome_paths_2[l_node1] = None
+                    self.genome_paths_2[l_node2] = None
+                    self.genome_paths_1[l_node2] = None
                 elif l_node2 < 0 and node_small < 0:
                     if is_valid_cycle(l_node2, node_small):
                         good_path_number += 1
 
                     more = False
-                    self.genome_paths2[l_node1] = None
+                    self.genome_paths_2[l_node1] = None
                 elif l_node2 < 0 < node_small:
                     ancestor_path1 = BPGPath(node_small, l_node2, 1, 2)
                     node1 = ancestor_path1.head
@@ -392,8 +392,8 @@ class BPGDistance:
                         node_big = node2
                         node_small = node1
 
-                    self.genome_paths2[l_node1] = None
+                    self.genome_paths_2[l_node1] = None
 
-            ancestor_path1 = get_valid_path(start, self.genome_paths1)
+            ancestor_path1 = get_valid_path(start, self.genome_paths_1)
 
-        self.distance = self.gene_number + len(self.genome1) - cycle_number - good_path_number
+        self.distance = self.gene_count + len(self.genome_1) - cycle_number - good_path_number
