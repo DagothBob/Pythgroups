@@ -2,6 +2,7 @@ from io import StringIO
 from typing import List, Dict, Optional
 
 import yaml
+import InputPreprocessing
 from Bio import Phylo
 from Bio.Phylo.Newick import Tree, Clade
 from networkx import Graph
@@ -337,8 +338,13 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
+    gene_data = InputPreprocessing.parse_gene_file(CONFIG_DIR)
 
-    print("This is genome aliquoting")
+    genome_data = InputPreprocessing.group_genomes(gene_data)
+
+    pathgroups_data = InputPreprocessing.to_pathgroups_format(genome_data)
+
+    print(pathgroups_data)
 
 
 def dcj_rearrangements():
@@ -415,7 +421,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "DCJRearrangements"
+    algorithm = "GenomeAliquoting"
     get_algorithm(algorithm)
 
 
