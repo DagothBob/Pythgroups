@@ -1,25 +1,21 @@
-import sys
+from io import StringIO
+from typing import List, Dict, Optional
+
 import yaml
 import InputPreprocessing
-
-from BPGDistance import BPGDistance
-from DCJOperations import DCJOperations, OperationTypes
-from GenomeInString import GenomeInString
-from TreeStructure import TreeStructure
-from SmallPhylogeny import SmallPhylogeny
-from MedianIteration import MedianIteration
-from PGMPathForAGenome import PGMPathForAGenome
-from PGMPath import PGMPath
-
-import networkx as nx
-from networkx import Graph
 from Bio import Phylo
 from Bio.Phylo.Newick import Tree, Clade
-from io import StringIO
-from typing import List, Dict, TextIO, Type, Optional
-from enum import Enum
-from copy import copy, deepcopy
+from networkx import Graph
 
+from BPGDistance import BPGDistance
+from DCJOperation import OperationTypes
+from DCJRearrangement import DCJRearrangement
+from GenomeInString import GenomeInString
+from MedianIteration import MedianIteration
+from PGMPath import PGMPath
+from PGMPathForAGenome import PGMPathForAGenome
+from SmallPhylogeny import SmallPhylogeny
+from TreeStructure import TreeStructure
 
 """
  Driver program for Pythgroups
@@ -39,6 +35,29 @@ from copy import copy, deepcopy
 CONFIG_DIR = "config.yaml"
 CONFIG_GENOME_FILE = "genome_file"
 CONFIG_TREE_STRUCTURE = "tree_structure"
+
+
+def split_at_whitespace(strings: str) -> List[str]:
+    """
+    Strips, then splits, a string, then strips the substrings again
+
+    Parameters
+    ----------
+    strings
+        List of strings to operate on
+
+    Returns
+    -------
+    [str]
+        Set of cleaned-up strings
+    """
+    result: List[str] = []
+
+    for string in strings.strip().split(" "):
+        if string.strip() != "":
+            result.append(string.strip())
+
+    return result
 
 
 class GenomeNode:
@@ -216,7 +235,7 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     for genome, chromosomes in genomes.items():
         count: int = 0
         for chromosome in chromosomes:
-            count += len(chromosome.strip().split(" "))
+            count += len(split_at_whitespace(chromosome))
 
         # Each genome must have the same number of genes (as compared to the first genome in genomes)
         if genome == list(genomes.keys())[0]:
@@ -245,7 +264,7 @@ def small_phylogeny():
     num_genes = count_genes(genomes)
     all_genomes: List[GenomeInString] = []
     for chromosomes in genomes.values():
-        all_genomes.insert(0, GenomeInString(chromosomes))
+        all_genomes.append(GenomeInString(chromosomes))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
@@ -350,18 +369,21 @@ def dcj_rearrangements():
     cur_dist: int = bpg_dist.distance
 
     # Perform DCJ operations until distance == 0 or there are no more DCJ operations to perform (?)
-    operation_types: List[int] = [OperationTypes.INVERSION, OperationTypes.TRANSLOCATION]
-    dcj: DCJOperations = DCJOperations(genome1, genome2)
+    operation_types: List[int] = [OperationTypes.INVERSION,
+                                  OperationTypes.TRANSLOCATION,
+                                  OperationTypes.FISSION,
+                                  OperationTypes.FUSION]
+    dcj: DCJRearrangement = DCJRearrangement(genome1, genome2)
     dcj.initial_value()
     more: bool = True
     while cur_dist > 0 and more:
         more = False
         rearrange_state: List[GenomeInString] = dcj.get_result(1, 30, -2, operation_types, 10)
-        if len(rearrange_state) > 0:
+        if len(rearrange_state) != 0:
             more = True
             for genome in rearrange_state:
                 print("*******")
-                for i in range(0, len(genome.chromosomes)):
+                for i in range(len(genome.chromosomes)):
                     print("Chromosome " + str(i) + "\n" + genome.chromosomes[i])
 
             new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
@@ -369,7 +391,7 @@ def dcj_rearrangements():
             bpg_dist.calculate_distance()
             cur_dist = bpg_dist.distance
             print("a run, steps: " + str(len(rearrange_state)) + ", cur_dist: " + str(cur_dist))
-            dcj = DCJOperations(new_genome.chromosomes, genome2)
+            dcj = DCJRearrangement(new_genome.chromosomes, genome2)
             dcj.initial_value()
 
 
