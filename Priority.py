@@ -99,8 +99,8 @@ class Priority:
             The position of empty_start, which shifts to the next empty position each time insert() is called
         """
 
-        cur_pos = self.empty_start
-        first_empty_pos = self.empty_next[cur_pos]
+        cur_pos: int = self.empty_start
+        first_empty_pos: int = self.empty_next[cur_pos]
 
         # Update cs/median_indexes and empty_start/previous
         self.cs_indexes[cur_pos] = cs_index
@@ -115,7 +115,7 @@ class Priority:
             self.taken_start = cur_pos
             self.taken_previous[cur_pos] = -1
         else:
-            last_taken_pos = self.taken_end
+            last_taken_pos: int = self.taken_end
             self.taken_next[last_taken_pos] = cur_pos
             self.taken_end = cur_pos
             self.taken_previous[cur_pos] = last_taken_pos
@@ -131,10 +131,9 @@ class Priority:
         cs_pos : int
             Position of the choice structure
         """
-
-        t_prev = self.taken_previous[cs_pos]
-        t_next = self.taken_next[cs_pos]
-        last_empty_pos = self.empty_end
+        t_prev: int = self.taken_previous[cs_pos]
+        t_next: int = self.taken_next[cs_pos]
+        last_empty_pos: int = self.empty_end
 
         # Update cs/median_indexes and empty_end/next
         self.cs_indexes[cs_pos] = -1

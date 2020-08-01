@@ -35,6 +35,8 @@ def parse_gene_file(config_dir: str) -> List[List[str]]:
             if data[0] != "geneName":  # Ignore the header text
                 parsed_data.append([data[i] for i in [1, 2, 3, 4, 5, 8]])  # familyID, chr, start, end, strand, genome
 
+    config_file.close()
+
     return parsed_data
 
 
@@ -97,9 +99,9 @@ def to_pathgroups_format(genome_data: Dict[str, List[List[str]]]) -> str:
         all_chromosomes: List[int] = [int(gene[1]) for gene in genes]
         chromosomes: List[int] = list(set(all_chromosomes))
         chromosomes.sort()
-        for chr in chromosomes:
-            chr_str = ["{} ".format(gene[0]) for gene in genes if int(gene[1]) == chr]
-            for gene in chr_str:
+        for chromosome in chromosomes:
+            chromosome_str = ["{} ".format(gene[0]) for gene in genes if int(gene[1]) == chromosome]
+            for gene in chromosome_str:
                 output += gene
             output += "$\n"
         output += "\n"
