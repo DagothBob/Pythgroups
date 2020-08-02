@@ -10,7 +10,7 @@ from BPGPath import BPGPath
                                                            
  Based on BPGDistance.java from C.Zheng & D.Sankoff (2011) 
                                                            
- Author: Holger Jensen                                     
+ Author: Holger Jensen, Oskar Jensen                                     
 """
 
 

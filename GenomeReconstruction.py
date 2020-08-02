@@ -2,15 +2,16 @@ from io import StringIO
 from typing import List, Dict, Optional
 
 import yaml
-import InputPreprocessing
 from Bio import Phylo
 from Bio.Phylo.Newick import Tree, Clade
 from networkx import Graph
 
+import InputPreprocessing
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
 from GenomeInString import GenomeInString
+from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
 from PGMPath import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
@@ -395,6 +396,39 @@ def dcj_rearrangements():
             dcj.initial_value()
 
 
+def genome_halving():
+    tetrad: List[str] = list()  # TODO: Read from file
+    outgroup: List[str] = list()  # TODO: Read from file
+
+    ggh: GroupGraph = GroupGraph(tetrad, outgroup, 1)
+    ggh.get_result()
+
+    bpg_distance: BPGDistance = BPGDistance(tetrad, ggh.ancestor_AA)
+    bpg_distance.calculate_distance()
+    distance_1: int = bpg_distance.distance
+
+    bpg_distance = BPGDistance(outgroup, ggh.ancestor_A)
+    bpg_distance.calculate_distance()
+    distance_2: int = bpg_distance.distance
+
+    total_distance: int = distance_1 + distance_2
+
+    print("\nd(AA, tetra) = " + str(distance_1) + " | d(A,outgroup) = " + str(distance_2), " | total = " +
+          str(total_distance) + "\n")
+
+    print("Genome ancestor_AA:\n")
+
+    for i in range(len(ggh.ancestor_AA)):
+        print("Chromosome " + str(i + 1))
+        print(str(ggh.ancestor_AA[i]))
+
+    print("Genome ancestor_A:\n")
+
+    for i in range(len(ggh.ancestor_A)):
+        print("Chromosome " + str(i + 1))
+        print(str(ggh.ancestor_A[i]))
+
+
 def get_algorithm(alg: str):
     """
     Calls the appropriate function based on the user input.
@@ -410,11 +444,14 @@ def get_algorithm(alg: str):
         genome_aliquoting()
     elif alg == "DCJRearrangements":
         dcj_rearrangements()
+    elif alg == "GenomeHalving":
+        genome_halving()
     else:
         print("Algorithm not supported by this program. Supported algorithms:\n" +
               "- SmallPhylogeny\n" +
               "- GenomeAliquoting\n" +
-              "- DCJRearrangements\n\n" +
+              "- DCJRearrangements\n" +
+              "- GenomeHalving\n\n" +
               "Exiting.")
         exit(1)
 

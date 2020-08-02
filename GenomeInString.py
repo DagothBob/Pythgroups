@@ -6,7 +6,7 @@ from typing import List
 
  Based on GenomeInString.java from C.Zheng & D.Sankoff (2011)
 
- Author: Holger Jensen
+ Author: Holger Jensen, Oskar Jensen
 """
 
 

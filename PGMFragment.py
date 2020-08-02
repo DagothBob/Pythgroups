@@ -9,7 +9,7 @@ import PGMPath
                                                                
  Based on PGMFragment.java from C. Zheng and D. Sankoff (2011) 
                                                                
- Author: Oskar Jensen                                          
+ Author: Holger Jensen, Oskar Jensen                                        
 """
 
 
@@ -47,10 +47,7 @@ class PGMFragment:
         fragment
             To construct from
         """
-        end1 = fragment.end1
-        end2 = fragment.end2
-
-        return cls(end1, end2)
+        return cls(fragment.end1, fragment.end2)
 
     def __str__(self) -> str:
         """
@@ -82,18 +79,20 @@ def combine(f_path: PGMPath, f1: PGMFragment, f2: PGMFragment) -> Optional[PGMFr
     PGMFragment
         New PGMFragment from the given fragments or None if they cannot be combined
     """
-    h = f_path.head
-    t = f_path.tail
-    if (h == f1.end1 and t == f2.end1) or (t == f1.end1 and h == f2.end1):
+    if (f_path.head == f1.end1 and f_path.tail == f2.end1) or \
+       (f_path.tail == f1.end1 and f_path.head == f2.end1):
         return PGMFragment(f1.end2, f2.end2)
 
-    elif (h == f1.end1 and t == f2.end2) or (t == f1.end1 and h == f2.end2):
+    elif (f_path.head == f1.end1 and f_path.tail == f2.end2) or \
+         (f_path.tail == f1.end1 and f_path.head == f2.end2):
         return PGMFragment(f1.end2, f2.end1)
 
-    elif (h == f1.end2 and t == f2.end1) or (t == f1.end2 and h == f2.end1):
+    elif (f_path.head == f1.end2 and f_path.tail == f2.end1) or \
+         (f_path.tail == f1.end2 and f_path.head == f2.end1):
         return PGMFragment(f1.end1, f2.end2)
 
-    elif (h == f1.end2 and t == f2.end2) or (t == f1.end2 and h == f2.end2):
+    elif (f_path.head == f1.end2 and f_path.tail == f2.end2) or \
+         (f_path.tail == f1.end2 and f_path.head == f2.end2):
         return PGMFragment(f1.end1, f2.end1)
 
     return None

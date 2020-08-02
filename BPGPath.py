@@ -6,7 +6,7 @@ from __future__ import annotations
                                                        
  Based on BPGPath.java from C.Zheng & D.Sankoff (2011) 
                                                        
- Author: Holger Jensen                                 
+ Author: Holger Jensen, Oskar Jensen                             
 """
 
 
