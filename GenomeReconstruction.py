@@ -123,11 +123,18 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
         else:
             chromosomes: List[str] = []
             while len(line) != 0 and not line.startswith(">") and line != "\n":
-                chromosome: str = line.replace("$", "").replace("\n", "")
+                clean_input: str = line.replace("$", "").replace("\n", "")
+                chromosome: str = ""
+                for string in clean_input.strip().split(" "):
+                    if string.strip() != "":
+                        chromosome += string.strip() + " "
+
                 chromosomes.append(chromosome)
                 line = genome_file.readline()
             genomes[header] = chromosomes
         line = genome_file.readline()
+
+    config_file.close()
 
     return genomes
 
@@ -148,7 +155,9 @@ def parse_tree(config_dir: str) -> Optional[Tree]:
     """
     config_file = open(config_dir, "r")
     config_data = yaml.safe_load(config_file)
-    return Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
+    tree_data = Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
+    config_file.close()
+    return tree_data
 
 
 def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
@@ -270,7 +279,6 @@ def small_phylogeny():
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
     for median in median_nodes:
-        print(str(median.genome_id) + str(median.neighbors))
         ts.set_tree_structure(median.genome_id, median.neighbors[0],
                               median.neighbors[1], median.neighbors[2])
 
@@ -458,7 +466,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "GenomeAliquoting"
+    algorithm = "SmallPhylogeny"
     get_algorithm(algorithm)
 
 

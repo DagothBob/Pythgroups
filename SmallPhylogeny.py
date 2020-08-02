@@ -191,7 +191,7 @@ class SmallPhylogeny:
                     index_from, tail_of1, which_genome, which_genome)
 
                 return ancestor_priority
-            elif ancestor_priority < result:
+            if ancestor_priority < result:
                 result = ancestor_priority
                 self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                     index_from, tail_of1, which_genome, which_genome)
@@ -212,7 +212,7 @@ class SmallPhylogeny:
                         index_from, tail_of2, which_genome, which_genome)
 
                     return ancestor_priority
-                elif ancestor_priority < result:
+                if ancestor_priority < result:
                     result = ancestor_priority
                     self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
                         index_from, tail_of2, which_genome, which_genome)
@@ -225,7 +225,7 @@ class SmallPhylogeny:
 
         if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_head == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_tail:
-            if ((not add_tail1) or tail_of3 != tail_of1) and ((not add_tail2) or tail_of3 != tail_of1):
+            if ((not add_tail1) or tail_of3 != tail_of1) and ((not add_tail2) or tail_of3 != tail_of2):
                 ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of3)
 
                 if ancestor_priority < result:
@@ -290,7 +290,7 @@ class SmallPhylogeny:
             self.tree.medians[median_index].fragments[created_fragment[1].end2] = PGMFragment(created_fragment[1].end2,
                                                                                               created_fragment[1].end1)
 
-        index: int = 0
+        index: int = 1
 
         for cn in range(2, 0, -1):
             for bcla in range(3, 0, -1):
@@ -495,7 +495,7 @@ class SmallPhylogeny:
 
                     if tail1 == tail2 or tail1 == tail3:
                         current_tail = tail1
-                    elif tail2 == tail3:
+                    if tail2 == tail3:
                         current_tail = tail2
 
                     current_new_choice_structure: [ChoiceStructure] = self.get_new_choice_structure_2_step(
@@ -521,7 +521,7 @@ class SmallPhylogeny:
                                 return new_count
                             elif current_max < new_count:
                                 current_max = new_count
-                    elif genome_tail2 == genome_head2:
+                    if genome_tail2 == genome_head2:
                         current_new_choice_structure: [ChoiceStructure] = self.get_new_choice_structure_2_step(
                             index_from, tail2, current_genome, ancestor_choice_structure, created_choice_structures)
 
@@ -532,7 +532,7 @@ class SmallPhylogeny:
                                 return new_count
                             elif current_max < new_count:
                                 current_max = new_count
-                    elif genome_tail3 == genome_head3:
+                    if genome_tail3 == genome_head3:
                         current_new_choice_structure: [ChoiceStructure] = self.get_new_choice_structure_2_step(
                             index_from, tail3, current_genome, ancestor_choice_structure, created_choice_structures)
 
@@ -796,9 +796,9 @@ class SmallPhylogeny:
             elif genome_from == genome_tail and genome_from != for_which_genome:
                 ancestor_median = for_which_genome
             elif genome_from != genome_tail:
-                if genome_from == for_which_genome:
+                if genome_tail == for_which_genome:
                     ancestor_median = median_index + self.tree.number_of_leaves
-                elif genome_from != for_which_genome:
+                elif genome_tail != for_which_genome:
                     ancestor_median = for_which_genome
 
             if ancestor_median != -1:
@@ -846,9 +846,9 @@ class SmallPhylogeny:
 
         while best_choice_structure[0] != -1:
             priority: int = best_choice_structure[0]
-            for_which_priorty: int = best_choice_structure[1]
-            current_ancestor: int = self.priorities[priority].median_indexes[for_which_priorty]
-            current_choice_structure_index: int = self.priorities[priority].cs_indexes[for_which_priorty]
+            for_which_priority: int = best_choice_structure[1]
+            current_ancestor: int = self.priorities[priority].median_indexes[for_which_priority]
+            current_choice_structure_index: int = self.priorities[priority].cs_indexes[for_which_priority]
 
             self.add_gray_edge(current_ancestor, self.tree.medians[current_ancestor].choice_structures[
                 current_choice_structure_index].gray_edge)

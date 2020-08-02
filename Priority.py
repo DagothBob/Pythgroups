@@ -93,7 +93,7 @@ class Priority:
             self.median_indexes.append(-1)
             self.empty_previous.append(i - 1)
             self.empty_next.append(i + 1)
-            
+
         self.empty_next[size - 1] = -1     # last entry set to -1
 
         self.empty_start: int = 0
@@ -117,7 +117,9 @@ class Priority:
         int
             The position of empty_start, which shifts to the next empty position each time insert() is called
         """
-        first_empty_pos: int = self.empty_next[self.empty_start]
+
+        cur_pos: int = self.empty_start
+        first_empty_pos: int = self.empty_next[cur_pos]
 
         # Update cs/median_indexes and empty_start/previous
         if which_ancestor is not None:  # Small phylogeny case
@@ -134,11 +136,11 @@ class Priority:
             self.taken_start = self.empty_start
             self.taken_previous[self.empty_start] = -1
         else:
-            self.taken_next[self.taken_end] = self.empty_start
-            self.taken_end = self.empty_start
-            self.taken_previous[self.empty_start] = self.taken_end
-            
-        self.taken_next[self.empty_start] = -1
+            last_taken_pos: int = self.taken_end
+            self.taken_next[last_taken_pos] = cur_pos
+            self.taken_end = cur_pos
+            self.taken_previous[cur_pos] = last_taken_pos
+        self.taken_next[cur_pos] = -1
 
         return self.empty_start
 
@@ -151,10 +153,9 @@ class Priority:
         cs_pos : int
             Position of the choice structure
         """
-
-        t_prev = self.taken_previous[cs_pos]
-        t_next = self.taken_next[cs_pos]
-        last_empty_pos = self.empty_end
+        t_prev: int = self.taken_previous[cs_pos]
+        t_next: int = self.taken_next[cs_pos]
+        last_empty_pos: int = self.empty_end
 
         # Update cs/median_indexes and empty_end/next
         self.cs_indexes[cs_pos] = -1

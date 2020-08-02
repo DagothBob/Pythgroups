@@ -89,7 +89,7 @@ def get_next_path(start_pos: int, paths: List[PGMPath]) -> Optional[PGMPath]:
     """
     for i in range(start_pos, len(paths)):
         if paths[i] is not None:
-            return paths[i]
+            return PGMPath(paths[i].head, paths[i].tail, paths[i].genome_head, paths[i].genome_tail)
     return None
 
 
@@ -250,15 +250,17 @@ class MedianData:
                 (total number of genes) + (number of chromosomes) - (number of cycles) - (number of "good" paths)
         """
 
-        cycle_count, good_path_count, chr_count = 0, 0, 0
-        paths1 = list()
+        cycle_count: int = 0
+        good_path_count: int = 0
+        chromosome_count: int = 0
+        paths1: List[Optional[PGMPath]] = [None for _ in range(2 * self.gene_num + 1)]
 
         # Populates paths1 based on the heads and tails of each path in p1
         # where negative values are set to -1
         for path in p1:
             if path is not None:
-                end1 = path.head
-                end2 = path.tail
+                end1: int = path.head
+                end2: int = path.tail
                 if end1 < 0:
                     end1 = -1
                 if end2 < 0:
@@ -273,18 +275,18 @@ class MedianData:
         # Count gets divided by 2 in the end I think because there are two paths for each gene?
         for i in range(0, len(paths1)):
             if paths1[i] is not None and paths1[i].tail == -1:
-                chr_count += 1
+                chromosome_count += 1
             elif paths1[i] is None and i != 0:
                 paths1[i] = PGMPath(i, -1, 1, 1)
-                chr_count += 1
-        chr_count = math.trunc(chr_count / 2)
+                chromosome_count += 1
+        chromosome_count = math.trunc(chromosome_count / 2)
 
-        # Same as paths1, except without chr_count
-        paths2 = List[PGMPath]
+        # Same as paths1, except without chromosome_count
+        paths2: List[Optional[PGMPath]] = [None for _ in range(2 * self.gene_num + 1)]
         for path in p2:
             if path is not None:
-                end1 = path.head
-                end2 = path.tail
+                end1: int = path.head
+                end2: int = path.tail
                 if end1 < 0:
                     end1 = -1
                 if end2 < 0:
@@ -301,8 +303,8 @@ class MedianData:
         # Iterates through paths1 until all paths have been checked
         next_path = get_next_path(0, paths1)
         while next_path is not None:
-            n1 = next_path.head
-            n2 = next_path.tail
+            n1: int = next_path.head
+            n2: int = next_path.tail
             start_point = n1
 
             if n1 > 0:
@@ -317,16 +319,16 @@ class MedianData:
                 n_big = n2
                 n_small = n1
 
-            more = True
+            more: bool = True
             while more:
                 if next_path.head < 0 and next_path.tail < 0:
                     if good_cycle(next_path.head, next_path.tail):
                         good_path_count += 1
                     break
 
-                path_l = paths2[n_big]
-                m1 = path_l.head
-                m2 = path_l.tail
+                path_l: Optional[PGMPath] = paths2[n_big]
+                m1: int = path_l.head
+                m2: int = path_l.tail
                 if m2 > 0:
                     if m2 == n_small:
                         cycle_count += 1
@@ -371,7 +373,7 @@ class MedianData:
 
             next_path = get_next_path(start_point, paths1)
 
-        return self.gene_num + chr_count - cycle_count - good_path_count
+        return self.gene_num + chromosome_count - cycle_count - good_path_count
 
     def get_ancestors(self):
         """
