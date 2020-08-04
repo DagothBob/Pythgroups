@@ -2,7 +2,9 @@ from copy import deepcopy
 from typing import List, Optional, TypeVar
 
 from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, TranslocationSubtypes
+from Gene import Gene
 from GeneNode import GeneNode
+from Genome import Genome
 from GenomeInString import GenomeInString
 
 """                               
@@ -45,29 +47,6 @@ def insert_character(s: str, i: int, c: str) -> str:
     return s[:i] + c + s[(i + 1):]
 
 
-def split_at_whitespace(strings: str) -> List[str]:
-    """
-    Strips, then splits, a string, then strips the substrings again
-
-    Parameters
-    ----------
-    strings
-        List of strings to operate on
-
-    Returns
-    -------
-    [str]
-        Set of cleaned-up strings
-    """
-    result: List[str] = list()
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
-
-
 T = TypeVar('T')
 
 
@@ -89,9 +68,9 @@ class DCJRearrangement:
     Attributes
     ----------
     genome1 : GenomeInString
-        Genome 1 as a list of strings
+        Genome 1 as a list of chromosomes
     genome2 : GenomeInString
-        Genome 2 as a list of strings
+        Genome 2 as a list of chromosomes
     gene_count : int
         How many genes are in both genomes (must be the same)
     max_chromosome_number : int
@@ -112,7 +91,7 @@ class DCJRearrangement:
         Current chromosome being updated
     """
 
-    def __init__(self, genome1: List[str], genome2: List[str]):
+    def __init__(self, genome1: Genome, genome2: Genome):
         """
         Constructor
 
@@ -147,14 +126,12 @@ class DCJRearrangement:
         gene_count_2: int = 0
 
         # Split genome_1 into genes and save the number of them
-        for i in range(len(self.genome1.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
-            gene_count_1 += len(genes)
+        for chromosome in self.genome1.chromosomes:
+            gene_count_1 += len(chromosome.genes)
 
         # Split genome_2 into genes and save the number of them
-        for i in range(len(self.genome2.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
-            gene_count_2 += len(genes)
+        for chromosome in self.genome2.chromosomes:
+            gene_count_2 += len(chromosome.genes)
 
         self.gene_count = gene_count_1
         self.gene_node_as_string = list()
@@ -167,19 +144,19 @@ class DCJRearrangement:
 
         # Split each chromosome of genome_1 into genes and save genes into gene_nodes_1 and chromosomes_for_gene_node_1
         for i in range(len(self.genome1.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
+            genes: List[Gene] = self.genome1.chromosomes[i].genes
             self.chromosomes_for_gene_node_1.append([int() for _ in range((len(genes) * 2))])
 
             for j in range(len(genes)):
                 sign: str
                 genome_name: str
 
-                if genes[j][0] == "-":
+                if genes[j].name[0] == "-":
                     sign = "-"
-                    genome_name = genes[j][1:]
+                    genome_name = genes[j].name[1:]
                 else:
                     sign = "+"
-                    genome_name = genes[j]
+                    genome_name = genes[j].name
 
                 if sign == "+":
                     self.gene_node_as_string.append([genome_name])
@@ -217,7 +194,7 @@ class DCJRearrangement:
 
         # Split each chromosome of genome_2 into genes and save genes into gene_nodes_2 and chromosomes_for_gene_node_2
         for i in range(len(self.genome2.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
+            genes: List[Gene] = self.genome2.chromosomes[i].genes
             pre_node_index: int = -1
             self.chromosomes_for_gene_node_2.append([int() for _ in range((len(genes) * 2))])
 
@@ -226,12 +203,12 @@ class DCJRearrangement:
                 genome_node_string1: str
                 genome_node_string2: str
 
-                if genes[j][0] == "-":
-                    genome_name = genes[j][1:]
+                if genes[j].name[0] == "-":
+                    genome_name = genes[j].name[1:]
                     genome_node_string1 = insert_character(genome_name, len(genome_name), "h")
                     genome_node_string2 = insert_character(genome_name, len(genome_name), "t")
                 else:
-                    genome_name = genes[j]
+                    genome_name = genes[j].name
                     genome_node_string1 = insert_character(genome_name, len(genome_name), "t")
                     genome_node_string2 = insert_character(genome_name, len(genome_name), "h")
 
@@ -288,24 +265,24 @@ class DCJRearrangement:
         GenomeInString
             New GenomeInString
         """
-        chromosome: List[str] = list()
+        chromosomes: List[str] = list()
 
         for i in range(len(node_list)):
-            chromosome.append(str())
+            chromosomes.append(str())
 
             for j in range(int(len(node_list[i]) / 2)):
-                genome1: str = self.gene_node_as_string[node_list[i][j * 2]][0]
+                gene_node_1: str = self.gene_node_as_string[node_list[i][j * 2]][0]
                 tail_or_head1: str = self.gene_node_as_string[node_list[i][j * 2]][1]
-                genome2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][0]
+                gene_node_2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][0]
                 tail_or_head2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][1]
 
-                if genome1 == genome2 and tail_or_head1 == "t" and tail_or_head2 == "h":
-                    chromosome[i] = chromosome[i] + " " + genome1
+                if gene_node_1 == gene_node_2 and tail_or_head1 == "t" and tail_or_head2 == "h":
+                    chromosomes[i] = chromosomes[i] + " " + gene_node_1
                 else:
-                    if genome1 == genome2 and tail_or_head1 == "h" and tail_or_head2 == "t":
-                        chromosome[i] = chromosome[i] + " -" + genome1
+                    if gene_node_1 == gene_node_2 and tail_or_head1 == "h" and tail_or_head2 == "t":
+                        chromosomes[i] = chromosomes[i] + " -" + gene_node_1
 
-        return GenomeInString(chromosome)
+        return GenomeInString(Genome.from_strings(chromosomes))
 
     def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: List[int],
                    number_of_operations: int) -> List[Optional[GenomeInString]]:

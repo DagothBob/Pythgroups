@@ -71,6 +71,14 @@ class Chromosome:
 
         return cls(genes)
 
+    def to_strings(self) -> List[str]:
+        value: List[str] = list()
+
+        for gene in self.genes:
+            value.append(gene.name)
+
+        return value
+
     def __str__(self) -> str:
         """
         String override
@@ -82,6 +90,6 @@ class Chromosome:
         ret: str = "chr: \n"
 
         for gene in self.genes:
-            ret += str(gene)
+            ret += str(gene) + " "
 
         return ret

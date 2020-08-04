@@ -103,4 +103,4 @@ class Gene:
         str
             String representation of the object's attributes
         """
-        return self.name + "\t" + str(self.node_1) + "\t" + str(self.node_2)
+        return self.name  # + "\t" + str(self.node_1) + "\t" + str(self.node_2)
