@@ -13,7 +13,7 @@ from TreeStructure import TreeStructure
 
  Based on MedianIteration.java from C.Zheng & D.Sankoff (2011)
 
- Author: Oskar Jensen
+ Author: Holger Jensen, Oskar Jensen
 """
 
 

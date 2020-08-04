@@ -3,6 +3,7 @@ from sys import exit
 from typing import Optional, List
 
 from BPGPath import BPGPath
+from Genome import Genome
 
 """                              
  Calculate the distance between two genomes using          
@@ -10,7 +11,7 @@ from BPGPath import BPGPath
                                                            
  Based on BPGDistance.java from C.Zheng & D.Sankoff (2011) 
                                                            
- Author: Holger Jensen                                     
+ Author: Holger Jensen, Oskar Jensen                                     
 """
 
 
@@ -60,29 +61,6 @@ def is_valid_cycle(edge1: int, edge2: int) -> bool:
     return int(edge2 / 2) * 2 != edge2
 
 
-def split_at_whitespace(strings: str) -> List[str]:
-    """
-    Strips, then splits, a string, then strips the substrings again
-
-    Parameters
-    ----------
-    strings
-        List of strings to operate on
-
-    Returns
-    -------
-    [str]
-        Set of cleaned-up strings
-    """
-    result: List[str] = []
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
-
-
 def get_valid_path(start_from: int, paths: List[BPGPath]) -> Optional[BPGPath]:
     """
     Gets the first non-None value from a list of paths
@@ -128,7 +106,7 @@ class BPGDistance:
         Integer distance between genome 1 and genome 2
     """
 
-    def __init__(self, genome_1: List[str], genome_2: List[str]):
+    def __init__(self, genome_1: Genome, genome_2: Genome):
         """
         Constructor
 
@@ -139,28 +117,20 @@ class BPGDistance:
         genome_2
             Genome to test distance from the first one
         """
-        index1: int = 0
-        index2: int = 0
         gene_count_1: int = 0
         gene_count_2: int = 0
-        self.genome_1: List[str] = [str() for _ in range(len(genome_1))]  # Genome 1 as String
-        self.genome_2: List[str] = [str() for _ in range(len(genome_2))]  # Genome 2 as String
+        self.genome_1: Genome = Genome(list())  # Genome 1 as String
+        self.genome_2: Genome = Genome(list())  # Genome 2 as String
 
-        for chromosome in genome_1:
-            genes: List[str] = split_at_whitespace(chromosome)
+        for chromosome in genome_1.chromosomes:
+            if len(chromosome.genes) != 0:
+                gene_count_1 += len(chromosome.genes)
+                self.genome_1.add_chromosome(chromosome)
 
-            if len(genes) != 0:
-                gene_count_1 += len(genes)
-                self.genome_1[index1] = chromosome
-                index1 += 1
-
-        for chromosome in genome_2:
-            genes: List[str] = split_at_whitespace(chromosome)
-
-            if len(genes) != 0:
-                gene_count_2 += len(genes)
-                self.genome_2[index2] = chromosome
-                index2 += 1
+        for chromosome in genome_2.chromosomes:
+            if len(chromosome.genes) != 0:
+                gene_count_2 += len(chromosome.genes)
+                self.genome_2.add_chromosome(chromosome)
 
         if gene_count_1 == gene_count_2:  # Algorithm requires genomes are equal length
             self.gene_count: int = gene_count_1  # Number of genes
@@ -181,17 +151,15 @@ class BPGDistance:
         """
         index1: int = 0
 
-        for chromosome in self.genome_1:
-            genes: List[str] = split_at_whitespace(chromosome)
-
-            for gene in genes:
-                first_character: str = deepcopy(gene[0])  # Sign indicating gene is head-tail or tail-head
+        for chromosome in self.genome_1.chromosomes:
+            for gene in chromosome.genes:
+                first_character: str = deepcopy(gene.name[0])  # Sign indicating gene is head-tail or tail-head
                 node1: str
                 node2: str
 
                 if first_character == "-":
-                    node1 = insert_character(gene[1:], len(gene[1:]), "h")
-                    node2 = insert_character(gene[1:], len(gene[1:]), "t")
+                    node1 = insert_character(gene.name[1:], len(gene.name[1:]), "h")
+                    node2 = insert_character(gene.name[1:], len(gene.name[1:]), "t")
                     self.node_ints[index1] = index1 + 1
                     self.node_strings_1[index1] = node2
 
@@ -199,8 +167,8 @@ class BPGDistance:
                     self.node_ints[index1] = index1 + 1
                     self.node_strings_1[index1] = node1
                 else:
-                    node1 = insert_character(gene, len(gene), "t")
-                    node2 = insert_character(gene, len(gene), "h")
+                    node1 = insert_character(gene.name, len(gene.name), "t")
+                    node2 = insert_character(gene.name, len(gene.name), "h")
                     self.node_ints[index1] = index1 + 1
                     self.node_strings_1[index1] = node1
 
@@ -215,7 +183,7 @@ class BPGDistance:
         self.genome_paths_1 = self.get_paths(self.genome_1, 1)
         self.genome_paths_2 = self.get_paths(self.genome_2, 2)
 
-    def get_paths(self, genome: List[str], node: int) -> List[BPGPath]:
+    def get_paths(self, genome: Genome, node: int) -> List[BPGPath]:
         """
         Gets the gene/telomere paths from the given genome and node
 
@@ -234,21 +202,20 @@ class BPGDistance:
         null_node: int = -node
         path1: List[Optional[BPGPath]] = [None for _ in range(((self.gene_count * 2) + 1))]
 
-        for chromosome in genome:
-            genes: List[str] = split_at_whitespace(chromosome)
+        for chromosome in genome.chromosomes:
             pre_node: int = 0
 
-            for i in range(len(genes)):
-                first_character: str = genes[i][0]  # Sign indicating gene is head-tail or tail-head
+            for i in range(len(chromosome.genes)):
+                first_character: str = chromosome.genes[i].name[0]  # Sign indicating gene is head-tail or tail-head
                 node1: str
                 node2: str
 
                 if first_character == "-":
-                    node1 = insert_character(genes[i][1:], len(genes[i][1:]), "h")
-                    node2 = insert_character(genes[i][1:], len(genes[i][1:]), "t")
+                    node1 = insert_character(chromosome.genes[i].name[1:], len(chromosome.genes[i].name[1:]), "h")
+                    node2 = insert_character(chromosome.genes[i].name[1:], len(chromosome.genes[i].name[1:]), "t")
                 else:
-                    node1 = insert_character(genes[i], len(genes[i]), "t")
-                    node2 = insert_character(genes[i], len(genes[i]), "h")
+                    node1 = insert_character(chromosome.genes[i].name, len(chromosome.genes[i].name), "t")
+                    node2 = insert_character(chromosome.genes[i].name, len(chromosome.genes[i].name), "h")
 
                 node1_int: int = self.get_node_int(node1, node)
                 node2_int: int = self.get_node_int(node2, node)
@@ -258,13 +225,13 @@ class BPGDistance:
                     pre_node: int = node2_int
                     null_node -= 2
 
-                if i != 0 and i != len(genes) - 1:
+                if i != 0 and i != len(chromosome.genes) - 1:
                     path1[node1_int] = BPGPath(node1_int, pre_node, node, node)
                     path1[pre_node] = BPGPath(pre_node, node1_int, node, node)
                     pre_node: int = node2_int
 
-                if i == len(genes) - 1:
-                    if len(genes) != 1:
+                if i == len(chromosome.genes) - 1:
+                    if len(chromosome.genes) != 1:
                         path1[pre_node] = BPGPath(pre_node, node1_int, node, node)
                         path1[node1_int] = BPGPath(node1_int, pre_node, node, node)
 
@@ -396,4 +363,4 @@ class BPGDistance:
 
             ancestor_path1 = get_valid_path(start, self.genome_paths_1)
 
-        self.distance = self.gene_count + len(self.genome_1) - cycle_number - good_path_number
+        self.distance = self.gene_count + len(self.genome_1.chromosomes) - cycle_number - good_path_number

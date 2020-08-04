@@ -3,7 +3,7 @@ from enum import IntEnum
 """
 Operation object for use in DCJRearrangement algorithm
 
-Author: Holger Jensen
+Author: Holger Jensen, Oskar Jensen
 """
 
 

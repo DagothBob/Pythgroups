@@ -5,10 +5,9 @@ from PGMPath import PGMPath
 """                         
  Used in TreeStructure, MedianIteration, PGMPath 
                                                  
- Based on PGMPathForAGenome.java                 
- from C.Zheng & D.Sankoff (2011)                 
+ Based on PGMPathForAGenome.java from C.Zheng & D.Sankoff (2011)                 
                                                  
- Author: Holger Jensen                           
+ Author: Holger Jensen, Oskar Jensen                        
 """
 
 

@@ -1,12 +1,14 @@
 from typing import List
 
+from Chromosome import Chromosome
+from Genome import Genome
 
 """
  GenomeInString class for use in various classes
 
  Based on GenomeInString.java from C.Zheng & D.Sankoff (2011)
 
- Author: Holger Jensen
+ Author: Holger Jensen, Oskar Jensen
 """
 
 
@@ -14,17 +16,17 @@ class GenomeInString:
     """
     Attributes
     ----------
-    chromosomes : [str]
+    genome : [str]
         List of chromosomes expressed as strings
     """
 
-    def __init__(self, chromosomes: List[str]):
+    def __init__(self, genome: Genome):
         """
         Constructor
 
         Parameters
         ----------
-        chromosomes
+        genome
             Chromosomes to construct from
         """
-        self.chromosomes: List[str] = chromosomes
+        self.chromosomes: List[Chromosome] = genome.chromosomes

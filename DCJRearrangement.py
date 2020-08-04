@@ -1,8 +1,10 @@
 from copy import deepcopy
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 
 from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, TranslocationSubtypes
+from Gene import Gene
 from GeneNode import GeneNode
+from Genome import Genome
 from GenomeInString import GenomeInString
 
 """                               
@@ -20,7 +22,7 @@ from GenomeInString import GenomeInString
                                                              
  Based on DCJOperations.java from C.Zheng & D.Sankoff (2011) 
                                                              
- Author: Holger Jensen                                       
+ Author: Holger Jensen, Oskar Jensen                                     
 """
 
 
@@ -45,27 +47,20 @@ def insert_character(s: str, i: int, c: str) -> str:
     return s[:i] + c + s[(i + 1):]
 
 
-def split_at_whitespace(strings: str) -> List[str]:
-    """
-    Strips, then splits, a string, then strips the substrings again
+T = TypeVar('T')
 
-    Parameters
-    ----------
-    strings
-        List of strings to operate on
 
-    Returns
-    -------
-    [str]
-        Set of cleaned-up strings
-    """
-    result: List[str] = list()
+def clean_empty_lists(list_: List[List[T]]) -> List[List[T]]:
+    temp: List[List[T]] = list()
 
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
+    for item in list_:
+        if item != [0]:
+            temp.append(item)
 
-    return result
+    return temp
+
+
+TELOMERE_VALUE: int = -1
 
 
 class DCJRearrangement:
@@ -73,15 +68,15 @@ class DCJRearrangement:
     Attributes
     ----------
     genome1 : GenomeInString
-        Genome 1 as a list of strings
+        Genome 1 as a list of chromosomes
     genome2 : GenomeInString
-        Genome 2 as a list of strings
+        Genome 2 as a list of chromosomes
     gene_count : int
         How many genes are in both genomes (must be the same)
     max_chromosome_number : int
-        Highest number of chromosomes in either genome
+        Highest number of chromosomes for fission/fusion operations
     min_chromosome_number : int
-        Lower number of chromosomes in either genome
+        Lower number of chromosomes for fission/fusion operations
     gene_nodes_1 : List[List[int]]
         First gene node for performing DCJ operations
     gene_nodes_2 : List[List[int]]
@@ -96,7 +91,7 @@ class DCJRearrangement:
         Current chromosome being updated
     """
 
-    def __init__(self, genome1: List[str], genome2: List[str]):
+    def __init__(self, genome1: Genome, genome2: Genome):
         """
         Constructor
 
@@ -109,13 +104,12 @@ class DCJRearrangement:
         """
         self.genome1: GenomeInString = GenomeInString(genome1)
         self.genome2: GenomeInString = GenomeInString(genome2)
+
         self.gene_count: int = int()
 
-        # Parameters for choosing an appropriate operation
         self.max_chromosome_number: int = int()
         self.min_chromosome_number: int = int()
 
-        # For each row, use GeneNodeAttributes to index
         self.gene_nodes_1: Optional[List[Optional[GeneNode]]] = None
         self.gene_nodes_2: Optional[List[Optional[GeneNode]]] = None
 
@@ -132,64 +126,67 @@ class DCJRearrangement:
         gene_count_2: int = 0
 
         # Split genome_1 into genes and save the number of them
-        for i in range(len(self.genome1.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
-            gene_count_1 += len(genes)
+        for chromosome in self.genome1.chromosomes:
+            gene_count_1 += len(chromosome.genes)
 
         # Split genome_2 into genes and save the number of them
-        for i in range(len(self.genome2.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
-            gene_count_2 += len(genes)
+        for chromosome in self.genome2.chromosomes:
+            gene_count_2 += len(chromosome.genes)
 
         self.gene_count = gene_count_1
-        self.gene_node_as_string = [[str(), str()] for _ in range((self.gene_count * 2))]
+        self.gene_node_as_string = list()
         self.gene_nodes_1 = [GeneNode() for _ in range((self.gene_count * 2))]
         self.gene_nodes_2 = [GeneNode() for _ in range((self.gene_count * 2))]
-        self.chromosomes_for_gene_node_1 = [[int()] for _ in range(len(self.genome1.chromosomes))]
-        self.chromosomes_for_gene_node_2 = [[int()] for _ in range(len(self.genome2.chromosomes))]
+        self.chromosomes_for_gene_node_1 = list()
+        self.chromosomes_for_gene_node_2 = list()
 
-        index: int = 0
+        index: int = 0  # Indexes gene_nodes_1
 
         # Split each chromosome of genome_1 into genes and save genes into gene_nodes_1 and chromosomes_for_gene_node_1
         for i in range(len(self.genome1.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome1.chromosomes[i])
-            self.chromosomes_for_gene_node_1[i] = [int() for _ in range((len(genes) * 2))]
+            genes: List[Gene] = self.genome1.chromosomes[i].genes
+            self.chromosomes_for_gene_node_1.append([int() for _ in range((len(genes) * 2))])
 
             for j in range(len(genes)):
-                sign: str = "+"
-                genome_name: str = genes[j]
+                sign: str
+                genome_name: str
 
-                if genome_name[0] == "-":
+                if genes[j].name[0] == "-":
                     sign = "-"
-                    genome_name = genes[j][1:]
+                    genome_name = genes[j].name[1:]
+                else:
+                    sign = "+"
+                    genome_name = genes[j].name
 
                 if sign == "+":
-                    self.gene_node_as_string[index][0] = genome_name
-                    self.gene_node_as_string[index][1] = "t"
+                    self.gene_node_as_string.append([genome_name])
+                    self.gene_node_as_string[index].append("t")
                     index += 1
-                    self.gene_node_as_string[index][0] = genome_name
-                    self.gene_node_as_string[index][1] = "h"
+                    self.gene_node_as_string.append([genome_name])
+                    self.gene_node_as_string[index].append("h")
                 else:
-                    self.gene_node_as_string[index][0] = genome_name
-                    self.gene_node_as_string[index][1] = "h"
+                    self.gene_node_as_string.append([genome_name])
+                    self.gene_node_as_string[index].append("h")
                     index += 1
-                    self.gene_node_as_string[index][0] = genome_name
-                    self.gene_node_as_string[index][1] = "t"
+                    self.gene_node_as_string.append([genome_name])
+                    self.gene_node_as_string[index].append("t")
 
                 index += 1
 
-                if j == 0:
-                    self.gene_nodes_1[index - 2].adjacency = -1
+                # This pair of if-statements is for coupling gene adjacencies in gene_nodes_1
+                # Index subtractions are to account for the parity character
+                if j == 0:  # Indicates a telomere. Telomeres have no adjacency
+                    self.gene_nodes_1[index - 2].adjacency = TELOMERE_VALUE
                 else:
                     self.gene_nodes_1[index - 2].adjacency = index - 3
 
-                if j == len(genes) - 1:
-                    self.gene_nodes_1[index - 1].adjacency = -1
+                if j == len(genes) - 1:  # Ending telomere
+                    self.gene_nodes_1[index - 1].adjacency = TELOMERE_VALUE
                 else:
                     self.gene_nodes_1[index - 1].adjacency = index
 
-                self.gene_nodes_1[index - 2].chromosome_index = i
-                self.gene_nodes_1[index - 1].chromosome_index = i
+                self.gene_nodes_1[index - 2].chromosome_id = i
+                self.gene_nodes_1[index - 1].chromosome_id = i
                 self.gene_nodes_1[index - 2].chromosome_position = j * 2
                 self.gene_nodes_1[index - 1].chromosome_position = (j * 2) + 1
                 self.chromosomes_for_gene_node_1[i][j * 2] = index - 2
@@ -197,30 +194,29 @@ class DCJRearrangement:
 
         # Split each chromosome of genome_2 into genes and save genes into gene_nodes_2 and chromosomes_for_gene_node_2
         for i in range(len(self.genome2.chromosomes)):
-            genes: List[str] = split_at_whitespace(self.genome2.chromosomes[i])
+            genes: List[Gene] = self.genome2.chromosomes[i].genes
             pre_node_index: int = -1
-            self.chromosomes_for_gene_node_2[i] = [int() for _ in range((len(genes) * 2))]
+            self.chromosomes_for_gene_node_2.append([int() for _ in range((len(genes) * 2))])
 
             for j in range(len(genes)):
-                sign: str = "+"
-                genome_name: str = genes[j]
+                genome_name: str
+                genome_node_string1: str
+                genome_node_string2: str
 
-                if genome_name[0] == "-":
-                    sign = "-"
-                    genome_name = genes[j][1:]
-
-                genome_node_string1: str = insert_character(genome_name, len(genome_name), "t")
-                genome_node_string2: str = insert_character(genome_name, len(genome_name), "h")
-
-                if sign == "-":
+                if genes[j].name[0] == "-":
+                    genome_name = genes[j].name[1:]
                     genome_node_string1 = insert_character(genome_name, len(genome_name), "h")
                     genome_node_string2 = insert_character(genome_name, len(genome_name), "t")
+                else:
+                    genome_name = genes[j].name
+                    genome_node_string1 = insert_character(genome_name, len(genome_name), "t")
+                    genome_node_string2 = insert_character(genome_name, len(genome_name), "h")
 
                 genome_node_index1: int = self.get_node_index(genome_node_string1)
                 genome_node_index2: int = self.get_node_index(genome_node_string2)
 
-                self.gene_nodes_2[genome_node_index1].chromosome_index = i
-                self.gene_nodes_2[genome_node_index2].chromosome_index = i
+                self.gene_nodes_2[genome_node_index1].chromosome_id = i
+                self.gene_nodes_2[genome_node_index2].chromosome_id = i
                 self.gene_nodes_2[genome_node_index1].chromosome_position = j * 2
                 self.gene_nodes_2[genome_node_index2].chromosome_position = (j * 2) + 1
                 self.chromosomes_for_gene_node_2[i][j * 2] = genome_node_index1
@@ -269,24 +265,24 @@ class DCJRearrangement:
         GenomeInString
             New GenomeInString
         """
-        chromosome: List[str] = [str() for _ in range(len(node_list))]
+        chromosomes: List[str] = list()
 
         for i in range(len(node_list)):
-            chromosome[i] = ""
+            chromosomes.append(str())
 
-            for j in range(len(node_list[i]) // 2):
-                genome1: str = self.gene_node_as_string[node_list[i][j * 2]][0]
+            for j in range(int(len(node_list[i]) / 2)):
+                gene_node_1: str = self.gene_node_as_string[node_list[i][j * 2]][0]
                 tail_or_head1: str = self.gene_node_as_string[node_list[i][j * 2]][1]
-                genome2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][0]
+                gene_node_2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][0]
                 tail_or_head2: str = self.gene_node_as_string[node_list[i][(j * 2) + 1]][1]
 
-                if genome1 == genome2 and tail_or_head1 == "t" and tail_or_head2 == "h":
-                    chromosome[i] = chromosome[i] + " " + genome1
+                if gene_node_1 == gene_node_2 and tail_or_head1 == "t" and tail_or_head2 == "h":
+                    chromosomes[i] = chromosomes[i] + " " + gene_node_1
                 else:
-                    if genome1 == genome2 and tail_or_head1 == "h" and tail_or_head2 == "t":
-                        chromosome[i] = chromosome[i] + " -" + genome1
+                    if gene_node_1 == gene_node_2 and tail_or_head1 == "h" and tail_or_head2 == "t":
+                        chromosomes[i] = chromosomes[i] + " -" + gene_node_1
 
-        return GenomeInString(chromosome)
+        return GenomeInString(Genome.from_strings(chromosomes))
 
     def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: List[int],
                    number_of_operations: int) -> List[Optional[GenomeInString]]:
@@ -296,9 +292,9 @@ class DCJRearrangement:
         Parameters
         ----------
         min_chromosome
-            Minimum chromosome count
+            Minimum chromosome count for fission/fusion operations
         max_chromosome
-            Maximum chromosome count
+            Maximum chromosome count for fission/fusion operations
         which_chromosome
             Which chromosome to perform operation on
         types_of_operation
@@ -311,8 +307,7 @@ class DCJRearrangement:
         [GenomeInString]
             New list of GenomeInStrings after operations performed
         """
-        all_steps: List[Optional[GenomeInString]] = [None for _ in range(number_of_operations)]
-        step_index: int = 0
+        all_steps: List[Optional[GenomeInString]] = list()
         current_operation: int = 0
 
         self.touched_chromosome = [int() for _ in range(len(self.chromosomes_for_gene_node_1))]
@@ -337,12 +332,11 @@ class DCJRearrangement:
 
                 self.update_all_values(operation, which_chromosome)
 
-                all_steps[step_index] = self.get_genome_in_string(self.chromosomes_for_gene_node_1)
-                step_index += 1
+                all_steps.append(self.get_genome_in_string(self.chromosomes_for_gene_node_1))
                 current_operation += 1
                 more = True
 
-        return deepcopy(all_steps)[:step_index]
+        return deepcopy(all_steps)
 
     def update_all_values(self, operation: DCJOperation, which_chromosome: int):
         """
@@ -356,133 +350,88 @@ class DCJRearrangement:
             Which chromosome operating on
         """
         if which_chromosome == -1:
-            if operation.chromosome_1 != -1:
+            if operation.chromosome_1 != -1:  # No chromosome
                 self.touched_chromosome[operation.chromosome_1] = 1
 
-            if operation.chromosome_2 != -1:
+            if operation.chromosome_2 != -1:  # No chromosome
                 self.touched_chromosome[operation.chromosome_2] = 1
 
         if operation.operation_type == OperationTypes.INVERSION:
-            start_node: int = \
-                self.gene_nodes_1[operation.node_3].chromosome_position
+            start_node: int = self.gene_nodes_1[operation.node_3].chromosome_position
             end_node: int = self.gene_nodes_1[operation.node_2].chromosome_position
-            chromosome_here: int = operation.chromosome_1
-            new_chromosome_here: List[int] = \
-                [int() for _ in range(len(self.chromosomes_for_gene_node_1[chromosome_here]))]
+            new_chromosome_here: List[int] = list()
 
-            for i in range(start_node):
-                new_chromosome_here[i] = self.chromosomes_for_gene_node_1[chromosome_here][i]
-
-            for i in range(start_node, end_node + 1):
-                new_chromosome_here[i] = self.chromosomes_for_gene_node_1[chromosome_here][end_node - i + start_node]
-
-            for i in range(end_node + 1, len(new_chromosome_here)):
-                new_chromosome_here[i] = self.chromosomes_for_gene_node_1[chromosome_here][i]
+            for i in range(len(self.chromosomes_for_gene_node_1[operation.chromosome_1])):
+                if end_node >= i >= start_node:  # Inverted section of the chromosome
+                    new_chromosome_here.append(
+                        self.chromosomes_for_gene_node_1[operation.chromosome_1][end_node - i + start_node])
+                else:                            # Normal section of the chromosome
+                    new_chromosome_here.append(
+                        self.chromosomes_for_gene_node_1[operation.chromosome_1][i])
 
             for i in range(start_node, end_node + 1):
                 self.gene_nodes_1[new_chromosome_here[i]].chromosome_position = i
 
-            self.chromosomes_for_gene_node_1[chromosome_here] = new_chromosome_here
+            self.chromosomes_for_gene_node_1[operation.chromosome_1] = new_chromosome_here
         elif operation.operation_type == OperationTypes.TRANSLOCATION:
             length_1: int = len(self.chromosomes_for_gene_node_1[operation.chromosome_1])
-            length_2: int = len(self.chromosomes_for_gene_node_1[operation.chromosome_2])
             length_a: int = 0
+            length_c: int = 0
 
             if operation.node_1 != -1:
-                length_a = \
-                    self.gene_nodes_1[operation.node_1].chromosome_position + 1
+                length_a = self.gene_nodes_1[operation.node_1].chromosome_position + 1
 
             length_b: int = length_1 - length_a
+
             new_chromosome1: List[int] = list()
             new_chromosome2: List[int] = list()
 
             if operation.operation_subtype == TranslocationSubtypes.ADCB:
-                length_c: int = 0
-
                 if operation.node_4 != -1:
                     length_c = self.gene_nodes_1[operation.node_4].chromosome_position + 1
 
-                length_d: int = length_2 - length_c
-                new_chromosome1 = [int() for _ in range(length_a + length_d)]
-                new_chromosome2 = [int() for _ in range(length_c + length_b)]
+                new_chromosome1 = deepcopy(             # A
+                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_a]
+                new_chromosome1[length_a:] = deepcopy(  # D
+                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[length_c:]
 
-                for i in range(length_a):
-                    new_chromosome1[i] = self.chromosomes_for_gene_node_1[operation.chromosome_1][i]
+                new_chromosome2 = deepcopy(             # C
+                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[:length_c]
+                new_chromosome2[length_c:] = deepcopy(  # B
+                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[length_a:]
 
-                for i in range(length_d):
-                    new_chromosome1[i + length_a] = \
-                        self.chromosomes_for_gene_node_1[operation.chromosome_2][i + length_c]
-
-                for i in range(length_c):
-                    new_chromosome2[i] = self.chromosomes_for_gene_node_1[operation.chromosome_2][i]
-
-                for i in range(length_b):
-                    new_chromosome2[i + length_c] = \
-                        self.chromosomes_for_gene_node_1[operation.chromosome_1][i + length_a]
             elif operation.operation_subtype == TranslocationSubtypes.AnCnBD:
-                length_c: int = 0
-
                 if operation.node_2 != -1:
                     length_c = self.gene_nodes_1[operation.node_2].chromosome_position + 1
 
-                length_d: int = length_2 - length_c
-                new_chromosome1 = [int() for _ in range(length_a + length_c)]
-                new_chromosome2 = [int() for _ in range(length_b + length_d)]
+                new_chromosome1 = deepcopy(             # A
+                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_a]
+                new_chromosome1[length_a:] = [          # -C
+                    x for x in reversed(self.chromosomes_for_gene_node_1[operation.chromosome_2][:length_c])]
 
-                for i in range(length_a):
-                    new_chromosome1[i] = deepcopy(
-                        self.chromosomes_for_gene_node_1[operation.chromosome_1][i])
-
-                for i in range(length_c):
-                    new_chromosome1[i + length_a] = deepcopy(
-                        self.chromosomes_for_gene_node_1[operation.chromosome_2][length_c - i - 1])
-
-                for i in range(length_b):
-                    new_chromosome2[i] = deepcopy(
-                        self.chromosomes_for_gene_node_1[operation.chromosome_1][length_1 - i - 1])
-
-                for i in range(length_d):
-                    new_chromosome2[i + length_b] = deepcopy(
-                        self.chromosomes_for_gene_node_1[operation.chromosome_2][i + length_c])
+                new_chromosome2 = [                     # -B
+                    x for x in reversed(self.chromosomes_for_gene_node_1[operation.chromosome_1][length_a:])]
+                new_chromosome2[length_b:] = deepcopy(  # D
+                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[length_c:]
 
             for i in range(len(new_chromosome1)):
-                self.gene_nodes_1[new_chromosome1[i]].chromosome_index = operation.chromosome_1
+                self.gene_nodes_1[new_chromosome1[i]].chromosome_id = operation.chromosome_1
                 self.gene_nodes_1[new_chromosome1[i]].chromosome_position = i
 
             for i in range(len(new_chromosome2)):
-                self.gene_nodes_1[new_chromosome2[i]].chromosome_index = operation.chromosome_2
+                self.gene_nodes_1[new_chromosome2[i]].chromosome_id = operation.chromosome_2
                 self.gene_nodes_1[new_chromosome2[i]].chromosome_position = i
 
             self.chromosomes_for_gene_node_1[operation.chromosome_1] = new_chromosome1
             self.chromosomes_for_gene_node_1[operation.chromosome_2] = new_chromosome2
         elif operation.operation_type == OperationTypes.FISSION:
-            chromosome: int = operation.chromosome_1
-            length: int = len(self.chromosomes_for_gene_node_1[chromosome])
             length_1: int = self.gene_nodes_1[operation.node_1].chromosome_position + 1
-            length_2: int = length - length_1
-            new_chromosome1: List[int] = [int() for _ in range(length_1)]
-            new_chromosome2: List[int] = [int() for _ in range(length_2)]
 
-            for i in range(length_1):
-                new_chromosome1[i] = self.chromosomes_for_gene_node_1[operation.chromosome_1][i]
+            new_chromosome1: List[int] = deepcopy(self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_1]
+            new_chromosome2: List[int] = deepcopy(self.chromosomes_for_gene_node_1[operation.chromosome_1])[length_1:]
 
-            for i in range(length_2):
-                new_chromosome2[i] = \
-                    self.chromosomes_for_gene_node_1[operation.chromosome_1][length_1 + i]
-
-            chromosome_in_gene_node1_temp: List[List[int]] = \
-                [list() for _ in range(len(self.chromosomes_for_gene_node_1) + 1)]
-
-            for i in range(len(self.chromosomes_for_gene_node_1)):
-                chromosome_in_gene_node1_temp[i] = self.chromosomes_for_gene_node_1[i]
-
-            chromosome_in_gene_node1_temp[operation.chromosome_1] = new_chromosome1
-            chromosome_in_gene_node1_temp[len(self.chromosomes_for_gene_node_1)] = new_chromosome2
-
-            self.chromosomes_for_gene_node_1 = [list() for _ in range(len(chromosome_in_gene_node1_temp))]
-
-            for i in range(len(chromosome_in_gene_node1_temp)):
-                self.chromosomes_for_gene_node_1[i] = chromosome_in_gene_node1_temp[i]
+            self.chromosomes_for_gene_node_1[operation.chromosome_1] = new_chromosome1
+            self.chromosomes_for_gene_node_1.append(new_chromosome2)
         elif operation.operation_type == OperationTypes.FUSION:
             chromosome1: int = operation.chromosome_1
             chromosome2: int = operation.chromosome_2
@@ -492,31 +441,35 @@ class DCJRearrangement:
             new_chromosome: List[int] = [int() for _ in range(length)]
 
             if operation.operation_subtype == FusionSubtypes.TWO_REVERSED_PLUS_ONE:
-                for i in range(length_2):
-                    new_chromosome[i] = self.chromosomes_for_gene_node_1[chromosome2][length_2 - i]
-
-                new_chromosome[length_2:length_1] = deepcopy(self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome = [                     # -2
+                    x for x in reversed(self.chromosomes_for_gene_node_1[chromosome2])]
+                new_chromosome[length_2:] = deepcopy(  # 1
+                    self.chromosomes_for_gene_node_1[chromosome1])
             elif operation.operation_subtype == FusionSubtypes.TWO_PLUS_ONE:
-                new_chromosome[:length_2] = deepcopy(self.chromosomes_for_gene_node_1[chromosome2])
-                new_chromosome[length_2:length_1] = deepcopy(self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome = deepcopy(             # 2
+                    self.chromosomes_for_gene_node_1[chromosome2])
+                new_chromosome[length_2:] = deepcopy(  # 1
+                    self.chromosomes_for_gene_node_1[chromosome1])
             elif operation.operation_subtype == FusionSubtypes.ONE_PLUS_TWO:
-                new_chromosome[:length_1] = deepcopy(self.chromosomes_for_gene_node_1[chromosome1])
-                new_chromosome[length_1:length_2] = deepcopy(self.chromosomes_for_gene_node_1[chromosome2])
+                new_chromosome = deepcopy(             # 1
+                    self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome[length_1:] = deepcopy(  # 2
+                    self.chromosomes_for_gene_node_1[chromosome2])
             elif operation.operation_subtype == FusionSubtypes.ONE_PLUS_TWO_REVERSED:
-                new_chromosome[:length_1] = deepcopy(self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome = deepcopy(             # 1
+                    self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome[length_1:] = [          # -2
+                    x for x in reversed(self.chromosomes_for_gene_node_1[chromosome2])]
 
-                for i in range(length_2):
-                    new_chromosome[i + length_1] = self.chromosomes_for_gene_node_1[chromosome2][length_2 - i]
-
-            chromosome_small: int = chromosome1
-
-            if chromosome2 < chromosome1:
-                chromosome_small = chromosome2
-
-            chromosome_big: int = chromosome2
+            chromosome_big: int
+            chromosome_small: int
 
             if chromosome1 > chromosome2:
                 chromosome_big = chromosome1
+                chromosome_small = chromosome2
+            else:
+                chromosome_big = chromosome2
+                chromosome_small = chromosome1
 
             self.chromosomes_for_gene_node_1[chromosome_small] = new_chromosome
             self.chromosomes_for_gene_node_1[chromosome_big] = [0]
@@ -525,22 +478,12 @@ class DCJRearrangement:
                 self.gene_nodes_1[new_chromosome[i]].chromosome_position = i
 
             for i in range(len(self.gene_nodes_1)):
-                if self.gene_nodes_1[i].chromosome_index >= chromosome1 and \
-                        self.gene_nodes_1[i].chromosome_index >= chromosome2:
-                    self.gene_nodes_1[i].chromosome_index = self.gene_nodes_1[i].chromosome_index - 1
+                if self.gene_nodes_1[i].chromosome_id >= chromosome1 and \
+                        self.gene_nodes_1[i].chromosome_id >= chromosome2:
+                    self.gene_nodes_1[i].chromosome_id = self.gene_nodes_1[i].chromosome_id - 1
 
-            chromosome_in_gene_node1_temp: List[List[int]] = [
-                [int()] for _ in range((len(self.chromosomes_for_gene_node_1) - 1))]
-
-            index: int = 0
-
-            for ints in self.chromosomes_for_gene_node_1:
-                if ints != [0]:
-                    chromosome_in_gene_node1_temp[index] = ints
-                    index += 1
-
-            self.chromosomes_for_gene_node_1 = [[int()] for _ in range(len(chromosome_in_gene_node1_temp))]
-            self.chromosomes_for_gene_node_1 = chromosome_in_gene_node1_temp
+            self.chromosomes_for_gene_node_1 = clean_empty_lists(
+                self.chromosomes_for_gene_node_1[:len(self.chromosomes_for_gene_node_1) - 1])
 
         if operation.node_1 != -1:
             self.gene_nodes_1[operation.node_1].adjacency = operation.node_2
@@ -602,6 +545,9 @@ class DCJRearrangement:
         result: DCJOperation = DCJOperation()
         result.chromosome_1 = -1
 
+        # If true, returns a value indicating an invalid operation result: -1
+        # A fusion operation cannot result in fewer chromosomes than the indicated minimum and,
+        # a fission cannot result in more chromosomes than the indicated maximum.
         if operation_type == OperationTypes.FUSION and \
            len(self.chromosomes_for_gene_node_1) <= self.min_chromosome_number or \
            operation_type == OperationTypes.FISSION and \
@@ -619,10 +565,10 @@ class DCJRearrangement:
                     node4: int = self.chromosomes_for_gene_node_2[j][len(self.chromosomes_for_gene_node_2[j]) - 1]
 
                     if self.gene_nodes_1[node1].adjacency == node3 and \
-                            ((-1 < which_chromosome == self.gene_nodes_1[node1].chromosome_index) or
+                            ((-1 < which_chromosome == self.gene_nodes_1[node1].chromosome_id) or
                              (which_chromosome < 0 and
-                              self.touched_chromosome[self.gene_nodes_1[node1].chromosome_index] == 0)):
-                        result.chromosome_1 = self.gene_nodes_1[node1].chromosome_index
+                              self.touched_chromosome[self.gene_nodes_1[node1].chromosome_id] == 0)):
+                        result.chromosome_1 = self.gene_nodes_1[node1].chromosome_id
                         result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                         result.node_1 = node1
                         result.node_2 = -1
@@ -633,10 +579,10 @@ class DCJRearrangement:
 
                         return result
                     elif self.gene_nodes_1[node1].adjacency == node4 and \
-                            ((-1 < which_chromosome == self.gene_nodes_1[node1].chromosome_index) or
+                            ((-1 < which_chromosome == self.gene_nodes_1[node1].chromosome_id) or
                              (which_chromosome < 0 and
-                              self.touched_chromosome[self.gene_nodes_1[node1].chromosome_index] == 0)):
-                        result.chromosome_1 = self.gene_nodes_1[node1].chromosome_index
+                              self.touched_chromosome[self.gene_nodes_1[node1].chromosome_id] == 0)):
+                        result.chromosome_1 = self.gene_nodes_1[node1].chromosome_id
                         result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                         result.node_1 = node1
                         result.node_2 = -1
@@ -647,10 +593,10 @@ class DCJRearrangement:
 
                         return result
                     elif self.gene_nodes_1[node2].adjacency == node3 and \
-                            ((-1 < which_chromosome == self.gene_nodes_1[node2].chromosome_index) or
+                            ((-1 < which_chromosome == self.gene_nodes_1[node2].chromosome_id) or
                              (which_chromosome < 0 and
-                              self.touched_chromosome[self.gene_nodes_1[node2].chromosome_index] == 0)):
-                        result.chromosome_1 = self.gene_nodes_1[node2].chromosome_index
+                              self.touched_chromosome[self.gene_nodes_1[node2].chromosome_id] == 0)):
+                        result.chromosome_1 = self.gene_nodes_1[node2].chromosome_id
                         result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                         result.node_1 = node2
                         result.node_2 = -1
@@ -661,10 +607,10 @@ class DCJRearrangement:
 
                         return result
                     elif self.gene_nodes_1[node2].adjacency == node4 and \
-                            ((-1 < which_chromosome == self.gene_nodes_1[node2].chromosome_index) or
+                            ((-1 < which_chromosome == self.gene_nodes_1[node2].chromosome_id) or
                              (which_chromosome < 0 and
-                              self.touched_chromosome[self.gene_nodes_1[node2].chromosome_index] == 0)):
-                        result.chromosome_1 = self.gene_nodes_1[node2].chromosome_index
+                              self.touched_chromosome[self.gene_nodes_1[node2].chromosome_id] == 0)):
+                        result.chromosome_1 = self.gene_nodes_1[node2].chromosome_id
                         result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                         result.node_1 = node2
                         result.node_2 = -1
@@ -679,13 +625,13 @@ class DCJRearrangement:
                 node1 = self.chromosomes_for_gene_node_2[i][0]
                 node2 = self.chromosomes_for_gene_node_2[i][len(self.chromosomes_for_gene_node_2[i]) - 1]
 
-                chromosome_node1: int = self.gene_nodes_1[node1].chromosome_index
+                chromosome_node1: int = self.gene_nodes_1[node1].chromosome_id
                 node3: int = self.gene_nodes_1[node1].adjacency
 
                 if node3 != -1 and (chromosome_node1 == which_chromosome or
                                     which_chromosome < 0 and
                                     self.touched_chromosome[chromosome_node1] == 0):
-                    result.chromosome_1 = self.gene_nodes_1[node1].chromosome_index
+                    result.chromosome_1 = self.gene_nodes_1[node1].chromosome_id
                     result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                     result.node_1 = node1
                     result.node_2 = -1
@@ -696,13 +642,13 @@ class DCJRearrangement:
 
                     return result
 
-                chromosome_node2: int = self.gene_nodes_1[node2].chromosome_index
+                chromosome_node2: int = self.gene_nodes_1[node2].chromosome_id
                 node4: int = self.gene_nodes_1[node2].adjacency
 
                 if node4 != -1 and (chromosome_node2 == which_chromosome or
                                     which_chromosome < 0 and
                                     self.touched_chromosome[chromosome_node2] == 0):
-                    result.chromosome_1 = self.gene_nodes_1[node2].chromosome_index
+                    result.chromosome_1 = self.gene_nodes_1[node2].chromosome_id
                     result.chromosome_2 = len(self.chromosomes_for_gene_node_1)
                     result.node_1 = node2
                     result.node_2 = -1
@@ -895,7 +841,7 @@ class DCJRearrangement:
                 node4: int = self.gene_nodes_2[node2].adjacency
 
                 if node3 != -1 and \
-                   self.gene_nodes_1[node3].chromosome_index == chromosome and \
+                   self.gene_nodes_1[node3].chromosome_id == chromosome and \
                    self.gene_nodes_1[node3].chromosome_position > int(i * 2):
                     node5: int = self.gene_nodes_1[node3].adjacency
 
@@ -912,7 +858,7 @@ class DCJRearrangement:
 
                         return result
                 elif node4 != -1 and \
-                        self.gene_nodes_1[node4].chromosome_index == chromosome and \
+                        self.gene_nodes_1[node4].chromosome_id == chromosome and \
                         self.gene_nodes_1[node4].chromosome_position > int(i * 2):
                     node6: int = self.gene_nodes_1[node4].adjacency
 
@@ -974,20 +920,20 @@ class DCJRearrangement:
                 if node2 != -1:
                     node4 = self.gene_nodes_2[node2].adjacency
 
-                if (node3 != -1 and self.gene_nodes_1[node3].chromosome_index != chromosome) and \
-                   (which_chromosome > -1 or self.touched_chromosome[self.gene_nodes_1[node3].chromosome_index] == 0):
+                if (node3 != -1 and self.gene_nodes_1[node3].chromosome_id != chromosome) and \
+                   (which_chromosome > -1 or self.touched_chromosome[self.gene_nodes_1[node3].chromosome_id] == 0):
                     node5: int = self.gene_nodes_1[node3].adjacency
 
                     if node2 + node5 != -2:
                         sub_type: int = TranslocationSubtypes.AnCnBD
 
-                        if (self.chromosomes_for_gene_node_1[self.gene_nodes_1[node3].chromosome_index][0] == node3) or\
+                        if (self.chromosomes_for_gene_node_1[self.gene_nodes_1[node3].chromosome_id][0] == node3) or\
                            (node5 != -1 and self.gene_nodes_1[node5].chromosome_position <
                                 self.gene_nodes_1[node3].chromosome_position):
                             sub_type = TranslocationSubtypes.ADCB
 
                         result.chromosome_1 = chromosome
-                        result.chromosome_2 = self.gene_nodes_1[node3].chromosome_index
+                        result.chromosome_2 = self.gene_nodes_1[node3].chromosome_id
                         result.node_1 = node1
                         result.node_2 = node3
                         result.node_3 = node2
@@ -997,20 +943,20 @@ class DCJRearrangement:
 
                         return result
 
-                if (node4 != -1 and self.gene_nodes_1[node4].chromosome_index != chromosome) and \
-                   (which_chromosome > -1 or self.touched_chromosome[self.gene_nodes_1[node4].chromosome_index] == 0):
+                if (node4 != -1 and self.gene_nodes_1[node4].chromosome_id != chromosome) and \
+                   (which_chromosome > -1 or self.touched_chromosome[self.gene_nodes_1[node4].chromosome_id] == 0):
                     node6: int = self.gene_nodes_1[node4].adjacency
 
                     if node1 + node6 != -2:
                         sub_type: int = TranslocationSubtypes.ADCB
 
-                        if (self.chromosomes_for_gene_node_1[self.gene_nodes_1[node4].chromosome_index][0] == node4) or\
+                        if (self.chromosomes_for_gene_node_1[self.gene_nodes_1[node4].chromosome_id][0] == node4) or\
                            (node6 != -1 and self.gene_nodes_1[node6].chromosome_position <
                                 self.gene_nodes_1[node4].chromosome_position):
                             sub_type = TranslocationSubtypes.AnCnBD
 
                         result.chromosome_1 = chromosome
-                        result.chromosome_2 = self.gene_nodes_1[node4].chromosome_index
+                        result.chromosome_2 = self.gene_nodes_1[node4].chromosome_id
                         result.node_1 = node1
                         result.node_2 = node6
                         result.node_3 = node2

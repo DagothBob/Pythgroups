@@ -2,15 +2,17 @@ from io import StringIO
 from typing import List, Dict, Optional
 
 import yaml
-import InputPreprocessing
 from Bio import Phylo
 from Bio.Phylo.Newick import Tree, Clade
 from networkx import Graph
 
+import InputPreprocessing
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
+from Genome import Genome
 from GenomeInString import GenomeInString
+from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
 from PGMPath import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
@@ -271,9 +273,9 @@ def small_phylogeny():
     num_ancestor = len(tree.get_nonterminals())
     num_leaves = len(tree.get_terminals())
     num_genes = count_genes(genomes)
-    all_genomes: List[GenomeInString] = []
+    all_genomes: List[GenomeInString] = list()
     for chromosomes in genomes.values():
-        all_genomes.append(GenomeInString(chromosomes))
+        all_genomes.append(GenomeInString(Genome.from_strings(chromosomes)))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
@@ -372,7 +374,7 @@ def dcj_rearrangements():
     genome2: List[str] = next(value_iterator)
 
     # Calculate the initial BPG distance
-    bpg_dist: BPGDistance = BPGDistance(genome1, genome2)
+    bpg_dist: BPGDistance = BPGDistance(Genome.from_strings(genome1), Genome.from_strings(genome2))
     bpg_dist.calculate_distance()
     cur_dist: int = bpg_dist.distance
 
@@ -381,7 +383,7 @@ def dcj_rearrangements():
                                   OperationTypes.TRANSLOCATION,
                                   OperationTypes.FISSION,
                                   OperationTypes.FUSION]
-    dcj: DCJRearrangement = DCJRearrangement(genome1, genome2)
+    dcj: DCJRearrangement = DCJRearrangement(Genome.from_strings(genome1), Genome.from_strings(genome2))
     dcj.initial_value()
     more: bool = True
     while cur_dist > 0 and more:
@@ -392,15 +394,48 @@ def dcj_rearrangements():
             for genome in rearrange_state:
                 print("*******")
                 for i in range(len(genome.chromosomes)):
-                    print("Chromosome " + str(i) + "\n" + genome.chromosomes[i])
+                    print("Chromosome " + str(i) + "\n" + str(genome.chromosomes[i]))
 
             new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
-            bpg_dist = BPGDistance(new_genome.chromosomes, genome2)
+            bpg_dist = BPGDistance(Genome(new_genome.chromosomes), Genome.from_strings(genome2))
             bpg_dist.calculate_distance()
             cur_dist = bpg_dist.distance
             print("a run, steps: " + str(len(rearrange_state)) + ", cur_dist: " + str(cur_dist))
-            dcj = DCJRearrangement(new_genome.chromosomes, genome2)
+            dcj = DCJRearrangement(Genome(new_genome.chromosomes), Genome.from_strings(genome2))
             dcj.initial_value()
+
+
+def genome_halving():
+    tetrad: List[str] = list()  # TODO: Read from file
+    outgroup: List[str] = list()  # TODO: Read from file
+
+    ggh: GroupGraph = GroupGraph(tetrad, outgroup, 1)
+    ggh.get_result()
+
+    bpg_distance: BPGDistance = BPGDistance(Genome.from_strings(tetrad), Genome.from_strings(ggh.ancestor_AA))
+    bpg_distance.calculate_distance()
+    distance_1: int = bpg_distance.distance
+
+    bpg_distance = BPGDistance(Genome.from_strings(outgroup), Genome.from_strings(ggh.ancestor_A))
+    bpg_distance.calculate_distance()
+    distance_2: int = bpg_distance.distance
+
+    total_distance: int = distance_1 + distance_2
+
+    print("\nd(AA, tetra) = " + str(distance_1) + " | d(A,outgroup) = " + str(distance_2), " | total = " +
+          str(total_distance) + "\n")
+
+    print("Genome ancestor_AA:\n")
+
+    for i in range(len(ggh.ancestor_AA)):
+        print("Chromosome " + str(i + 1))
+        print(str(ggh.ancestor_AA[i]))
+
+    print("Genome ancestor_A:\n")
+
+    for i in range(len(ggh.ancestor_A)):
+        print("Chromosome " + str(i + 1))
+        print(str(ggh.ancestor_A[i]))
 
 
 def get_algorithm(alg: str):
@@ -418,18 +453,21 @@ def get_algorithm(alg: str):
         genome_aliquoting()
     elif alg == "DCJRearrangements":
         dcj_rearrangements()
+    elif alg == "GenomeHalving":
+        genome_halving()
     else:
         print("Algorithm not supported by this program. Supported algorithms:\n" +
               "- SmallPhylogeny\n" +
               "- GenomeAliquoting\n" +
-              "- DCJRearrangements\n\n" +
+              "- DCJRearrangements\n" +
+              "- GenomeHalving\n\n" +
               "Exiting.")
         exit(1)
 
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "SmallPhylogeny"
+    algorithm = "DCJRearrangements"
     get_algorithm(algorithm)
 
 
