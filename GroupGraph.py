@@ -3,6 +3,7 @@ from random import Random
 from typing import List, Optional
 
 from ChoiceStructure import ChoiceStructure
+from Genome import Genome
 from PGMFragment import PGMFragment, combine
 from PGMPath import PGMPath
 from Priority import Priority
@@ -53,12 +54,11 @@ def split_at_whitespace(strings: str) -> List[str]:
     return result
 
 
-def count_gene_number(genome: List[str]) -> int:
+def count_gene_number(genome: Genome) -> int:
     result: int = 0
 
-    for chromosome in genome:
-        genes: List[str] = split_at_whitespace(chromosome)
-        result += len(genes)
+    for chromosome in genome.chromosomes:
+        result += len(chromosome.genes)
 
     return result
 
@@ -154,7 +154,7 @@ def is_a_cycle(path1: PGMPath, path2: PGMPath) -> bool:
 
 
 class GroupGraph:
-    def __init__(self, tetrad: List[str], outgroup: List[str], replace: int):
+    def __init__(self, tetrad: Genome, outgroup: Genome, replace: int):
         self.node_int: List[int] = list()
         self.node_str: List[str] = list()
         self.ancestor_AA: List[str] = list()
@@ -174,7 +174,7 @@ class GroupGraph:
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
             self.fragments[2 * i + 2] = PGMFragment(2 * i + 2, 2 * i + 1)
 
-        self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(tetrad))]
+        self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(tetrad.chromosomes))]
         self.gray_edge_index: int = 0
 
         self.choice_structures: List[Optional[ChoiceStructure]] = [None for _ in range(self.gene_number * 2)]
@@ -183,9 +183,9 @@ class GroupGraph:
         for i in range(1, self.gene_number * 2 + 1):
             self.choice_structures[cs_index] = ChoiceStructure()
             self.choice_structures[cs_index].index_from = i
-            self.choice_structures[cs_index].genome_1_path = copy(tetrad[i])
-            self.choice_structures[cs_index].genome_2_path = copy(tetrad[i + self.gene_number * 2])
-            self.choice_structures[cs_index].genome_3_path = copy(outgroup[i])
+            self.choice_structures[cs_index].genome_1_path = copy(tetrad.chromosomes[i])
+            self.choice_structures[cs_index].genome_2_path = copy(tetrad.chromosomes[i + self.gene_number * 2])
+            self.choice_structures[cs_index].genome_3_path = copy(outgroup.chromosomes[i])
             self.choice_structures[cs_index].priority = 200
             self.choice_structures[cs_index].position = -1
             self.choice_structures[cs_index].gray_edge = None
@@ -205,22 +205,20 @@ class GroupGraph:
 
         return priorities
 
-    def set_nodes(self, genome: List[str]):
+    def set_nodes(self, genome: Genome):
         self.node_int = [int() for _ in range(self.gene_number * 2)]
         self.node_str = [str() for _ in range(self.gene_number * 2)]
 
         index: int = 0
 
-        for chromosome in genome:
-            genes: List[str] = split_at_whitespace(chromosome)
-
-            for gene in genes:
+        for chromosome in genome.chromosomes:
+            for gene in chromosome.genes:
                 node_1: str
                 node_2: str
 
-                if gene[0] == "-":
-                    node_1 = gene[1:] + "h"
-                    node_2 = gene[1:] + "t"
+                if gene.name[0] == "-":
+                    node_1 = gene.name[1:] + "h"
+                    node_2 = gene.name[1:] + "t"
 
                     self.node_int[index] = index + 1
                     self.node_str[index] = node_2
@@ -230,8 +228,8 @@ class GroupGraph:
                     self.node_str[index] = node_1
                     index += 1
                 else:
-                    node_1 = gene + "t"
-                    node_2 = gene + "h"
+                    node_1 = gene.name + "t"
+                    node_2 = gene.name + "h"
 
                     self.node_int[index] = index + 1
                     self.node_str[index] = node_1
@@ -241,7 +239,7 @@ class GroupGraph:
                     self.node_str[index] = node_2
                     index += 1
 
-    def get_pgm_path(self, genome: List[str], ploidy: int) -> List[PGMPath]:
+    def get_pgm_path(self, genome: Genome, ploidy: int) -> List[PGMPath]:
         """
         Gets list of PGMPaths for a genome
 
@@ -266,39 +264,38 @@ class GroupGraph:
 
         null_node: int = -1
 
-        for chromosome in genome:
-            genes: List[str] = split_at_whitespace(chromosome)
+        for chromosome in genome.chromosomes:
             pre_node: int = 0
 
-            for j in range(len(genes)):
-                first_character: str = genes[j][0]
+            for j in range(len(chromosome.genes)):
+                first_character: str = chromosome.genes[j].name[0]
                 node1: str
                 node2: str
 
                 if first_character == '-':
-                    node1 = insert_character(genes[j][1:], len(genes[j][1:]), "h")
-                    node2 = insert_character(genes[j][1:], len(genes[j][1:]), "t")
+                    node1 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "h")
+                    node2 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "t")
                 else:
-                    node1 = insert_character(genes[j], len(genes[j]), "t")
-                    node2 = insert_character(genes[j], len(genes[j]), "h")
+                    node1 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "t")
+                    node2 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "h")
 
                 node1_int: int = self.find_node_int(node1, ploidy)
                 node2_int: int = self.find_node_int(node2, ploidy)
 
                 if node1_int == 0 or node2_int == 0:
-                    print("Gene ", str(genes[j]), " does not exist in the other genome.\n")
+                    print("Gene ", str(chromosome.genes[j]), " does not exist in the other genome.\n")
 
                 if j == 0:
                     path1[node1_int] = PGMPath(node1_int, null_node, None, None)
                     pre_node = node2_int
                     null_node -= 1
-                elif j != 0 and j != len(genes) - 1:
+                elif j != 0 and j != len(chromosome.genes) - 1:
                     path1[node1_int] = PGMPath(node1_int, pre_node, None, None)
                     path1[pre_node] = PGMPath(pre_node, node1_int, None, None)
                     pre_node = node2_int
 
-                if j == len(genes) - 1:
-                    if len(genes) != 1:
+                if j == len(chromosome.genes) - 1:
+                    if len(chromosome.genes) != 1:
                         path1[pre_node] = PGMPath(pre_node, node1_int, None, None)
                         path1[node1_int] = PGMPath(node1_int, pre_node, None, None)
 
