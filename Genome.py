@@ -112,6 +112,6 @@ class Genome:
         ret: str = str()
 
         for chromosome in self.chromosomes:
-            ret += str(chromosome)
+            ret += str(chromosome) + "\n"
 
         return ret

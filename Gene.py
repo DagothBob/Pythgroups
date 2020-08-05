@@ -73,7 +73,7 @@ class Gene:
             Gene object with name and node values based on parity of the gene
         """
         if name[0] == "-":
-            return cls(name[1:], TailOrHead.HEAD, TailOrHead.TAIL)
+            return cls(name, TailOrHead.HEAD, TailOrHead.TAIL)
         else:
             return cls(name, TailOrHead.HEAD, TailOrHead.TAIL)
 
