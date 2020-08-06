@@ -25,7 +25,7 @@ class PGMPath:
         Genome for the tail gene
     """
 
-    def __init__(self, head: int, tail: int, ghead: Optional[int], gtail: Optional[int]):
+    def __init__(self, head: int, tail: int, ghead: Optional[int] = None, gtail: Optional[int] = None):
         """
         Constructor
 
@@ -46,7 +46,10 @@ class PGMPath:
         self.genome_tail: Optional[int] = gtail
 
     @staticmethod
-    def connect(path1: PGMPath, path2: PGMPath, path_l: PGMPath, which_genome: Optional[int]) -> Optional[PGMPath]:
+    def connect(path1: PGMPath,
+                path2: PGMPath,
+                path_l: PGMPath,
+                which_genome: Optional[int] = None) -> Optional[PGMPath]:
         """
         Connect two PGMPaths
 
@@ -209,20 +212,20 @@ class PGMPath:
                 return PGMPath(head, tail, genome_head, genome_tail)
         else:  # GGH version
             if path1.head == path_l.head and path2.head == path_l.tail:
-                return PGMPath(path1.tail, path2.tail, None, None)
+                return PGMPath(path1.tail, path2.tail)
             elif path1.head == path_l.tail and path2.head == path_l.head:
-                return PGMPath(path1.tail, path2.tail, None, None)
+                return PGMPath(path1.tail, path2.tail)
             elif path1.head == path_l.tail and path2.tail == path_l.head:
-                return PGMPath(path1.tail, path2.head, None, None)
+                return PGMPath(path1.tail, path2.head)
             elif path1.head == path_l.head and path2.tail == path_l.tail:
-                return PGMPath(path1.tail, path2.head, None, None)
+                return PGMPath(path1.tail, path2.head)
             elif path1.tail == path_l.head and path2.head == path_l.tail:
-                return PGMPath(path1.head, path2.tail, None, None)
+                return PGMPath(path1.head, path2.tail)
             elif path1.tail == path_l.tail and path2.head == path_l.head:
-                return PGMPath(path1.head, path2.tail, None, None)
+                return PGMPath(path1.head, path2.tail)
             elif path1.tail == path_l.head and path2.tail == path_l.tail:
-                return PGMPath(path1.head, path2.head, None, None)
+                return PGMPath(path1.head, path2.head)
             elif path1.tail == path_l.tail and path2.tail == path_l.head:
-                return PGMPath(path1.head, path2.head, None, None)
+                return PGMPath(path1.head, path2.head)
 
         return None

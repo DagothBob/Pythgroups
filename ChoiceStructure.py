@@ -80,9 +80,11 @@ class ChoiceStructure:
         gene_number
             Number of genes
         """
-        genome_here: int = path.genome_head
+        genome_here: int
 
         if ploidy is None:
+            genome_here = path.genome_head
+
             if genome_here == self.genome_1_path.genome_head:
                 self.genome_1_path = copy(path)
 
@@ -92,17 +94,18 @@ class ChoiceStructure:
             if genome_here == self.genome_3_path.genome_head:
                 self.genome_3_path = copy(path)
         else:
+            genome_here = path.head
+
             if genome_here > gene_number * 2:
                 genome_here -= gene_number * 2
 
             if self.index_from != genome_here:
-                print("Object instance attribute index_from is not equal to from in ChoiceStructure.set_new_path(). "
-                      "Exiting.\n")
-                exit(1)
+                raise Exception(
+                    "Object instance attribute index_from is not equal to from in ChoiceStructure.set_new_path().\n")
 
             if ploidy == 1:
                 self.genome_3_path = copy(path)
-            else:
+            elif ploidy == 2:
                 if self.index_from == path.head:
                     self.genome_1_path = copy(path)
 
