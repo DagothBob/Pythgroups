@@ -300,6 +300,7 @@ def small_phylogeny():
 
     # Ancestor paths added second
     for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
+        # TODO: fix this please (TreeStructure, get_pgm_path, line 242: 'list' object has no attribute 'chromosomes')
         reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(ts.medians[i - ts.number_of_leaves].medians, i)))
 
     relation: List[List[int]] = ts.get_relation()
@@ -467,7 +468,7 @@ def get_algorithm(alg: str):
 
 def main():
     # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "DCJRearrangements"
+    algorithm = "SmallPhylogeny"
     get_algorithm(algorithm)
 
 
