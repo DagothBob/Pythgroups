@@ -8,6 +8,7 @@ from networkx import Graph
 
 import InputPreprocessing
 from BPGDistance import BPGDistance
+from Chromosome import Chromosome
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
 from Genome import Genome, split_at_whitespace
@@ -255,8 +256,8 @@ def small_phylogeny():
     genome_nodes: List[GenomeNode] = genome_nodes_from_tree(tree)
     median_nodes: List[GenomeNode] = parse_medians(genome_nodes)
 
-    num_ancestor = len(tree.get_nonterminals())
-    num_leaves = len(tree.get_terminals())
+    num_ancestor = len([node for node in tree.get_nonterminals() if node.name is not None])
+    num_leaves = len([node for node in tree.get_terminals() if node.name is not None])  # don't count unnamed nodes
     num_genes = count_genes(genomes)
     all_genomes: List[GenomeInString] = list()
     for chromosomes in genomes.values():
@@ -274,8 +275,8 @@ def small_phylogeny():
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
         print("before optimization, reconstructed ancestors")
-        for j in range(0, len(ts.medians[i].medians)):
-            print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
+        for j in range(0, len(ts.medians[i].median)):
+            print("chr {}\n {}".format(j, ts.medians[i].median[j]))
 
     reconstructed_paths: List[PGMPathForAGenome] = []
 
@@ -285,8 +286,9 @@ def small_phylogeny():
 
     # Ancestor paths added second
     for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
-        # TODO: fix this please (TreeStructure, get_pgm_path, line 242: 'list' object has no attribute 'chromosomes')
-        reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(ts.medians[i - ts.number_of_leaves].medians, i)))
+        chromosome_strings: List[str] = ts.medians[i - ts.number_of_leaves].median
+        median_genome: Genome = Genome.from_strings(chromosome_strings)
+        reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(median_genome, i)))
 
     relation: List[List[int]] = ts.get_relation()
     reconstructed_dist: int = int()
@@ -327,8 +329,8 @@ def small_phylogeny():
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
         print("reconstructed ancestors:")
-        for j in range(0, len(ts.medians[i].medians)):
-            print("chr {}\n {}".format(j, ts.medians[i].medians[j]))
+        for j in range(0, len(ts.medians[i].median)):
+            print("chr {}\n {}".format(j, ts.medians[i].median[j]))
 
 
 def genome_aliquoting():
