@@ -285,6 +285,7 @@ def small_phylogeny():
 
     # Ancestor paths added second
     for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
+        # TODO: fix this please (TreeStructure, get_pgm_path, line 242: 'list' object has no attribute 'chromosomes')
         reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(ts.medians[i - ts.number_of_leaves].medians, i)))
 
     relation: List[List[int]] = ts.get_relation()

@@ -161,6 +161,8 @@ class SmallPhylogeny:
         """
         Groups path group into the instance priorities list
         """
+        grouping_progress: int = 0
+        num_medians: int = len(self.tree.medians)
         for j in range(len(self.tree.medians[0].choice_structures)):
             for i in range(len(self.tree.medians)):
                 if self.tree.medians[i].choice_structures[j] is not None:
@@ -170,6 +172,11 @@ class SmallPhylogeny:
                         insert_position: int = self.priorities[priority_count].insert(j, i)
                         self.tree.medians[i].choice_structures[j].priority = priority_count
                         self.tree.medians[i].choice_structures[j].position = insert_position
+                grouping_progress += 1
+            if j % ((num_medians - 1) * 15) == 0:  # update progress at intervals
+                print("\rInitializing pathgroups: {}".format(grouping_progress), end="")
+
+        print("\rInitializing pathgroups: {}".format(grouping_progress))
 
     def get_priority_count(self, median_index: int, choice_structure_index: int) -> int:
         """
@@ -853,6 +860,7 @@ class SmallPhylogeny:
         self.group_pathgroup_into_priorities()
 
         best_choice_structure: List[int] = self.find_the_best_choice_structure()
+        bcs_progress = 0
 
         while best_choice_structure[0] != -1:
             priority: int = best_choice_structure[0]
@@ -863,6 +871,12 @@ class SmallPhylogeny:
             self.add_gray_edge(current_ancestor, self.tree.medians[current_ancestor].choice_structures[
                 current_choice_structure_index].gray_edge)
             best_choice_structure = self.find_the_best_choice_structure()
+
+            bcs_progress += 1
+            if bcs_progress % 15 == 0:  # update progress at intervals
+                print("\rSearching for best choice structure: {}".format(bcs_progress), end="")
+
+        print("\rSearching for best choice structure: {}".format(bcs_progress))
 
     def add_gray_edge(self, ancestor: int, gray_edge: PGMPath):
         """
