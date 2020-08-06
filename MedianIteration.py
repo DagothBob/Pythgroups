@@ -128,6 +128,8 @@ class MedianIteration:
         for turn in range(runs):
             # Iterates through each changed ancestor
             for i in range(len(self.changed)):
+                print("round: {}/{}, median: {}/{}".format(turn + 1, runs, i + 1, len(self.changed)))
+
                 leaf1: int = self.leaves[i + self.leaf_num][0]
                 leaf2: int = self.leaves[i + self.leaf_num][1]
                 leaf3: int = self.leaves[i + self.leaf_num][2]

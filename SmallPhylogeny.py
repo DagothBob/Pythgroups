@@ -162,9 +162,11 @@ class SmallPhylogeny:
         Groups path group into the instance priorities list
         """
         grouping_progress: int = 0
+        num_choice_structures: int = len(self.tree.medians[0].choice_structures)
         num_medians: int = len(self.tree.medians)
-        for j in range(len(self.tree.medians[0].choice_structures)):
-            for i in range(len(self.tree.medians)):
+        total_operations: int = num_choice_structures * num_medians
+        for j in range(num_choice_structures):
+            for i in range(num_medians):
                 if self.tree.medians[i].choice_structures[j] is not None:
                     priority_count: int = self.get_priority_count(i, j)
 
@@ -173,10 +175,10 @@ class SmallPhylogeny:
                         self.tree.medians[i].choice_structures[j].priority = priority_count
                         self.tree.medians[i].choice_structures[j].position = insert_position
                 grouping_progress += 1
-            if j % ((num_medians - 1) * 15) == 0:  # update progress at intervals
-                print("\rInitializing pathgroups: {}".format(grouping_progress), end="")
+                if j % 45 == 0:  # update progress at intervals
+                    print("\rInitializing pathgroups: {}/{}".format(grouping_progress, total_operations), end="")
 
-        print("\rInitializing pathgroups: {}".format(grouping_progress))
+        print("\rInitializing pathgroups: {}/{}".format(grouping_progress, total_operations))
 
     def get_priority_count(self, median_index: int, choice_structure_index: int) -> int:
         """
@@ -874,9 +876,9 @@ class SmallPhylogeny:
 
             bcs_progress += 1
             if bcs_progress % 15 == 0:  # update progress at intervals
-                print("\rSearching for best choice structure: {}".format(bcs_progress), end="")
+                print("\rSearching for best choice structure: {} iterations".format(bcs_progress), end="")
 
-        print("\rSearching for best choice structure: {}".format(bcs_progress))
+        print("\rSearching for best choice structure: {} iterations".format(bcs_progress))
 
     def add_gray_edge(self, ancestor: int, gray_edge: PGMPath):
         """

@@ -45,6 +45,9 @@ class PGMPath:
         self.genome_head: Optional[int] = ghead
         self.genome_tail: Optional[int] = gtail
 
+    def __str__(self):
+        return "h: {}, t: {}, gh: {}, gt: {}".format(self.head, self.tail, self.genome_head, self.genome_tail)
+
     @staticmethod
     def connect(path1: PGMPath,
                 path2: PGMPath,

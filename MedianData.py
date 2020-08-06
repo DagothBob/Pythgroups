@@ -119,25 +119,25 @@ class MedianData:
 
     Attributes
     ----------
-    self.three_genome_paths : [[PGMPath]]
+    three_genome_paths : [[PGMPath]]
         All paths for genomes 1-3 in the tree structure
-    self.three_genomes : [int]
+    three_genomes : [int]
         The identifiers for the three leaves (genomes) in the tree structure
-    self.gene_num : int
+    gene_num : int
         Total number of genes in each genome
-    self.which_genome : int
+    which_genome : int
         Which genome in the tree structure these medians exist in
-    self.node_strings : [str]
+    node_strings : [str]
         String representation of each node
-    self.gray_edge : [PGMPath]
+    gray_edge : [PGMPath]
         List of PGMPaths representing a gray edge
-    self.gray_edge_index : int
+    gray_edge_index : int
         Index of the gray edge
-    self.fragments : [PGMFragment]
+    fragments : [PGMFragment]
         List of each fragment
-    self.choice_structures : [Optional[ChoiceStructure]]
+    choice_structures : [Optional[ChoiceStructure]]
         List of each choice structure
-    self.medians : [str]
+    median : [str]
         List of each median
     """
 
@@ -188,7 +188,7 @@ class MedianData:
         self.gray_edge_index: int = 0
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(fragment_size)]
         self.choice_structures: List[Optional[ChoiceStructure]] = list()
-        self.medians: Optional[List[str]] = list()
+        self.median: Optional[List[str]] = list()
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -285,9 +285,9 @@ class MedianData:
                 end1: int = path.head
                 end2: int = path.tail
                 if end1 < 0:
-                    end1 = -1
+                    end1 = -2
                 if end2 < 0:
-                    end2 = -1
+                    end2 = -2
                 if end1 > 0:
                     paths2[end1] = PGMPath(end1, end2, 2, 2)
                 if end2 > 0:
@@ -386,7 +386,7 @@ class MedianData:
             if frag is not None:
                 median_chr += 1
 
-        self.medians = [str() for _ in range(0, median_chr)]
+        self.median = [str() for _ in range(0, median_chr)]
 
         gene_index: int = 0
         for frag in self.fragments:
@@ -396,9 +396,9 @@ class MedianData:
 
                 node_str = self.node_strings[frag.end1 - 1]
                 if node_str.endswith("h"):
-                    self.medians[gene_index] = "-" + node_str[0: len(node_str) - 1]
+                    self.median[gene_index] = "-" + node_str[0: len(node_str) - 1]
                 else:
-                    self.medians[gene_index] = node_str[0: len(node_str) - 1]
+                    self.median[gene_index] = node_str[0: len(node_str) - 1]
 
                 start_index = get_gene_next_node(start_index)
                 node_gene_index = find_gray_edge_node(start_index, self.gray_edge)
@@ -407,10 +407,10 @@ class MedianData:
                     node_gene = self.node_strings[node_gene_index - 1]
 
                     if node_gene.startswith("h", len(node_gene) - 1):
-                        self.medians[gene_index] = self.medians[gene_index] + "  -" + \
+                        self.median[gene_index] = self.median[gene_index] + "  -" + \
                                                    node_gene[0: len(node_gene) - 1]
                     else:
-                        self.medians[gene_index] = self.medians[gene_index] + "  " + \
+                        self.median[gene_index] = self.median[gene_index] + "  " + \
                                                    node_gene[0: len(node_gene) - 1]
 
                     start_index = get_gene_next_node(node_gene_index)
