@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from typing import List
 from typing import Optional
 
@@ -188,8 +187,8 @@ class MedianData:
         self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(paths1))]
         self.gray_edge_index: int = 0
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(fragment_size)]
-        self.choice_structures: List[Optional[ChoiceStructure]] = [None for _ in range(0, cs_size)]
-        self.medians: Optional[List[str]] = None
+        self.choice_structures: List[Optional[ChoiceStructure]] = list()
+        self.medians: Optional[List[str]] = list()
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
         # [(1, 2), (2, 1), (3, 4), (4, 3), ..., (1999, 2000), (2000, 1999)] for gene_num == 1000
@@ -197,7 +196,6 @@ class MedianData:
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
             self.fragments[2 * i + 2] = PGMFragment(2 * i + 2, 2 * i + 1)
 
-        cs_index = 0
         for i in range(1, cs_size + 1):
             cs = ChoiceStructure()
             cs.index_from = i
@@ -209,8 +207,7 @@ class MedianData:
             cs.position = -1
             cs.gray_edge = None
 
-            self.choice_structures[cs_index] = cs
-            cs_index += 1
+            self.choice_structures.append(cs)
 
     def gray_edge_total_distance(self, median: MedianData) -> int:
         """
@@ -279,7 +276,7 @@ class MedianData:
             elif paths1[i] is None and i != 0:
                 paths1[i] = PGMPath(i, -1, 1, 1)
                 chromosome_count += 1
-        chromosome_count = math.trunc(chromosome_count / 2)
+        chromosome_count = int(chromosome_count / 2)
 
         # Same as paths1, except without chromosome_count
         paths2: List[Optional[PGMPath]] = [None for _ in range(2 * self.gene_num + 1)]

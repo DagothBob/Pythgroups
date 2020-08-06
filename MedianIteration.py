@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from random import random
 from typing import List
 
@@ -74,11 +74,14 @@ class MedianIteration:
         self.leaves: List[List[int]] = [row[:] for row in leaves]  # 2D array copy
         self.all_paths: List[PGMPathForAGenome] = deepcopy(all_paths)
         self.medians: List[MedianData] = deepcopy(medians)
-        self.nodes_int: List[int] = deepcopy(nodes_int)
-        self.nodes_str: List[str] = deepcopy(nodes_str)
+        self.nodes_int: List[int] = copy(nodes_int)
+        self.nodes_str: List[str] = copy(nodes_str)
 
-    def median_total_distance(self, median_paths: List[PGMPath], paths1: List[PGMPath],
-                              paths2: List[PGMPath], paths3: List[PGMPath]) -> int:
+    def median_total_distance(self,
+                              median_paths: List[PGMPath],
+                              paths1: List[PGMPath],
+                              paths2: List[PGMPath],
+                              paths3: List[PGMPath]) -> int:
         """
         Returns the sum of all distances between the paths of the given median and three leaves
         Renamed from countTotalDistance
@@ -102,6 +105,7 @@ class MedianIteration:
         d1 = self.medians[0].get_distance(median_paths, paths1)
         d2 = self.medians[0].get_distance(median_paths, paths2)
         d3 = self.medians[0].get_distance(median_paths, paths3)
+
         return d1 + d2 + d3
 
     def optimize_result(self, prob_threshold_top: float, runs: int):
@@ -117,27 +121,29 @@ class MedianIteration:
         runs : int
             Total number of optimization runs
         """
-        p1 = prob_threshold_top  # Probability threshold for when total_dis == dis_before
-        p2 = 0  # Probability threshold for when total_dis > dis_before
+        p1: float = prob_threshold_top  # Probability threshold for when total_dis == dis_before
+        p2: float = 0  # Probability threshold for when total_dis > dis_before
 
         # Each optimization run
-        for turn in range(0, runs):
+        for turn in range(runs):
             # Iterates through each changed ancestor
-            for i in range(0, len(self.changed)):
-                leaf1 = self.leaves[i + self.leaf_num][0]
-                leaf2 = self.leaves[i + self.leaf_num][1]
-                leaf3 = self.leaves[i + self.leaf_num][2]
+            for i in range(len(self.changed)):
+                leaf1: int = self.leaves[i + self.leaf_num][0]
+                leaf2: int = self.leaves[i + self.leaf_num][1]
+                leaf3: int = self.leaves[i + self.leaf_num][2]
 
-                dis_before = self.median_total_distance(self.all_paths[i + self.leaf_num].paths,
-                                                        self.all_paths[leaf1].paths,
-                                                        self.all_paths[leaf2].paths,
-                                                        self.all_paths[leaf3].paths)
-                aps = List[PGMPathForAGenome]  # Local copy of all_paths containing the given leaves
-                aps[0] = self.all_paths[leaf1]
-                aps[1] = self.all_paths[leaf2]
-                aps[2] = self.all_paths[leaf3]
+                dis_before: int = self.median_total_distance(self.all_paths[i + self.leaf_num].paths,
+                                                             self.all_paths[leaf1].paths,
+                                                             self.all_paths[leaf2].paths,
+                                                             self.all_paths[leaf3].paths)
+
+                # Local copy of all_paths containing the given leaves
+                aps: List[PGMPathForAGenome] = [self.all_paths[leaf1],
+                                                self.all_paths[leaf2],
+                                                self.all_paths[leaf3]]
+
                 # Filters out all None values for each list of paths in each leaf
-                for t in range(0, len(aps[0].paths)):
+                for t in range(len(aps[0].paths)):
                     if aps[0].paths[t] is not None:
                         aps[0].paths[t] = PGMPath(aps[0].paths[t].head, aps[0].paths[t].tail, 0, 0)
                     if aps[1].paths[t] is not None:
@@ -145,17 +151,18 @@ class MedianIteration:
                     if aps[2].paths[t] is not None:
                         aps[2].paths[t] = PGMPath(aps[2].paths[t].head, aps[2].paths[t].tail, 2, 2)
 
-                ts = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int, None)
-                sp = SmallPhylogeny(ts)
+                ts: TreeStructure = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int)
+                sp: SmallPhylogeny = SmallPhylogeny(ts)
                 sp.get_result()
 
                 # Specifies thresholds to meet to perform optimizations
-                total_dis = ts.medians[0].gray_edge_total_distance(ts.medians[0])
-                rand1 = random()
-                rand2 = random()
-                total_less = total_dis < dis_before
-                total_equal = total_dis == dis_before and rand1 < p1
-                total_greater = total_dis > dis_before and rand2 < p2
+                total_dis: int = ts.medians[0].gray_edge_total_distance(ts.medians[0])
+                rand1: float = random()
+                rand2: float = random()
+                total_less: bool = total_dis < dis_before
+                total_equal: bool = total_dis == dis_before and rand1 < p1
+                total_greater: bool = total_dis > dis_before and rand2 < p2
+
                 if total_less or total_equal or total_greater:
                     # Not sure what the point of these statements are, self.changed isn't used anywhere really
                     if leaf1 >= self.leaf_num:
@@ -168,10 +175,11 @@ class MedianIteration:
                     self.medians[i] = ts.medians[0]
                     self.all_paths[i + self.leaf_num].paths = List[PGMPath]
                     # Performs optimizations on each path in gray_edge
-                    for g in range(0, len(self.medians[i].gray_edge)):
+                    for g in range(len(self.medians[i].gray_edge)):
                         if self.medians[i].gray_edge[g] is not None:
-                            end1 = self.medians[i].gray_edge[g].head
-                            end2 = self.medians[i].gray_edge[g].tail
+                            end1: int = self.medians[i].gray_edge[g].head
+                            end2: int = self.medians[i].gray_edge[g].tail
+
                             if end1 < 0:
                                 end1 = -1
                             if end2 < 0:
@@ -180,7 +188,8 @@ class MedianIteration:
                                 self.all_paths[i + self.leaf_num].paths[end1] = PGMPath(end1, end2, 1, 1)
                             if end2 > 0:
                                 self.all_paths[i + self.leaf_num].paths[end2] = PGMPath(end2, end1, 1, 1)
-                    for g in range(0, len(self.all_paths[i + self.leaf_num].paths)):
+
+                    for g in range(len(self.all_paths[i + self.leaf_num].paths)):
                         if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0:
                             self.all_paths[i + self.leaf_num].paths[g] = PGMPath(g, -1, 1, 1)
 

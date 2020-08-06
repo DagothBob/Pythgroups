@@ -51,6 +51,19 @@ T = TypeVar('T')
 
 
 def clean_empty_lists(list_: List[List[T]]) -> List[List[T]]:
+    """
+    Cleans [0] entries from the given list
+
+    Parameters
+    ----------
+    list_
+        List to be cleaned
+
+    Returns
+    -------
+    List[List[T]]
+        List without [0] entries
+    """
     temp: List[List[T]] = list()
 
     for item in list_:
@@ -284,7 +297,11 @@ class DCJRearrangement:
 
         return GenomeInString(Genome.from_strings(chromosomes))
 
-    def get_result(self, min_chromosome: int, max_chromosome: int, which_chromosome: int, types_of_operation: List[int],
+    def get_result(self,
+                   min_chromosome: int,
+                   max_chromosome: int,
+                   which_chromosome: int,
+                   types_of_operation: List[int],
                    number_of_operations: int) -> List[Optional[GenomeInString]]:
         """
         Performs a DCJ operation
@@ -304,7 +321,7 @@ class DCJRearrangement:
 
         Returns
         -------
-        [GenomeInString]
+        List[GenomeInString]
             New list of GenomeInStrings after operations performed
         """
         all_steps: List[Optional[GenomeInString]] = list()
@@ -336,7 +353,7 @@ class DCJRearrangement:
                 current_operation += 1
                 more = True
 
-        return deepcopy(all_steps)
+        return all_steps
 
     def update_all_values(self, operation: DCJOperation, which_chromosome: int):
         """
@@ -511,7 +528,7 @@ class DCJRearrangement:
 
         Returns
         -------
-        [int]
+        List[int]
             List of operation attributes
         """
         result: DCJOperation = DCJOperation()
@@ -539,7 +556,7 @@ class DCJRearrangement:
 
         Returns
         -------
-        [int]
+        List[int]
             List of operation attributes
         """
         result: DCJOperation = DCJOperation()
@@ -813,7 +830,7 @@ class DCJRearrangement:
 
         Returns
         -------
-        [int]
+        List[int]
             List of result attributes
         """
         result: DCJOperation = DCJOperation()
@@ -891,7 +908,7 @@ class DCJRearrangement:
 
         Returns
         -------
-        [int]
+        List[int]
             List of result attributes
         """
         result: DCJOperation = DCJOperation()

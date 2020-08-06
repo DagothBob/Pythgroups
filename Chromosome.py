@@ -72,6 +72,14 @@ class Chromosome:
         return cls(genes)
 
     def to_strings(self) -> List[str]:
+        """
+        Convert Chromosome object into string representation for backwards compatibility
+
+        Returns
+        -------
+        List[str]
+            String list representation of the chromosome
+        """
         value: List[str] = list()
 
         for gene in self.genes:
