@@ -1,5 +1,4 @@
 from copy import deepcopy
-from sys import exit
 from typing import Optional, List
 
 from BPGPath import BPGPath
@@ -135,14 +134,13 @@ class BPGDistance:
         if gene_count_1 == gene_count_2:  # Algorithm requires genomes are equal length
             self.gene_count: int = gene_count_1  # Number of genes
         else:
-            print("Different numbers of genes in both genomes. Exiting.\n")
-            exit(1)
+            raise Exception("Different numbers of genes in both genomes.\n")
 
-        self.node_ints: List[int] = [int() for _ in range((self.gene_count * 2))]
-        self.node_strings_1: List[Optional[str]] = [None for _ in range((self.gene_count * 2))]
-        self.node_strings_2: List[Optional[str]] = [None for _ in range((self.gene_count * 2))]
-        self.genome_paths_1: Optional[List[Optional[BPGPath]]] = None
-        self.genome_paths_2: Optional[List[Optional[BPGPath]]] = None
+        self.node_ints: List[int] = list()
+        self.node_strings_1: List[Optional[str]] = list()
+        self.node_strings_2: List[Optional[str]] = list()
+        self.genome_paths_1: List[Optional[BPGPath]] = list()
+        self.genome_paths_2: List[Optional[BPGPath]] = list()
         self.distance: int = int()
 
     def graph_init(self):
@@ -160,21 +158,21 @@ class BPGDistance:
                 if first_character == "-":
                     node1 = insert_character(gene.name[1:], len(gene.name[1:]), "h")
                     node2 = insert_character(gene.name[1:], len(gene.name[1:]), "t")
-                    self.node_ints[index1] = index1 + 1
-                    self.node_strings_1[index1] = node2
+                    self.node_ints.append(index1 + 1)
+                    self.node_strings_1.append(node2)
 
                     index1 += 1
-                    self.node_ints[index1] = index1 + 1
-                    self.node_strings_1[index1] = node1
+                    self.node_ints.append(index1 + 1)
+                    self.node_strings_1.append(node1)
                 else:
                     node1 = insert_character(gene.name, len(gene.name), "t")
                     node2 = insert_character(gene.name, len(gene.name), "h")
-                    self.node_ints[index1] = index1 + 1
-                    self.node_strings_1[index1] = node1
+                    self.node_ints.append(index1 + 1)
+                    self.node_strings_1.append(node1)
 
                     index1 += 1
-                    self.node_ints[index1] = index1 + 1
-                    self.node_strings_1[index1] = node2
+                    self.node_ints.append(index1 + 1)
+                    self.node_strings_1.append(node2)
 
                 index1 += 1
 

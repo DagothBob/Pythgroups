@@ -44,7 +44,8 @@ def count_cycle_look_ahead(ancestor_choice_structure: Optional[ChoiceStructure])
 
     Returns
     -------
-    Count of cycle look aheads
+    int
+        Count of cycle look aheads
     """
     if ancestor_choice_structure.genome_1_path.tail < 0 and \
             ancestor_choice_structure.genome_2_path.tail < 0 and \
@@ -101,10 +102,25 @@ def count_cycle_look_ahead(ancestor_choice_structure: Optional[ChoiceStructure])
 
 
 def is_a_cycle(path1: PGMPath, path2: PGMPath) -> bool:
+    """
+    Checks that two paths make up a cycle
+
+    Parameters
+    ----------
+    path1
+        First path to check
+    path2
+        Second path to check
+
+    Returns
+    -------
+    bool
+        True/False if given paths form a cycle
+    """
     return path1.head == path2.tail and \
-           path1.tail == path2.head and \
-           path1.genome_head == path2.genome_tail and \
-           path1.genome_tail == path2.genome_head
+        path1.tail == path2.head and \
+        path1.genome_head == path2.genome_tail and \
+        path1.genome_tail == path2.genome_head
 
 
 class SmallPhylogeny:
@@ -437,7 +453,7 @@ class SmallPhylogeny:
         [int]
             Counts of look ahead cycles for each ChoiceStructure
         """
-        result: List[int] = [int(), int(), int()]
+        result: List[int] = list()
         max_cycle: int = 1
         total: int = 0
 
@@ -454,9 +470,9 @@ class SmallPhylogeny:
 
                 total += new_cycle - old_cycle
 
-        result[0] = max_cycle
-        result[1] = total
-        result[2] = self.count_2_steps_look_ahead_cycle(created_choice_structures, max_cycle)
+        result.append(max_cycle)
+        result.append(total)
+        result.append(self.count_2_steps_look_ahead_cycle(created_choice_structures, max_cycle))
 
         return result
 
@@ -696,24 +712,18 @@ class SmallPhylogeny:
             temp = self.get_new_choice_structure_based_on_path(
                 new_path3, temp, path_3_genome, median_index, new_choice_structures)
 
-        new_choice_structure_number: int = 0
+        null_count: int = temp.count(None)
 
-        for choice_structure in temp:
-            if choice_structure is not None:
-                new_choice_structure_number += 1
-
-        result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
-
-        if len(result) >= 0:
-            result = deepcopy(temp)[:len(result)]
-
-        return result
+        if null_count < len(temp):
+            return temp[:len(temp) - null_count]
+        else:
+            return list()
 
     def get_new_choice_structure_based_on_path(self, new_path1: PGMPath,
                                                temp: List[ChoiceStructure],
                                                for_which_genome: int,
                                                median_index: int,
-                                               new_choice_structures: Optional[List[ChoiceStructure]]) \
+                                               new_choice_structures: Optional[List[ChoiceStructure]] = None) \
             -> List[ChoiceStructure]:
         """
         Gets a new ChoiceStructure based on given PGMPath
@@ -1000,9 +1010,7 @@ class SmallPhylogeny:
         List[int]
             Result of the operation
         """
-        result: List[int] = [int(), int()]
-        result[0] = -1
-        result[1] = -1
+        result: List[int] = [-1, -1]
 
         for i in range(len(self.priorities)):
             if self.priorities[i].taken_start != -1:

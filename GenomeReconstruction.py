@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
 
 import yaml
 from Bio import Phylo
@@ -10,7 +10,7 @@ import InputPreprocessing
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
-from Genome import Genome
+from Genome import Genome, split_at_whitespace
 from GenomeInString import GenomeInString
 from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
@@ -28,6 +28,7 @@ from TreeStructure import TreeStructure
     - SmallPhylogeny
     - GenomeAliquoting
     - DCJRearrangements
+    - GenomeHalving
  
  Based on the small phylogeny program developed by C.Zheng & D.Sankoff (2011)
 
@@ -36,30 +37,14 @@ from TreeStructure import TreeStructure
 
 CONFIG_DIR = "config.yaml"
 CONFIG_GENOME_FILE = "genome_file"
+CONFIG_ALGORITHM = "algorithm"
 CONFIG_TREE_STRUCTURE = "tree_structure"
-
-
-def split_at_whitespace(strings: str) -> List[str]:
-    """
-    Strips, then splits, a string, then strips the substrings again
-
-    Parameters
-    ----------
-    strings
-        List of strings to operate on
-
-    Returns
-    -------
-    [str]
-        Set of cleaned-up strings
-    """
-    result: List[str] = []
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
+CONFIG_OPERATIONS = "operations"
+CONFIG_MINIMUM_CHROMOSOME = "minimum_chromosome"
+CONFIG_MAXIMUM_CHROMOSOME = "maximum_chromosome"
+CONFIG_WHICH_CHROMOSOME = "which_chromosome"
+CONFIG_NUMBER_OPERATIONS = "number_of_operations"
+CONFIG_GENOME_REPLACE = "genome_to_replace"
 
 
 class GenomeNode:
@@ -111,9 +96,10 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
     config_file = open(config_dir, "r")
     config_data = yaml.safe_load(config_file)
     genome_file = open(config_data.get(CONFIG_GENOME_FILE))
-    genomes: Dict[str, List[str]] = {}
+    genomes: Dict[str, List[str]] = dict()
     line: str = genome_file.readline()
-    header: str = ""
+    header: str = str()
+
     while len(line) != 0:
 
         # ">" indicates a header, sets that as the current genome to add chromosomes to
@@ -122,7 +108,7 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
 
         # Add chromosomes to the current genome until an empty line, another header, or the end of file is found
         else:
-            chromosomes: List[str] = []
+            chromosomes: List[str] = list()
             while len(line) != 0 and not line.startswith(">") and line != "\n":
                 clean_input: str = line.replace("$", "").replace("\n", "")
                 chromosome: str = ""
@@ -175,7 +161,7 @@ def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
     Dict[Clade, List[Clade]]
         Key: median to reconstruct, value: list of 3 neighboring clades
     """
-    medians: List[GenomeNode] = []
+    medians: List[GenomeNode] = list()
     for node in graph_nodes:
         if (len(node.neighbors)) == 3:
             medians.append(GenomeNode(node.name, node.neighbors, node.genome_id))
@@ -200,7 +186,7 @@ def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
     """
     terminals = tree.get_terminals()
     nonterminals = tree.get_nonterminals()
-    graph_indexes = {}
+    graph_indexes = dict()
     node_index = 0
     for t in terminals:
         graph_indexes[t.name] = node_index
@@ -216,10 +202,10 @@ def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
             for clade in nt.clades:
                 graph.add_edge(nt.name, clade.name)
 
-    graph_nodes = []
+    graph_nodes = list()
     for node in graph:
         genome_id = graph_indexes[node]
-        neighbor_ids = []
+        neighbor_ids = list()
         for neighbor in graph.neighbors(node):
             neighbor_ids.append(graph_indexes[neighbor])
         graph_nodes.append(GenomeNode(node, neighbor_ids, genome_id))
@@ -252,9 +238,8 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
         if genome == list(genomes.keys())[0]:
             final_count = count
         elif final_count != count:
-            print("Different numbers of genes in the genomes (check [{}] or the first genome for anomalies). \
-                    Exiting.\n".format(genome))
-            exit(1)
+            raise Exception("Different numbers of genes in the genomes (check [{}] or the first genome for anomalies). \
+                            Exiting.\n".format(genome))
 
     return final_count
 
@@ -304,8 +289,9 @@ def small_phylogeny():
         reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(ts.medians[i - ts.number_of_leaves].medians, i)))
 
     relation: List[List[int]] = ts.get_relation()
-    reconstructed_dist: int = 0
-    before_optimization: str = ""
+    reconstructed_dist: int = int()
+    before_optimization: str = str()
+
     for i in range(0, len(relation) - 1):
         for j in range(i + 1, len(relation)):
             if relation[i][j] == 2 or relation[j][i] == 2:
@@ -323,8 +309,9 @@ def small_phylogeny():
     mi: MedianIteration = MedianIteration(ts.number_of_leaves, ts.number_of_ancestors, ts.gene_number,
                                           ts.leaves, reconstructed_paths, ts.medians, ts.node_int, ts.node_string)
     mi.optimize_result(1, 50)
-    after_optimization: str = ""
-    optimized_dist: int = 0
+    after_optimization: str = str()
+    optimized_dist: int = int()
+
     for i in range(0, len(relation) - 1):
         for j in range(i + 1, len(relation)):
             if relation[i][j] == 2 or relation[j][i] == 2:
@@ -379,17 +366,54 @@ def dcj_rearrangements():
     bpg_dist.calculate_distance()
     cur_dist: int = bpg_dist.distance
 
-    # Perform DCJ operations until distance == 0 or there are no more DCJ operations to perform (?)
-    operation_types: List[int] = [OperationTypes.INVERSION,
-                                  OperationTypes.TRANSLOCATION,
-                                  OperationTypes.FISSION,
-                                  OperationTypes.FUSION]
+    # Get DCJ configuration options from config file
+    config_file: TextIO = open(CONFIG_DIR)
+    config_data = yaml.safe_load(config_file)
+    config_file.close()
+    operation_types: List[int] = list()
+
+    for operation in config_data.get(CONFIG_OPERATIONS):
+        if operation.lower() == "inversion" and OperationTypes.INVERSION not in operation_types:
+            operation_types.append(OperationTypes.INVERSION)
+        elif operation.lower() == "translocation" and OperationTypes.TRANSLOCATION not in operation_types:
+            operation_types.append(OperationTypes.TRANSLOCATION)
+        elif operation.lower() == "fission" and OperationTypes.FISSION not in operation_types:
+            operation_types.append(OperationTypes.FISSION)
+        elif operation.lower() == "fusion" and OperationTypes.FUSION not in operation_types:
+            operation_types.append(OperationTypes.FUSION)
+        else:
+            raise Exception("Invalid operation type: {}\n"
+                            "Valid types: [ inversion | translocation | fission | fusion ]\n".format(operation))
+
+    minimum_chromosome: int = config_data.get(CONFIG_MINIMUM_CHROMOSOME)
+    if type(minimum_chromosome) is not int:
+        raise Exception("Config attribute \"minimum_chromosome\" must be a number.\n")
+
+    maximum_chromosome: int = config_data.get(CONFIG_MAXIMUM_CHROMOSOME)
+    if type(maximum_chromosome) is not int:
+        raise Exception("Config attribute \"maximum_chromosome\" must be a number.\n")
+
+    which_chromosome: int = config_data.get(CONFIG_WHICH_CHROMOSOME)
+    if type(which_chromosome) is not int:
+        raise Exception("Config attribute \"which_chromosome\" must be a number.\n")
+
+    number_operations: int = config_data.get(CONFIG_NUMBER_OPERATIONS)
+    if type(number_operations) is not int:
+        raise Exception("Config attribute \"number_of_operations\" must be a number.\n")
+
+    # Perform DCJ operations until distance == 0 or there are no more DCJ operations to perform
     dcj: DCJRearrangement = DCJRearrangement(Genome.from_strings(genome1), Genome.from_strings(genome2))
     dcj.initial_value()
     more: bool = True
+
     while cur_dist > 0 and more:
         more = False
-        rearrange_state: List[GenomeInString] = dcj.get_result(1, 30, -2, operation_types, 10)
+        rearrange_state: List[GenomeInString] = dcj.get_result(minimum_chromosome,
+                                                               maximum_chromosome,
+                                                               which_chromosome,
+                                                               operation_types,
+                                                               number_operations)
+
         if len(rearrange_state) != 0:
             more = True
             for genome in rearrange_state:
@@ -407,17 +431,35 @@ def dcj_rearrangements():
 
 
 def genome_halving():
-    tetrad: List[str] = list()  # TODO: Read from file
-    outgroup: List[str] = list()  # TODO: Read from file
+    # Create the dictionary of genomes from the input file
+    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
 
-    ggh: GroupGraph = GroupGraph(tetrad, outgroup, 1)
+    # Get the first 2 genomes from the input file
+    values_view: ValuesView[List[str]] = genomes.values()
+    value_iterator: Iterator[List[str]] = iter(values_view)
+    tetrad: List[str] = next(value_iterator)
+    outgroup: List[str] = next(value_iterator)
+
+    # Get GenomeHalving configuration options
+    config_file: TextIO = open(CONFIG_DIR)
+    config_data = yaml.safe_load(config_file)
+    config_file.close()
+
+    to_replace: int = config_data.get(CONFIG_GENOME_REPLACE)
+    if type(to_replace) is not int:
+        raise Exception("Config attribute \"genome_to_replace\" needs to be a number.\n")
+    elif to_replace not in range(0, 3):
+        raise Exception("Genome to replace must be 0, 1, or 2.\n")
+
+    # Perform Guided Genome Halving on the given tetrad and outgroup genomes
+    ggh: GroupGraph = GroupGraph(Genome.from_strings(tetrad), Genome.from_strings(outgroup), to_replace)
     ggh.get_result()
 
-    bpg_distance: BPGDistance = BPGDistance(Genome.from_strings(tetrad), Genome.from_strings(ggh.ancestor_AA))
+    bpg_distance: BPGDistance = BPGDistance(Genome.from_strings(tetrad), ggh.ancestor_AA)
     bpg_distance.calculate_distance()
     distance_1: int = bpg_distance.distance
 
-    bpg_distance = BPGDistance(Genome.from_strings(outgroup), Genome.from_strings(ggh.ancestor_A))
+    bpg_distance = BPGDistance(Genome.from_strings(outgroup), ggh.ancestor_A)
     bpg_distance.calculate_distance()
     distance_2: int = bpg_distance.distance
 
@@ -428,15 +470,15 @@ def genome_halving():
 
     print("Genome ancestor_AA:\n")
 
-    for i in range(len(ggh.ancestor_AA)):
+    for i in range(len(ggh.ancestor_AA.chromosomes)):
         print("Chromosome " + str(i + 1))
-        print(str(ggh.ancestor_AA[i]))
+        print(str(ggh.ancestor_AA.chromosomes[i]))
 
     print("Genome ancestor_A:\n")
 
-    for i in range(len(ggh.ancestor_A)):
+    for i in range(len(ggh.ancestor_A.chromosomes)):
         print("Chromosome " + str(i + 1))
-        print(str(ggh.ancestor_A[i]))
+        print(str(ggh.ancestor_A.chromosomes[i]))
 
 
 def get_algorithm(alg: str):
@@ -457,18 +499,19 @@ def get_algorithm(alg: str):
     elif alg == "GenomeHalving":
         genome_halving()
     else:
-        print("Algorithm not supported by this program. Supported algorithms:\n" +
-              "- SmallPhylogeny\n" +
-              "- GenomeAliquoting\n" +
-              "- DCJRearrangements\n" +
-              "- GenomeHalving\n\n" +
-              "Exiting.")
-        exit(1)
+        raise Exception("Algorithm not supported by this program. Supported algorithms:\n"
+                        "- SmallPhylogeny\n"
+                        "- GenomeAliquoting\n"
+                        "- DCJRearrangements\n"
+                        "- GenomeHalving\n\n")
 
 
 def main():
-    # algorithm = sys.argv[1]  # The first argument when calling the program
-    algorithm = "SmallPhylogeny"
+    config_file: TextIO = open(CONFIG_DIR)
+    config_data = yaml.safe_load(config_file)
+    config_file.close()
+    algorithm: str = config_data.get(CONFIG_ALGORITHM)
+
     get_algorithm(algorithm)
 
 

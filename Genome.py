@@ -25,7 +25,7 @@ def split_at_whitespace(strings: str) -> List[str]:
 
     Returns
     -------
-    [str]
+    List[str]
         Set of cleaned-up strings
     """
     result: List[str] = list()

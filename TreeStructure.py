@@ -79,10 +79,10 @@ class TreeStructure:
                  number_of_ancestors: int,
                  number_of_leaves: int,
                  gene_number: int,
-                 paths: Optional[List[PGMPathForAGenome]],
-                 node_strings: Optional[List[str]],
-                 node_ints: Optional[List[int]],
-                 ancestor_genome_string: Optional[List[GenomeInString]]):
+                 paths: Optional[List[PGMPathForAGenome]] = None,
+                 node_strings: Optional[List[str]] = None,
+                 node_ints: Optional[List[int]] = None,
+                 ancestor_genome_string: Optional[List[GenomeInString]] = None):
         """
         Constructor
 
