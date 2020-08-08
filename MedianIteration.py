@@ -175,7 +175,7 @@ class MedianIteration:
                         self.changed[leaf3 - self.leaf_num] = 1
 
                     self.medians[i] = ts.medians[0]
-                    self.all_paths[i + self.leaf_num].paths = List[PGMPath]
+                    self.all_paths[i + self.leaf_num].paths = [None for _ in range(2 * self.gene_num + 1)]
                     # Performs optimizations on each path in gray_edge
                     for g in range(len(self.medians[i].gray_edge)):
                         if self.medians[i].gray_edge[g] is not None:
