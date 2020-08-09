@@ -232,3 +232,16 @@ class PGMPath:
                 return PGMPath(path1.head, path2.head)
 
         return None
+
+    # noinspection PyRedeclaration
+    # For debugging
+    def __str__(self) -> str:
+        """
+        String override
+
+        Returns
+        -------
+        str
+            String representation of the object data
+        """
+        return "Head: {} | Tail: {} | GH: {} | GT: {}".format(self.head, self.tail, self.genome_head, self.genome_tail)

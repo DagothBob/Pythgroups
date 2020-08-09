@@ -8,7 +8,6 @@ from networkx import Graph
 
 import InputPreprocessing
 from BPGDistance import BPGDistance
-from Chromosome import Chromosome
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
 from Genome import Genome, split_at_whitespace
