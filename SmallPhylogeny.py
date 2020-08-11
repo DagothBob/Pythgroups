@@ -4,9 +4,11 @@ from typing import Optional, List
 from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
 from PGMFragment import combine
-from PGMPath import PGMPath
+import PGMPath
 from Priority import Priority
 from TreeStructure import TreeStructure
+
+import cProfile
 
 
 def check_temp_list(temp: List[ChoiceStructure], ancestor_median: int, index_from: int) -> int:
@@ -47,55 +49,55 @@ def count_cycle_look_ahead(ancestor_choice_structure: Optional[ChoiceStructure])
     int
         Count of cycle look aheads
     """
-    if ancestor_choice_structure.genome_1_path.tail < 0 and \
-            ancestor_choice_structure.genome_2_path.tail < 0 and \
-            ancestor_choice_structure.genome_3_path.tail < 0:
+    if ancestor_choice_structure.genome_1_path["tail"] < 0 and \
+            ancestor_choice_structure.genome_2_path["tail"] < 0 and \
+            ancestor_choice_structure.genome_3_path["tail"] < 0:
         return 3
-    elif ancestor_choice_structure.genome_1_path.tail < 0 and ancestor_choice_structure.genome_2_path.tail < 0:
+    elif ancestor_choice_structure.genome_1_path["tail"] < 0 and ancestor_choice_structure.genome_2_path["tail"] < 0:
         return 2
-    elif ancestor_choice_structure.genome_1_path.tail < 0 and ancestor_choice_structure.genome_3_path.tail < 0:
+    elif ancestor_choice_structure.genome_1_path["tail"] < 0 and ancestor_choice_structure.genome_3_path["tail"] < 0:
         return 2
-    elif ancestor_choice_structure.genome_2_path.tail < 0 and ancestor_choice_structure.genome_3_path.tail < 0:
+    elif ancestor_choice_structure.genome_2_path["tail"] < 0 and ancestor_choice_structure.genome_3_path["tail"] < 0:
         return 2
     elif (
-            ancestor_choice_structure.genome_1_path.genome_head ==
-            ancestor_choice_structure.genome_1_path.genome_tail and
-            ancestor_choice_structure.genome_2_path.genome_head ==
-            ancestor_choice_structure.genome_2_path.genome_tail and
-            ancestor_choice_structure.genome_3_path.genome_head ==
-            ancestor_choice_structure.genome_3_path.genome_tail
+            ancestor_choice_structure.genome_1_path["genome_head"] ==
+            ancestor_choice_structure.genome_1_path["genome_tail"] and
+            ancestor_choice_structure.genome_2_path["genome_head"] ==
+            ancestor_choice_structure.genome_2_path["genome_tail"] and
+            ancestor_choice_structure.genome_3_path["genome_head"] ==
+            ancestor_choice_structure.genome_3_path["genome_tail"]
     ) and (
-            ancestor_choice_structure.genome_1_path.tail ==
-            ancestor_choice_structure.genome_2_path.tail and
-            ancestor_choice_structure.genome_1_path.tail ==
-            ancestor_choice_structure.genome_3_path.tail):
+            ancestor_choice_structure.genome_1_path["tail"] ==
+            ancestor_choice_structure.genome_2_path["tail"] and
+            ancestor_choice_structure.genome_1_path["tail"] ==
+            ancestor_choice_structure.genome_3_path["tail"]):
         return 3
     elif (
-            ancestor_choice_structure.genome_1_path.genome_head ==
-            ancestor_choice_structure.genome_1_path.genome_tail and
-            ancestor_choice_structure.genome_2_path.genome_head ==
-            ancestor_choice_structure.genome_2_path.genome_tail
+            ancestor_choice_structure.genome_1_path["genome_head"] ==
+            ancestor_choice_structure.genome_1_path["genome_tail"] and
+            ancestor_choice_structure.genome_2_path["genome_head"] ==
+            ancestor_choice_structure.genome_2_path["genome_tail"]
     ) and (
-            ancestor_choice_structure.genome_1_path.tail ==
-            ancestor_choice_structure.genome_2_path.tail):
+            ancestor_choice_structure.genome_1_path["tail"] ==
+            ancestor_choice_structure.genome_2_path["tail"]):
         return 2
     elif (
-            ancestor_choice_structure.genome_1_path.genome_head ==
-            ancestor_choice_structure.genome_1_path.genome_tail and
-            ancestor_choice_structure.genome_3_path.genome_head ==
-            ancestor_choice_structure.genome_3_path.genome_tail
+            ancestor_choice_structure.genome_1_path["genome_head"] ==
+            ancestor_choice_structure.genome_1_path["genome_tail"] and
+            ancestor_choice_structure.genome_3_path["genome_head"] ==
+            ancestor_choice_structure.genome_3_path["genome_tail"]
     ) and (
-            ancestor_choice_structure.genome_1_path.tail ==
-            ancestor_choice_structure.genome_3_path.tail):
+            ancestor_choice_structure.genome_1_path["tail"] ==
+            ancestor_choice_structure.genome_3_path["tail"]):
         return 2
     elif (
-            ancestor_choice_structure.genome_2_path.genome_head ==
-            ancestor_choice_structure.genome_2_path.genome_tail and
-            ancestor_choice_structure.genome_3_path.genome_head ==
-            ancestor_choice_structure.genome_3_path.genome_tail
+            ancestor_choice_structure.genome_2_path["genome_head"] ==
+            ancestor_choice_structure.genome_2_path["genome_tail"] and
+            ancestor_choice_structure.genome_3_path["genome_head"] ==
+            ancestor_choice_structure.genome_3_path["genome_tail"]
     ) and (
-            ancestor_choice_structure.genome_2_path.tail ==
-            ancestor_choice_structure.genome_3_path.tail):
+            ancestor_choice_structure.genome_2_path["tail"] ==
+            ancestor_choice_structure.genome_3_path["tail"]):
         return 2
 
     return 1
@@ -117,10 +119,10 @@ def is_a_cycle(path1: PGMPath, path2: PGMPath) -> bool:
     bool
         True/False if given paths form a cycle
     """
-    return path1.head == path2.tail and \
-        path1.tail == path2.head and \
-        path1.genome_head == path2.genome_tail and \
-        path1.genome_tail == path2.genome_head
+    return path1["head"] == path2["tail"] and \
+        path1["tail"] == path2["head"] and \
+        path1["genome_head"] == path2["genome_tail"] and \
+        path1["genome_tail"] == path2["genome_head"]
 
 
 class SmallPhylogeny:
@@ -199,67 +201,67 @@ class SmallPhylogeny:
         result: int = 200
         index_from: int = self.tree.medians[median_index].choice_structures[choice_structure_index].index_from
         which_genome: int = self.tree.medians[median_index].choice_structures[choice_structure_index].for_which_genome
-        tail_of1: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path.tail
-        tail_of2: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path.tail
-        tail_of3: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.tail
+        tail_of1: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path["tail"]
+        tail_of2: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path["tail"]
+        tail_of3: int = self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path["tail"]
         ancestor_priority: int
         add_tail1: bool = False
         add_tail2: bool = False
 
-        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path.genome_head == \
-                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path.genome_tail:
+        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path["genome_head"] == \
+                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path["genome_tail"]:
             ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of1)
             add_tail1 = True
 
             if 0 <= ancestor_priority <= 1:
-                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
+                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath.create_pgm_path(
                     index_from, tail_of1, which_genome, which_genome)
 
                 return ancestor_priority
             if ancestor_priority < result:
                 result = ancestor_priority
-                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
+                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath.create_pgm_path(
                     index_from, tail_of1, which_genome, which_genome)
             elif ancestor_priority == result and self.to_replace == 1:
                 result = ancestor_priority
-                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
+                self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath.create_pgm_path(
                     index_from, tail_of1, which_genome, which_genome)
 
         self.to_replace = 3 - self.to_replace
 
-        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path.genome_head == \
-                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path.genome_tail:
+        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path["genome_head"] == \
+                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path["genome_tail"]:
             if (not add_tail1) or tail_of2 != tail_of1:
                 ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of2)
 
                 if ancestor_priority == 1:
-                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
-                        index_from, tail_of2, which_genome, which_genome)
+                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = \
+                        PGMPath.create_pgm_path(index_from, tail_of2, which_genome, which_genome)
 
                     return ancestor_priority
                 if ancestor_priority < result:
                     result = ancestor_priority
-                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
-                        index_from, tail_of2, which_genome, which_genome)
+                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = \
+                        PGMPath.create_pgm_path(index_from, tail_of2, which_genome, which_genome)
                 elif ancestor_priority == result and self.to_replace == 1:
                     result = ancestor_priority
-                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
-                        index_from, tail_of2, which_genome, which_genome)
+                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = \
+                        PGMPath.create_pgm_path(index_from, tail_of2, which_genome, which_genome)
 
         self.to_replace = 3 - self.to_replace
 
-        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_head == \
-                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path.genome_tail:
+        if self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path["genome_head"] == \
+                self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path["genome_tail"]:
             if ((not add_tail1) or tail_of3 != tail_of1) and ((not add_tail2) or tail_of3 != tail_of2):
                 ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of3)
 
                 if ancestor_priority < result:
                     result = ancestor_priority
-                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
+                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath.create_pgm_path(
                         index_from, tail_of3, which_genome, which_genome)
                 elif ancestor_priority == result and self.to_replace == 1:
                     result = ancestor_priority
-                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath(
+                    self.tree.medians[median_index].choice_structures[choice_structure_index].gray_edge = PGMPath.create_pgm_path(
                         index_from, tail_of3, which_genome, which_genome)
 
         self.to_replace = 3 - self.to_replace
@@ -368,19 +370,19 @@ class SmallPhylogeny:
             ancestor_choice_structure: ChoiceStructure = self.tree.medians[median_index].choice_structures[
                 choice_structure_index]
 
-            if ancestor_choice_structure.genome_1_path.genome_head == \
-                    ancestor_choice_structure.genome_1_path.genome_tail and \
-                    ancestor_choice_structure.genome_1_path.tail == tail:
+            if ancestor_choice_structure.genome_1_path["genome_head"] == \
+                    ancestor_choice_structure.genome_1_path["genome_tail"] and \
+                    ancestor_choice_structure.genome_1_path["tail"] == tail:
                 result += 1
 
-            if ancestor_choice_structure.genome_2_path.genome_head == \
-                    ancestor_choice_structure.genome_2_path.genome_tail and \
-                    ancestor_choice_structure.genome_2_path.tail == tail:
+            if ancestor_choice_structure.genome_2_path["genome_head"] == \
+                    ancestor_choice_structure.genome_2_path["genome_tail"] and \
+                    ancestor_choice_structure.genome_2_path["tail"] == tail:
                 result += 1
 
-            if ancestor_choice_structure.genome_3_path.genome_head == \
-                    ancestor_choice_structure.genome_3_path.genome_tail and \
-                    ancestor_choice_structure.genome_3_path.tail == tail:
+            if ancestor_choice_structure.genome_3_path["genome_head"] == \
+                    ancestor_choice_structure.genome_3_path["genome_tail"] and \
+                    ancestor_choice_structure.genome_3_path["tail"] == tail:
                 result += 1
 
         return result
@@ -409,7 +411,7 @@ class SmallPhylogeny:
             result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node1]))
             result.append(PGMFragment.from_fragment(self.tree.medians[median_index].fragments[node2]))
 
-            ancestor_line: PGMPath = PGMPath(node1, node2, 1, 1)
+            ancestor_line: PGMPath = PGMPath.create_pgm_path(node1, node2, 1, 1)
 
             if self.tree.medians[median_index].fragments[node1] is not None:
                 ancestor_fragment: PGMFragment = combine(
@@ -503,17 +505,17 @@ class SmallPhylogeny:
                 index_from: int = ancestor_choice_structure.index_from
                 current_genome: int = ancestor_choice_structure.for_which_genome
 
-                tail1: int = ancestor_choice_structure.genome_1_path.tail
-                genome_tail1: int = ancestor_choice_structure.genome_1_path.genome_tail
-                genome_head1: int = ancestor_choice_structure.genome_1_path.genome_head
+                tail1: int = ancestor_choice_structure.genome_1_path["tail"]
+                genome_tail1: int = ancestor_choice_structure.genome_1_path["genome_tail"]
+                genome_head1: int = ancestor_choice_structure.genome_1_path["genome_head"]
 
-                tail2: int = ancestor_choice_structure.genome_2_path.tail
-                genome_tail2: int = ancestor_choice_structure.genome_2_path.genome_tail
-                genome_head2: int = ancestor_choice_structure.genome_2_path.genome_head
+                tail2: int = ancestor_choice_structure.genome_2_path["tail"]
+                genome_tail2: int = ancestor_choice_structure.genome_2_path["genome_tail"]
+                genome_head2: int = ancestor_choice_structure.genome_2_path["genome_head"]
 
-                tail3: int = ancestor_choice_structure.genome_3_path.tail
-                genome_tail3: int = ancestor_choice_structure.genome_3_path.genome_tail
-                genome_head3: int = ancestor_choice_structure.genome_3_path.genome_head
+                tail3: int = ancestor_choice_structure.genome_3_path["tail"]
+                genome_tail3: int = ancestor_choice_structure.genome_3_path["genome_tail"]
+                genome_head3: int = ancestor_choice_structure.genome_3_path["genome_head"]
 
                 if max_cycle > 1:
                     current_tail: int = -1000
@@ -592,24 +594,24 @@ class SmallPhylogeny:
         New ChoiceStructure
         """
         path_1_1: PGMPath = \
-            copy(self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path)
-        path_1_2: PGMPath = copy(self.tree.medians[median_index].choice_structures[tail - 1].genome_1_path)
+            self.tree.medians[median_index].choice_structures[choice_structure_index].genome_1_path
+        path_1_2: PGMPath = self.tree.medians[median_index].choice_structures[tail - 1].genome_1_path
         path_2_1: PGMPath = \
-            copy(self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path)
-        path_2_2: PGMPath = copy(self.tree.medians[median_index].choice_structures[tail - 1].genome_2_path)
+            self.tree.medians[median_index].choice_structures[choice_structure_index].genome_2_path
+        path_2_2: PGMPath = self.tree.medians[median_index].choice_structures[tail - 1].genome_2_path
         path_3_1: PGMPath = \
-            copy(self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path)
-        path_3_2: PGMPath = copy(self.tree.medians[median_index].choice_structures[tail - 1].genome_3_path)
-        path_l1: PGMPath = PGMPath(index_from, tail, path_1_1.genome_head, path_1_1.genome_head)
-        path_l2: PGMPath = PGMPath(index_from, tail, path_2_1.genome_head, path_2_1.genome_head)
-        path_l3: PGMPath = PGMPath(index_from, tail, path_3_1.genome_head, path_3_1.genome_head)
+            self.tree.medians[median_index].choice_structures[choice_structure_index].genome_3_path
+        path_3_2: PGMPath = self.tree.medians[median_index].choice_structures[tail - 1].genome_3_path
+        path_l1: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_1_1["genome_head"], path_1_1["genome_head"])
+        path_l2: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_2_1["genome_head"], path_2_1["genome_head"])
+        path_l3: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_3_1["genome_head"], path_3_1["genome_head"])
 
         for_which_genome: int = self.tree.medians[median_index].choice_structures[
             choice_structure_index].for_which_genome
 
-        new_path1: PGMPath = path_1_1.connect(path_1_1, path_1_2, path_l1, for_which_genome)
-        new_path2: PGMPath = path_2_1.connect(path_2_1, path_2_2, path_l2, for_which_genome)
-        new_path3: PGMPath = path_3_1.connect(path_3_1, path_3_2, path_l3, for_which_genome)
+        new_path1: PGMPath = PGMPath.connect(path_1_1, path_1_2, path_l1, for_which_genome)
+        new_path2: PGMPath = PGMPath.connect(path_2_1, path_2_2, path_l2, for_which_genome)
+        new_path3: PGMPath = PGMPath.connect(path_3_1, path_3_2, path_l3, for_which_genome)
 
         path_1_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][0]
         path_2_genome: int = self.tree.leaves[median_index + self.tree.number_of_leaves][1]
@@ -630,12 +632,7 @@ class SmallPhylogeny:
             if choice_structure is not None:
                 new_choice_structure_number += 1
 
-        result: List[Optional[ChoiceStructure]] = [None for _ in range(new_choice_structure_number)]
-
-        if len(result) >= 0:
-            result = deepcopy(temp)[:len(result)]
-
-        return result
+        return temp[:new_choice_structure_number]
 
     def get_new_choice_structure_2_step(self, index_from: int, tail: int, current_genome: int,
                                         ancestor_choice_structure: ChoiceStructure,
@@ -686,15 +683,15 @@ class SmallPhylogeny:
         path_2_2: PGMPath = new_choice_structure.genome_2_path
         path_3_2: PGMPath = new_choice_structure.genome_3_path
 
-        path_l1: PGMPath = PGMPath(index_from, tail, path_1_1.genome_head, path_1_1.genome_head)
-        path_l2: PGMPath = PGMPath(index_from, tail, path_2_1.genome_head, path_2_1.genome_head)
-        path_l3: PGMPath = PGMPath(index_from, tail, path_3_1.genome_head, path_3_1.genome_head)
+        path_l1: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_1_1["genome_head"], path_1_1["genome_head"])
+        path_l2: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_2_1["genome_head"], path_2_1["genome_head"])
+        path_l3: PGMPath = PGMPath.create_pgm_path(index_from, tail, path_3_1["genome_head"], path_3_1["genome_head"])
 
         for_which_genome: int = ancestor_choice_structure.for_which_genome
 
-        new_path1: PGMPath = path_1_1.connect(path_1_1, path_1_2, path_l1, for_which_genome)
-        new_path2: PGMPath = path_2_1.connect(path_2_1, path_2_2, path_l2, for_which_genome)
-        new_path3: PGMPath = path_3_1.connect(path_3_1, path_3_2, path_l3, for_which_genome)
+        new_path1: PGMPath = PGMPath.connect(path_1_1, path_1_2, path_l1, for_which_genome)
+        new_path2: PGMPath = PGMPath.connect(path_2_1, path_2_2, path_l2, for_which_genome)
+        new_path3: PGMPath = PGMPath.connect(path_3_1, path_3_2, path_l3, for_which_genome)
 
         median_index: int = ancestor_choice_structure.for_which_genome - self.tree.number_of_leaves
 
@@ -747,10 +744,10 @@ class SmallPhylogeny:
         -------
         temp, modified with the new ChoiceStructure
         """
-        index_from: int = new_path1.head
-        genome_from: int = new_path1.genome_head
-        from_tail: int = new_path1.tail
-        genome_tail: int = new_path1.genome_tail
+        index_from: int = new_path1["head"]
+        genome_from: int = new_path1["genome_head"]
+        from_tail: int = new_path1["tail"]
+        genome_tail: int = new_path1["genome_tail"]
         temp_index: int = 0
 
         for choice_structure in temp:
@@ -807,7 +804,7 @@ class SmallPhylogeny:
                     temp[index_in_temp].set_new_path(new_path1)
 
         if from_tail > 0:
-            new_path2: PGMPath = PGMPath(from_tail, index_from, genome_tail, genome_from)
+            new_path2: PGMPath = PGMPath.create_pgm_path(from_tail, index_from, genome_tail, genome_from)
             ancestor_median: int = -1
 
             if genome_from == genome_tail and genome_from == for_which_genome:
@@ -891,11 +888,11 @@ class SmallPhylogeny:
         gray_edge
             Temporary variable used in calling function
         """
-        if gray_edge.head >= 0 and gray_edge.tail >= 0:
+        if gray_edge["head"] >= 0 and gray_edge["tail"] >= 0:
             self.tree.medians[ancestor].gray_edge[self.tree.medians[ancestor].gray_edge_index] = gray_edge
             self.tree.medians[ancestor].gray_edge_index += 1
 
-        self.update_all(ancestor, gray_edge.head - 1, gray_edge)
+        self.update_all(ancestor, gray_edge["head"] - 1, gray_edge)
 
     def update_all(self, median_index: int, choice_structure_index: int, path_l: PGMPath):
         """
@@ -910,17 +907,17 @@ class SmallPhylogeny:
         path_l
             Used for combining paths
         """
-        new_fragment: List[PGMFragment] = self.get_created_fragment(median_index, path_l.head, path_l.tail)
+        new_fragment: List[PGMFragment] = self.get_created_fragment(median_index, path_l["head"], path_l["tail"])
         self.get_new_fragment_list(new_fragment, median_index)
 
-        self.priorities[self.tree.medians[median_index].choice_structures[path_l.head - 1].priority].remove(
-            self.tree.medians[median_index].choice_structures[path_l.head - 1].position)
-        self.priorities[self.tree.medians[median_index].choice_structures[path_l.tail - 1].priority].remove(
-            self.tree.medians[median_index].choice_structures[path_l.tail - 1].position)
+        self.priorities[self.tree.medians[median_index].choice_structures[path_l["head"] - 1].priority].remove(
+            self.tree.medians[median_index].choice_structures[path_l["head"] - 1].position)
+        self.priorities[self.tree.medians[median_index].choice_structures[path_l["tail"] - 1].priority].remove(
+            self.tree.medians[median_index].choice_structures[path_l["tail"] - 1].position)
 
         new_choice_structure: List[ChoiceStructure] = self.get_new_choice_structure(median_index,
                                                                                     choice_structure_index,
-                                                                                    path_l.head, path_l.tail)
+                                                                                    path_l["head"], path_l["tail"])
 
         for choice_structure in new_choice_structure:
             for_which_genome: int = choice_structure.for_which_genome
@@ -929,8 +926,8 @@ class SmallPhylogeny:
             self.tree.medians[for_which_genome - self.tree.number_of_leaves].choice_structures[
                 index_from - 1] = choice_structure
 
-        self.tree.medians[median_index].choice_structures[path_l.head - 1] = None
-        self.tree.medians[median_index].choice_structures[path_l.tail - 1] = None
+        self.tree.medians[median_index].choice_structures[path_l["head"] - 1] = None
+        self.tree.medians[median_index].choice_structures[path_l["tail"] - 1] = None
 
         for choice_structure in new_choice_structure:
             current_ancestor: int = choice_structure.for_which_genome - self.tree.number_of_leaves
@@ -961,9 +958,9 @@ class SmallPhylogeny:
             self.update_priority(median_index, new_fragment[2].end2 - 1)
 
         for choice_structure in new_choice_structure:
-            tail1: int = choice_structure.genome_1_path.tail
-            tail2: int = choice_structure.genome_2_path.tail
-            tail3: int = choice_structure.genome_3_path.tail
+            tail1: int = choice_structure.genome_1_path["tail"]
+            tail2: int = choice_structure.genome_2_path["tail"]
+            tail3: int = choice_structure.genome_3_path["tail"]
             which_ancestor: int = choice_structure.for_which_genome - self.tree.number_of_leaves
 
             if tail1 > 0:

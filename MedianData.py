@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import List
-from typing import Optional
+from typing import List, Optional, Dict
 
 from ChoiceStructure import ChoiceStructure
 from PGMFragment import PGMFragment
-from PGMPath import PGMPath
+import PGMPath
 
 """                            
  Represents data related to medians (ancestors) in the Pathgroups algorithm, 
@@ -43,15 +42,15 @@ def get_gene_next_node(end1: int) -> int:
     return end1 + 1
 
 
-def find_gray_edge_node(end1: int, gray_edge: List[PGMPath]) -> Optional[int]:
+def find_gray_edge_node(end1: int, gray_edge: List[Dict[str, int]]) -> Optional[int]:
     """
     Find the gray edge end that matches the given fragment end
 
     Parameters
     ----------
-    end1
+    end1 : int
         end1 from PGMFragment
-    gray_edge
+    gray_edge : List[Dict[str, int]]
         The gray edge to search for
 
     Returns
@@ -62,15 +61,15 @@ def find_gray_edge_node(end1: int, gray_edge: List[PGMPath]) -> Optional[int]:
 
     for path in gray_edge:
         if path is not None:
-            if end1 == path.head:
-                return path.tail
-            if end1 == path.tail:
-                return path.head
+            if end1 == path["head"]:
+                return path["tail"]
+            if end1 == path["tail"]:
+                return path["head"]
 
     return None
 
 
-def get_next_path(start_pos: int, paths: List[PGMPath]) -> Optional[PGMPath]:
+def get_next_path(start_pos: int, paths: List[Dict[str, int]]) -> Optional[Dict[str, int]]:
     """
     Returns the first path it finds in paths. Renamed from getAPath() for accuracy
 
@@ -78,17 +77,18 @@ def get_next_path(start_pos: int, paths: List[PGMPath]) -> Optional[PGMPath]:
     ----------
     start_pos : int
         Where to start in the paths list
-    paths : [PGMPath]
+    paths : List[Dict[str, int]]
         List of paths to search
 
     Returns
     -------
-        Optional[PGMPath]
+        Optional[Dict[str, int]]
             If a path is found, return that, else return None
     """
     for i in range(start_pos, len(paths)):
         if paths[i] is not None:
-            return PGMPath(paths[i].head, paths[i].tail, paths[i].genome_head, paths[i].genome_tail)
+            return PGMPath.create_pgm_path(paths[i]["head"], paths[i]["tail"],
+                                           paths[i]["genome_head"], paths[i]["genome_tail"])
     return None
 
 
@@ -119,31 +119,31 @@ class MedianData:
 
     Attributes
     ----------
-    three_genome_paths : [[PGMPath]]
+    three_genome_paths : List[List[Dict[str, int]]]
         All paths for genomes 1-3 in the tree structure
-    three_genomes : [int]
+    three_genomes : List[int]
         The identifiers for the three leaves (genomes) in the tree structure
     gene_num : int
         Total number of genes in each genome
     which_genome : int
         Which genome in the tree structure these medians exist in
-    node_strings : [str]
+    node_strings : List[str]
         String representation of each node
-    gray_edge : [PGMPath]
+    gray_edge : List[Dict[str, int]]
         List of PGMPaths representing a gray edge
     gray_edge_index : int
         Index of the gray edge
-    fragments : [PGMFragment]
+    fragments : List[PGMFragment]
         List of each fragment
-    choice_structures : [Optional[ChoiceStructure]]
+    choice_structures : List[Optional[ChoiceStructure]]
         List of each choice structure
-    median : [str]
+    median : List[str]
         List of each median
     """
 
-    def __init__(self, paths1: List[PGMPath],
-                 paths2: List[PGMPath],
-                 paths3: List[PGMPath],
+    def __init__(self, paths1: List[Dict[str, int]],
+                 paths2: List[Dict[str, int]],
+                 paths3: List[Dict[str, int]],
                  gene_num: int,
                  which_genome: int,
                  genome1: int,
@@ -155,27 +155,27 @@ class MedianData:
 
         Parameters
         ----------
-        paths1 : [[PGMPath]]
+        paths1 : List[Dict[str, int]]]
             All paths for genome 1 in the tree structure
-        paths2 : [[PGMPath]]
+        paths2 : List[Dict[str, int]]]
             All paths for genome 2 in the tree structure
-        paths3 : [[PGMPath]]
+        paths3 : List[Dict[str, int]]]
             All paths for genome 3 in the tree structure
-        genome1 : [int]
+        genome1 : List[int]
             The identifiers for leaf 1 (genome) in the tree structure
-        genome2 : [int]
+        genome2 : List[int]
             The identifiers for leaf 2 (genome) in the tree structure
-        genome3 : [int]
+        genome3 : List[int]
             The identifiers for leaf 3 (genome) in the tree structure
         gene_num : int
             Total number of genes in each genome
         which_genome : int
             Which genome in the tree structure these medians exist in
-        node_strings : [str]
+        node_strings : List[str]
             String representation of each node
         """
 
-        self.three_genome_paths: List[List[PGMPath]] = [paths1, paths2, paths3]
+        self.three_genome_paths: List[List[Dict[str, int]]] = [paths1, paths2, paths3]
         self.three_genomes: List[int] = [genome1, genome2, genome3]
         self.gene_num: int = gene_num
         self.which_genome: int = which_genome
@@ -184,7 +184,7 @@ class MedianData:
         fragment_size = self.gene_num * 2 + 1
         cs_size = int(self.gene_num * 2)
 
-        self.gray_edge: List[Optional[PGMPath]] = [None for _ in range(len(paths1))]
+        self.gray_edge: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths1))]
         self.gray_edge_index: int = 0
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(fragment_size)]
         self.choice_structures: List[Optional[ChoiceStructure]] = list()
@@ -229,15 +229,15 @@ class MedianData:
         d3 = self.get_distance(median.three_genome_paths[2], self.gray_edge)
         return d1 + d2 + d3
 
-    def get_distance(self, p1: List[PGMPath], p2: List[PGMPath]) -> int:
+    def get_distance(self, p1: List[Dict[str, int]], p2: List[Dict[str, int]]) -> int:
         """
         Gets the distance between two sets of paths
 
         Parameters
         ----------
-        p1 : [PGMPath]
+        p1 : List[Dict[str, int]]
             Path 1
-        p2 : [PGMPath]
+        p2 : List[Dict[str, int]]
             Path 2
 
         Returns
@@ -250,58 +250,58 @@ class MedianData:
         cycle_count: int = 0
         good_path_count: int = 0
         chromosome_count: int = 0
-        paths1: List[Optional[PGMPath]] = [None for _ in range(2 * self.gene_num + 1)]
+        paths1: List[Optional[Dict[str, int]]] = [None for _ in range(2 * self.gene_num + 1)]
 
         # Populates paths1 based on the heads and tails of each path in p1
         # where negative values are set to -1
         for path in p1:
             if path is not None:
-                end1: int = path.head
-                end2: int = path.tail
+                end1: int = path["head"]
+                end2: int = path["tail"]
                 if end1 < 0:
                     end1 = -1
                 if end2 < 0:
                     end2 = -1
                 if end1 > 0:
-                    paths1[end1] = PGMPath(end1, end2, 1, 1)
+                    paths1[end1] = PGMPath.create_pgm_path(end1, end2, 1, 1)
                 if end2 > 0:
-                    paths1[end2] = PGMPath(end2, end1, 1, 1)
+                    paths1[end2] = PGMPath.create_pgm_path(end2, end1, 1, 1)
 
         # Counts the number of chromosomes in paths1
         # Fills in None values with paths where head is i and tail is -1
         # Count gets divided by 2 in the end I think because there are two paths for each gene?
         for i in range(0, len(paths1)):
-            if paths1[i] is not None and paths1[i].tail == -1:
+            if paths1[i] is not None and paths1[i]["tail"] == -1:
                 chromosome_count += 1
             elif paths1[i] is None and i != 0:
-                paths1[i] = PGMPath(i, -1, 1, 1)
+                paths1[i] = PGMPath.create_pgm_path(i, -1, 1, 1)
                 chromosome_count += 1
         chromosome_count = int(chromosome_count / 2)
 
         # Same as paths1, except without chromosome_count
-        paths2: List[Optional[PGMPath]] = [None for _ in range(2 * self.gene_num + 1)]
+        paths2: List[Optional[Dict[str, int]]] = [None for _ in range(2 * self.gene_num + 1)]
         for path in p2:
             if path is not None:
-                end1: int = path.head
-                end2: int = path.tail
+                end1: int = path["head"]
+                end2: int = path["tail"]
                 if end1 < 0:
                     end1 = -2
                 if end2 < 0:
                     end2 = -2
                 if end1 > 0:
-                    paths2[end1] = PGMPath(end1, end2, 2, 2)
+                    paths2[end1] = PGMPath.create_pgm_path(end1, end2, 2, 2)
                 if end2 > 0:
-                    paths2[end2] = PGMPath(end2, end1, 2, 2)
+                    paths2[end2] = PGMPath.create_pgm_path(end2, end1, 2, 2)
 
         for i in range(0, len(paths1)):
             if paths2[i] is None and i != 0:
-                paths2[i] = PGMPath(i, -2, 2, 2)
+                paths2[i] = PGMPath.create_pgm_path(i, -2, 2, 2)
 
         # Iterates through paths1 until all paths have been checked
         next_path = get_next_path(0, paths1)
         while next_path is not None:
-            n1: int = next_path.head
-            n2: int = next_path.tail
+            n1: int = next_path["head"]
+            n2: int = next_path["tail"]
             start_point = n1
 
             if n1 > 0:
@@ -318,14 +318,14 @@ class MedianData:
 
             more: bool = True
             while more:
-                if next_path.head < 0 and next_path.tail < 0:
-                    if good_cycle(next_path.head, next_path.tail):
+                if next_path["head"] < 0 and next_path["tail"] < 0:
+                    if good_cycle(next_path["head"], next_path["tail"]):
                         good_path_count += 1
                     break
 
-                path_l: Optional[PGMPath] = paths2[n_big]
-                m1: int = path_l.head
-                m2: int = path_l.tail
+                path_l: Optional[Dict[str, int]] = paths2[n_big]
+                m1: int = path_l["head"]
+                m2: int = path_l["tail"]
                 if m2 > 0:
                     if m2 == n_small:
                         cycle_count += 1
@@ -334,9 +334,9 @@ class MedianData:
                         paths2[m2] = None
                     else:
                         m2_path = paths1[m2]
-                        next_path = PGMPath(m2_path.tail, n_small, 1, 1)
-                        n1 = next_path.head
-                        n2 = next_path.tail
+                        next_path = PGMPath.create_pgm_path(m2_path["tail"], n_small, 1, 1)
+                        n1 = next_path["head"]
+                        n2 = next_path["tail"]
                         if n1 > n2:
                             n_big = n1
                             n_small = n2
@@ -344,7 +344,7 @@ class MedianData:
                             n_big = n2
                             n_small = n1
 
-                        other_path = paths1[m2].tail
+                        other_path = paths1[m2]["tail"]
                         if other_path > 0:
                             paths1[other_path] = None
                         paths2[m1] = None
@@ -357,9 +357,9 @@ class MedianData:
                         more = False
                         paths2[m1] = None
                     elif n_small > 0:
-                        next_path = PGMPath(n_small, m2, 1, 2)
-                        n1 = next_path.head
-                        n2 = next_path.tail
+                        next_path = PGMPath.create_pgm_path(n_small, m2, 1, 2)
+                        n1 = next_path["head"]
+                        n2 = next_path["tail"]
                         if n1 > n2:
                             n_big = n1
                             n_small = n2

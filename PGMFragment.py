@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
-
-import PGMPath
+from typing import Optional, Dict
 
 """                                
  Fragment for use in the PathGroups algorithm (Median problem) 
@@ -61,7 +59,7 @@ class PGMFragment:
         return "end1: " + str(self.end1) + " | end2: " + str(self.end2)
 
 
-def combine(f_path: PGMPath, f1: PGMFragment, f2: PGMFragment) -> Optional[PGMFragment]:
+def combine(f_path: Dict[str, int], f1: PGMFragment, f2: PGMFragment) -> Optional[PGMFragment]:
     """
     Combines two fragments using the path between them to work out which ends to use
 
@@ -79,20 +77,20 @@ def combine(f_path: PGMPath, f1: PGMFragment, f2: PGMFragment) -> Optional[PGMFr
     PGMFragment
         New PGMFragment from the given fragments or None if they cannot be combined
     """
-    if (f_path.head == f1.end1 and f_path.tail == f2.end1) or \
-       (f_path.tail == f1.end1 and f_path.head == f2.end1):
+    if (f_path["head"] == f1.end1 and f_path["tail"] == f2.end1) or \
+       (f_path["tail"] == f1.end1 and f_path["head"] == f2.end1):
         return PGMFragment(f1.end2, f2.end2)
 
-    elif (f_path.head == f1.end1 and f_path.tail == f2.end2) or \
-         (f_path.tail == f1.end1 and f_path.head == f2.end2):
+    elif (f_path["head"] == f1.end1 and f_path["tail"] == f2.end2) or \
+         (f_path["tail"] == f1.end1 and f_path["head"] == f2.end2):
         return PGMFragment(f1.end2, f2.end1)
 
-    elif (f_path.head == f1.end2 and f_path.tail == f2.end1) or \
-         (f_path.tail == f1.end2 and f_path.head == f2.end1):
+    elif (f_path["head"] == f1.end2 and f_path["tail"] == f2.end1) or \
+         (f_path["tail"] == f1.end2 and f_path["head"] == f2.end1):
         return PGMFragment(f1.end1, f2.end2)
 
-    elif (f_path.head == f1.end2 and f_path.tail == f2.end2) or \
-         (f_path.tail == f1.end2 and f_path.head == f2.end2):
+    elif (f_path["head"] == f1.end2 and f_path["tail"] == f2.end2) or \
+         (f_path["tail"] == f1.end2 and f_path["head"] == f2.end2):
         return PGMFragment(f1.end1, f2.end1)
 
     return None
