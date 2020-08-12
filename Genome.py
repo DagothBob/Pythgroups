@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from copy import deepcopy
 from typing import List
 
@@ -56,7 +54,7 @@ class Genome:
         self.chromosomes: List[Chromosome] = deepcopy(chromosomes)
 
     @classmethod
-    def from_strings(cls, g_string: List[str]) -> Genome:
+    def from_strings(cls, g_string: List[str]) -> "Genome":
         """
         Construct a Genome from a list of strings representing chromosomes
 

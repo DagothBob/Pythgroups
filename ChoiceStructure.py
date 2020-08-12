@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from copy import copy
 from typing import Optional
 
@@ -49,7 +47,7 @@ class ChoiceStructure:
         self.genome_3_path: Optional[PGMPath] = None
         self.gray_edge: Optional[PGMPath] = None
 
-    def from_cs(self, cs: ChoiceStructure):
+    def from_cs(self, cs: "ChoiceStructure"):
         """
         Constructs a new ChoiceStructure from an existing given one
 

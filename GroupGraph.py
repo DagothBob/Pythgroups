@@ -3,7 +3,8 @@ from random import Random
 from typing import List, Optional
 
 from ChoiceStructure import ChoiceStructure
-from Genome import Genome
+from Chromosome import Chromosome
+from Genome import Genome, split_at_whitespace
 from PGMFragment import PGMFragment, combine
 from PGMPath import PGMPath
 from Priority import Priority
@@ -91,32 +92,10 @@ def get_gene_next_node(index: int) -> int:
     int
         Index of the paired gene_node
     """
-    if int((index / 2) * 2) == index:
+    if (index // 2) * 2 == index:
         return index - 1
 
     return index + 1
-
-
-def is_a_cycle(path1: PGMPath, path2: PGMPath) -> bool:
-    """
-    Checks that two paths make up a cycle
-
-    Parameters
-    ----------
-    path1
-        First path to check
-    path2
-        Second path to check
-
-    Returns
-    -------
-    bool
-        True/False if given paths form a cycle
-    """
-    return path1.head == path2.tail and \
-        path1.tail == path2.head and \
-        path1.genome_head == path2.genome_tail and \
-        path1.genome_tail == path2.genome_head
 
 
 class GroupGraph:
@@ -433,15 +412,15 @@ class GroupGraph:
             else:
                 tail_1 = gray_edge.tail + self.gene_number * 2
 
-            self.gray_edge.append(copy(gray_edge))
+            self.gray_edge[self.gray_edge_index] = gray_edge
             self.gray_edge_index += 1
-            self.gray_edge.append(PGMPath(from_1, tail_1))
+            self.gray_edge[self.gray_edge_index] = PGMPath(from_1, tail_1)
             self.gray_edge_index += 1
 
         cs_index: int
 
         if gray_edge.head > self.gene_number * 2:
-            cs_index = gray_edge.head - self.gene_number * 2
+            cs_index = (gray_edge.head - 1) - self.gene_number * 2
         else:
             cs_index = gray_edge.head - 1
 
@@ -461,21 +440,23 @@ class GroupGraph:
         new_fragment: List[PGMFragment] = self.get_created_fragment(path_l.head, path_l.tail)
         self.get_new_fragment_list(new_fragment)
 
-        head: int
-        tail: int
+        start_index: int
+        end_index: int
 
         if path_l.head > self.gene_number * 2:
-            head = path_l.head - (self.gene_number * 2)
+            start_index = path_l.head - (self.gene_number * 2)
         else:
-            head = path_l.head
+            start_index = path_l.head
 
         if path_l.tail > self.gene_number * 2:
-            tail = path_l.tail - (self.gene_number * 2)
+            end_index = path_l.tail - (self.gene_number * 2)
         else:
-            tail = path_l.tail
+            end_index = path_l.tail
 
-        self.priorities[self.choice_structures[head - 1].priority].remove(self.choice_structures[head - 1].position)
-        self.priorities[self.choice_structures[tail - 1].priority].remove(self.choice_structures[tail - 1].position)
+        self.priorities[self.choice_structures[start_index - 1].priority].\
+            remove(self.choice_structures[start_index - 1].position)
+        self.priorities[self.choice_structures[end_index - 1].priority].\
+            remove(self.choice_structures[end_index - 1].position)
 
         new_choice_structure: List[ChoiceStructure] = self.get_new_choice_structure(choice_structure_index,
                                                                                     path_l.head,
@@ -485,8 +466,8 @@ class GroupGraph:
             index_from: int = choice_structure.index_from
             self.choice_structures[index_from - 1] = copy(choice_structure)
 
-        self.choice_structures[path_l.head - 1] = None
-        self.choice_structures[path_l.tail - 1] = None
+        self.choice_structures[start_index - 1] = None
+        self.choice_structures[end_index - 1] = None
 
         for choice_structure in new_choice_structure:
             current_choice_structure_index: int = choice_structure.index_from - 1
@@ -556,26 +537,25 @@ class GroupGraph:
             if fragment is not None:
                 median_chromosome += 1
 
-        self.ancestor_AA = list()
+        self.ancestor_AA = Genome(list())
 
         for fragment in self.fragments:
             if fragment is not None:
                 start_index: int = fragment.end1
                 end_index: int = fragment.end2
 
-                self.ancestor_AA.append(self.get_chromosome_using_start_gene(start_index, end_index, 2))
-                self.ancestor_AA.append(self.get_chromosome_using_start_gene(start_index + self.gene_number * 2,
-                                                                             end_index,
-                                                                             2))
+                self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(start_index, end_index, 2))
+                self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(
+                    start_index + self.gene_number * 2, end_index, 2))
 
-        self.ancestor_A = list()
+        self.ancestor_A = Genome(list())
 
         for fragment in self.fragments:
             if fragment is not None:
                 start_index: int = fragment.end1
                 end_index: int = fragment.end2
 
-                self.ancestor_A.append(self.get_chromosome_using_start_gene(start_index, end_index, 1))
+                self.ancestor_A.add_chromosome(self.get_chromosome_using_start_gene(start_index, end_index, 1))
 
     def get_priority_count(self, cs_index: int) -> int:
         """
@@ -908,7 +888,7 @@ class GroupGraph:
                         if choice_structure.index_from == tail_small:
                             temp[temp_index] = ChoiceStructure()
                             temp[temp_index].from_cs(choice_structure)
-                            temp[temp_index].set_new_path(new_path1, ploidy, self.gene_number)
+                            temp[temp_index].set_new_path(np1, ploidy, self.gene_number)
                             find_now = True
                             break
 
@@ -950,7 +930,7 @@ class GroupGraph:
                 self.choice_structures[cs_index].priority = priority
                 self.choice_structures[cs_index].position = new_position
 
-    def get_chromosome_using_start_gene(self, start_index: int, end_index: int, ploidy: int) -> str:
+    def get_chromosome_using_start_gene(self, start_index: int, end_index: int, ploidy: int) -> Chromosome:
         """
         Gets a chromosome using the first gene
 
@@ -965,7 +945,7 @@ class GroupGraph:
 
         Returns
         -------
-        str
+        Chromosome
             Chromosome as a string
         """
         ancestor_chromosome: str = str()
@@ -1057,7 +1037,7 @@ class GroupGraph:
 
                     start_index = get_gene_next_node(next_gene_index)
 
-        return ancestor_chromosome
+        return Chromosome.from_strings(split_at_whitespace(ancestor_chromosome))
     
     def calculate_case(self, choice_structure_index: int, index_from: int, tail: int) -> int:
         """
@@ -1108,7 +1088,7 @@ class GroupGraph:
             self.fragments[created_fragment[1].end1] = created_fragment[1]
             self.fragments[created_fragment[1].end2] = PGMFragment(created_fragment[1].end2, created_fragment[1].end1)
 
-        index: int = 0
+        index: int = 1
 
         for cn in range(2, 0, -1):
             for bcla in range(3, 0, -1):
@@ -1171,7 +1151,7 @@ class GroupGraph:
                     
         return -1000
     
-    def count_cycle_for_edge(self, choice_structure_index: int, index_from: int, tail: int) -> int:
+    def count_cycle_for_edge(self, choice_structure_index: int, index_from: int, index_tail: int) -> int:
         """
         Counts the cycles for the current edge
 
@@ -1181,7 +1161,7 @@ class GroupGraph:
             Index of the ChoiceStructure
         index_from
             Head node
-        tail
+        index_tail
             Tail node
 
         Returns
@@ -1190,6 +1170,7 @@ class GroupGraph:
             Number of cycles
         """
         head: int = index_from
+        tail: int = index_tail
 
         if self.is_circular_chromosome(head, tail):
             return -1
@@ -1200,6 +1181,12 @@ class GroupGraph:
         result: int = 0
 
         if tail > 0:
+            if head > self.gene_number * 2:
+                head -= self.gene_number * 2
+
+            if tail > self.gene_number * 2:
+                tail -= self.gene_number * 2
+
             ancestor_choice_structure: ChoiceStructure = self.choice_structures[
                 choice_structure_index]
 
@@ -1457,18 +1444,18 @@ class GroupGraph:
             new_path2 = path_2_1.connect(path_2_1, path_1_2, path_l2)
 
         if index_from > self.gene_number * 2 >= tail:
-            new_path1 = path_1_1.connect(path_2_1, path_1_2, path_l1)
-            new_path2 = path_2_1.connect(path_1_2, path_2_2, path_l2)
+            new_path1 = path_2_1.connect(path_2_1, path_1_2, path_l1)
+            new_path2 = path_1_1.connect(path_1_1, path_2_2, path_l2)
 
         new_path3: Optional[PGMPath] = path_3_1.connect(path_3_1, path_3_2, path_l3)
 
         temp: List[Optional[ChoiceStructure]] = [None for _ in range(6)]
 
-        if not is_a_cycle(new_path1, PGMPath(index_from, tail)):
+        if not self.is_a_cycle(new_path1, index_from, tail):
             temp = self.get_new_choice_structure_based_on_path(new_path1, temp, new_choice_structures, 2)
-        if not is_a_cycle(new_path2, PGMPath(index_from, tail)):
+        if not self.is_a_cycle(new_path2, index_from, tail):
             temp = self.get_new_choice_structure_based_on_path(new_path2, temp, new_choice_structures, 2)
-        if not is_a_cycle(new_path3, PGMPath(index_from, tail)):
+        if not self.is_a_cycle(new_path3, index_from, tail):
             temp = self.get_new_choice_structure_based_on_path(new_path3, temp, new_choice_structures, 1)
 
         new_choice_structure_number: int = 0

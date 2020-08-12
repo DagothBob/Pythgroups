@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Optional
 
 import PGMPath
@@ -38,7 +36,7 @@ class PGMFragment:
         self.end2: int = end2
 
     @classmethod
-    def from_fragment(cls, fragment: PGMFragment) -> PGMFragment:
+    def from_fragment(cls, fragment: "PGMFragment") -> "PGMFragment":
         """
         Construct new PGMFragment from existing one
 

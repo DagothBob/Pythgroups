@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from copy import deepcopy
 from typing import List
 
@@ -33,7 +31,7 @@ class Chromosome:
         self.genes: List[Gene] = deepcopy(genes)
 
     @classmethod
-    def from_chromosome(cls, chromosome: Chromosome) -> Chromosome:
+    def from_chromosome(cls, chromosome: "Chromosome") -> "Chromosome":
         """
         Copy constructor
 
@@ -50,7 +48,7 @@ class Chromosome:
         return cls(chromosome.genes)
 
     @classmethod
-    def from_strings(cls, gene_strings: List[str]) -> Chromosome:
+    def from_strings(cls, gene_strings: List[str]) -> "Chromosome":
         """
         Constructor from list of gene names
 
@@ -86,6 +84,20 @@ class Chromosome:
             value.append(gene.name)
 
         return value
+
+    def add_gene(self, gene: Gene):
+        """
+        Adds a Gene to the Chromosome and strips whitespace from its name
+
+        Parameters
+        ----------
+        gene
+            Gene to add
+        """
+        strip: Gene = gene
+        strip.name.strip()
+
+        self.genes.append(strip)
 
     def __str__(self) -> str:
         """

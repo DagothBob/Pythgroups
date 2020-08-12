@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from enum import IntEnum
 
 """
@@ -46,7 +44,7 @@ class Gene:
         self.node_2: int = node2
 
     @classmethod
-    def default(cls) -> Gene:
+    def default(cls) -> "Gene":
         """
         Construct with default values
 
@@ -58,7 +56,7 @@ class Gene:
         return cls("", TailOrHead.NULL, TailOrHead.NULL)
 
     @classmethod
-    def with_name(cls, name: str) -> Gene:
+    def with_name(cls, name: str) -> "Gene":
         """
         Construct with name
 
@@ -78,7 +76,7 @@ class Gene:
             return cls(name, TailOrHead.HEAD, TailOrHead.TAIL)
 
     @classmethod
-    def from_gene(cls, gene: Gene) -> Gene:
+    def from_gene(cls, gene: "Gene") -> "Gene":
         """
         Copy constructor from existing Gene object
 
