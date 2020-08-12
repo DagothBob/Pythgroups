@@ -8,7 +8,6 @@ from networkx import Graph
 
 import InputPreprocessing
 from BPGDistance import BPGDistance
-from Chromosome import Chromosome
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
 from Genome import Genome, split_at_whitespace
@@ -470,13 +469,13 @@ def genome_halving():
     print("\nd(AA, tetra) = " + str(distance_1) + " | d(A,outgroup) = " + str(distance_2), " | total = " +
           str(total_distance) + "\n")
 
-    print("Genome ancestor_AA:\n")
+    print("\n-\nGenome ancestor_AA:\n")
 
     for i in range(len(ggh.ancestor_AA.chromosomes)):
         print("Chromosome " + str(i + 1))
         print(str(ggh.ancestor_AA.chromosomes[i]))
 
-    print("Genome ancestor_A:\n")
+    print("\n-\nGenome ancestor_A:\n")
 
     for i in range(len(ggh.ancestor_A.chromosomes)):
         print("Chromosome " + str(i + 1))

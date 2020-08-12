@@ -1,7 +1,4 @@
-from __future__ import annotations
-
-
-"""                            
+"""
  Path for use in a BreakPoint Graph for BPGDistance.   
                                                        
  Based on BPGPath.java from C.Zheng & D.Sankoff (2011) 
@@ -45,7 +42,7 @@ class BPGPath:
         self.genome_tail: int = ancestor_tail
 
     @classmethod
-    def from_path(cls, path: BPGPath) -> BPGPath:
+    def from_path(cls, path: "BPGPath") -> "BPGPath":
         """
         Constructs BPGPath from existing one
 

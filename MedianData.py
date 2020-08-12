@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import List
 from typing import Optional
 
@@ -209,7 +207,7 @@ class MedianData:
 
             self.choice_structures.append(cs)
 
-    def gray_edge_total_distance(self, median: MedianData) -> int:
+    def gray_edge_total_distance(self, median: "MedianData") -> int:
         """
         Calculate the total distances between the three genome paths from the given median
         and this instance's gray edge. Renamed from countTotalDis

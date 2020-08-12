@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Optional
 
 """                              
@@ -49,10 +47,10 @@ class PGMPath:
         return "h: {}, t: {}, gh: {}, gt: {}".format(self.head, self.tail, self.genome_head, self.genome_tail)
 
     @staticmethod
-    def connect(path1: PGMPath,
-                path2: PGMPath,
-                path_l: PGMPath,
-                which_genome: Optional[int] = None) -> Optional[PGMPath]:
+    def connect(path1: "PGMPath",
+                path2: "PGMPath",
+                path_l: "PGMPath",
+                which_genome: Optional[int] = None) -> Optional["PGMPath"]:
         """
         Connect two PGMPaths
 
@@ -232,3 +230,16 @@ class PGMPath:
                 return PGMPath(path1.head, path2.head)
 
         return None
+
+    # noinspection PyRedeclaration
+    # For debugging
+    def __str__(self) -> str:
+        """
+        String override
+
+        Returns
+        -------
+        str
+            String representation of the object data
+        """
+        return "Head: {} | Tail: {} | GH: {} | GT: {}".format(self.head, self.tail, self.genome_head, self.genome_tail)
