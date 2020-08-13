@@ -14,10 +14,10 @@ from Genome import Genome, split_at_whitespace
 from GenomeInString import GenomeInString
 from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
-from PGMPath import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
+
 
 """
  Driver program for Pythgroups
@@ -296,8 +296,8 @@ def small_phylogeny():
     for i in range(0, len(relation) - 1):
         for j in range(i + 1, len(relation)):
             if relation[i][j] == 2 or relation[j][i] == 2:
-                p1: List[PGMPath] = reconstructed_paths[i].paths
-                p2: List[PGMPath] = reconstructed_paths[j].paths
+                p1: List[Dict[str, int]] = reconstructed_paths[i].paths
+                p2: List[Dict[str, int]] = reconstructed_paths[j].paths
                 cur_dist: int = ts.medians[0].get_distance(p1, p2)
                 reconstructed_dist += cur_dist
                 before_optimization += "  d({r},{c})={d}".format(r=str(i), c=str(j), d=str(cur_dist))
@@ -316,8 +316,8 @@ def small_phylogeny():
     for i in range(0, len(relation) - 1):
         for j in range(i + 1, len(relation)):
             if relation[i][j] == 2 or relation[j][i] == 2:
-                p1: List[PGMPath] = reconstructed_paths[i].paths
-                p2: List[PGMPath] = reconstructed_paths[j].paths
+                p1: List[Dict[str, int]] = reconstructed_paths[i].paths
+                p2: List[Dict[str, int]] = reconstructed_paths[j].paths
                 cur_dist: int = ts.medians[0].get_distance(p1, p2)
                 optimized_dist += cur_dist
                 after_optimization += "  d({r},{c})={d}".format(r=str(i), c=str(j), d=str(cur_dist))

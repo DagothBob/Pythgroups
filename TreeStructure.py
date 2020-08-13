@@ -1,10 +1,10 @@
-from copy import deepcopy, copy
-from typing import Optional, List
+from copy import copy
+from typing import Optional, List, Dict
 
 from Genome import Genome
 from GenomeInString import GenomeInString
 from MedianData import MedianData
-from PGMPath import PGMPath
+import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
 
 
@@ -112,8 +112,8 @@ class TreeStructure:
         self.node_string: List[str] = [str() for _ in range(self.gene_number * 2)]
 
         if ancestor_genome_string is None:
-            self.node_int = deepcopy(node_ints)
-            self.node_string = deepcopy(node_strings)
+            self.node_int = node_ints
+            self.node_string = node_strings
 
             self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths) + 1)]
 
@@ -212,7 +212,7 @@ class TreeStructure:
 
         return relation
 
-    def get_pgm_path(self, genome: Optional[Genome], which_genome: int) -> List[PGMPath]:
+    def get_pgm_path(self, genome: Optional[Genome], which_genome: int) -> List[Dict[str, int]]:
         """
         Gets list of PGMPaths for a genome
 
@@ -225,18 +225,18 @@ class TreeStructure:
 
         Returns
         -------
-        [PGMPath]
+        List[Dict[str, int]]
             List of PGMPaths for the genome
         """
         if genome is None:
-            path2: List[Optional[PGMPath]] = [None for _ in range((2 * self.gene_number) + 1)]
+            path2: List[Optional[Dict[str, int]]] = [None for _ in range((2 * self.gene_number) + 1)]
 
             for i in range(1, len(path2)):
-                path2[i] = PGMPath(i, 0, which_genome, -1)
+                path2[i] = PGMPath.create_pgm_path(i, 0, which_genome, -1)
 
             return path2
 
-        path1: List[Optional[PGMPath]] = [None for _ in range((2 * self.gene_number) + 1)]
+        path1: List[Optional[Dict[str, int]]] = [None for _ in range((2 * self.gene_number) + 1)]
         null_node: int = -1
 
         for chromosome in genome.chromosomes:
@@ -261,20 +261,20 @@ class TreeStructure:
                     print("Gene ", str(chromosome.genes[j]), " does not exist in the other genome.\n")
 
                 if j == 0:
-                    path1[node1_int] = PGMPath(node1_int, null_node, which_genome, which_genome)
+                    path1[node1_int] = PGMPath.create_pgm_path(node1_int, null_node, which_genome, which_genome)
                     pre_node = node2_int
                     null_node -= 1
                 elif j != 0 and j != len(chromosome.genes) - 1:
-                    path1[node1_int] = PGMPath(node1_int, pre_node, which_genome, which_genome)
-                    path1[pre_node] = PGMPath(pre_node, node1_int, which_genome, which_genome)
+                    path1[node1_int] = PGMPath.create_pgm_path(node1_int, pre_node, which_genome, which_genome)
+                    path1[pre_node] = PGMPath.create_pgm_path(pre_node, node1_int, which_genome, which_genome)
                     pre_node = node2_int
 
                 if j == len(chromosome.genes) - 1:
                     if len(chromosome.genes) != 1:
-                        path1[pre_node] = PGMPath(pre_node, node1_int, which_genome, which_genome)
-                        path1[node1_int] = PGMPath(node1_int, pre_node, which_genome, which_genome)
+                        path1[pre_node] = PGMPath.create_pgm_path(pre_node, node1_int, which_genome, which_genome)
+                        path1[node1_int] = PGMPath.create_pgm_path(node1_int, pre_node, which_genome, which_genome)
 
-                    path1[node2_int] = PGMPath(node2_int, null_node, which_genome, which_genome)
+                    path1[node2_int] = PGMPath.create_pgm_path(node2_int, null_node, which_genome, which_genome)
                     null_node -= 1
 
         return path1
