@@ -6,6 +6,7 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 Author: Holger Jensen, Oskar Jensen
 """
 from typing import List, Optional
+import numpy as np
 
 
 class Priority:
@@ -78,12 +79,28 @@ class Priority:
 
         self.bw: int = better_or_worse
 
-        self.cs_indexes: List[int] = [-1 for _ in range(size)]
-        self.median_indexes: List[int] = [-1 for _ in range(size)]
-        self.empty_previous: List[int] = [i - 1 for i in range(size)]
-        self.empty_next: List[int] = [i + 1 for i in range(size)]
-        self.taken_previous: List[int] = [0 for _ in range(size)]
-        self.taken_next: List[int] = [0 for _ in range(size)]
+        # self.cs_indexes: List[int] = list()
+        # self.median_indexes: List[int] = list()
+        # self.empty_previous: List[int] = list()
+        # self.empty_next: List[int] = list()
+        # self.taken_previous: List[int] = list()
+        # self.taken_next: List[int] = list()
+
+        self.cs_indexes: np.ndarray = np.full(size, -1, np.int32)
+        self.median_indexes: np.ndarray = np.full(size, -1, np.int32)
+        self.taken_previous: np.ndarray = np.empty(size, np.int32)
+        self.taken_next: np.ndarray = np.empty(size, np.int32)
+        self.empty_previous: np.ndarray = np.array([i - 1 for i in np.arange(size)], np.int32)
+        self.empty_next: np.ndarray = np.array([i + 1 for i in np.arange(size)], np.int32)
+
+        # Initializes all the arrays to various default values
+        # for i in range(size):
+        #     self.taken_previous.append(0)  # These two arrays are filled in so
+        #     self.taken_next.append(0)      # that their sizes match the others
+        #     self.cs_indexes.append(-1)
+        #     self.median_indexes.append(-1)
+        #     self.empty_previous.append(i - 1)
+        #     self.empty_next.append(i + 1)
 
         self.empty_next[size - 1] = -1     # last entry set to -1
 
