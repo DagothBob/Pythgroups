@@ -1,4 +1,4 @@
-from copy import deepcopy, copy
+from copy import copy
 from typing import Optional, List, Dict
 
 from Genome import Genome

@@ -6,8 +6,6 @@ from Bio import Phylo
 from Bio.Phylo.Newick import Tree, Clade
 from networkx import Graph
 
-import cProfile
-
 import InputPreprocessing
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
@@ -16,12 +14,10 @@ from Genome import Genome, split_at_whitespace
 from GenomeInString import GenomeInString
 from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
-# from PGMPath import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
 
-import datetime
 
 """
  Driver program for Pythgroups
@@ -309,7 +305,6 @@ def small_phylogeny():
     print("before optimization:\n" + before_optimization)
     print("total distance: " + str(reconstructed_dist))
 
-    exit(1)
     # Section 4: optimize the result
 
     mi: MedianIteration = MedianIteration(ts.number_of_leaves, ts.number_of_ancestors, ts.gene_number,
@@ -335,8 +330,6 @@ def small_phylogeny():
         print("reconstructed ancestors:")
         for j in range(0, len(ts.medians[i].median)):
             print("chr {}\n {}".format(j, ts.medians[i].median[j]))
-
-    print(datetime.datetime.now().time())
 
 
 def genome_aliquoting():
@@ -515,7 +508,6 @@ def get_algorithm(alg: str):
 
 
 def main():
-    print(datetime.datetime.now().time())
     config_file: TextIO = open(CONFIG_DIR)
     config_data = yaml.safe_load(config_file)
     config_file.close()
