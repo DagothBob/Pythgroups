@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 from typing import Optional, List
 
 from BPGPath import BPGPath
@@ -151,7 +151,7 @@ class BPGDistance:
 
         for chromosome in self.genome_1.chromosomes:
             for gene in chromosome.genes:
-                first_character: str = deepcopy(gene.name[0])  # Sign indicating gene is head-tail or tail-head
+                first_character: str = gene.name[0]  # Sign indicating gene is head-tail or tail-head
                 node1: str
                 node2: str
 
@@ -176,7 +176,7 @@ class BPGDistance:
 
                 index1 += 1
 
-        self.node_strings_2 = deepcopy(self.node_strings_1)
+        self.node_strings_2 = copy(self.node_strings_1)  # Optimized
 
         self.genome_paths_1 = self.get_paths(self.genome_1, 1)
         self.genome_paths_2 = self.get_paths(self.genome_2, 2)

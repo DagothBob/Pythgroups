@@ -1,6 +1,6 @@
-import yaml
-from typing import List, Dict, Set
+from typing import List, Dict
 
+import yaml
 
 CONFIG_DIR = "config.yaml"
 CONFIG_GENOME_FILE = "genome_file"

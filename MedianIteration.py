@@ -1,9 +1,8 @@
-from copy import deepcopy, copy
 from random import random
 from typing import List, Dict
 
-from MedianData import MedianData
 import PGMPath
+from MedianData import MedianData
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
@@ -71,11 +70,11 @@ class MedianIteration:
         self.leaf_num: int = leaf_num
         self.changed: List[int] = [1 for _ in range(ancestor_num)]
         self.gene_num: int = gene_num
-        self.leaves: List[List[int]] = [row[:] for row in leaves]  # 2D array copy
-        self.all_paths: List[PGMPathForAGenome] = deepcopy(all_paths)
-        self.medians: List[MedianData] = deepcopy(medians)
-        self.nodes_int: List[int] = copy(nodes_int)
-        self.nodes_str: List[str] = copy(nodes_str)
+        self.leaves: List[List[int]] = leaves  # [row[:] for row in leaves]  # 2D array copy
+        self.all_paths: List[PGMPathForAGenome] = all_paths
+        self.medians: List[MedianData] = medians
+        self.nodes_int: List[int] = nodes_int
+        self.nodes_str: List[str] = nodes_str
 
     def median_total_distance(self,
                               median_paths: List[Dict[str, int]],
@@ -147,11 +146,20 @@ class MedianIteration:
                 # Filters out all None values for each list of paths in each leaf
                 for t in range(len(aps[0].paths)):
                     if aps[0].paths[t] is not None:
-                        aps[0].paths[t] = PGMPath.create_pgm_path(aps[0].paths[t]["head"], aps[0].paths[t]["tail"], 0, 0)
+                        aps[0].paths[t] = PGMPath.create_pgm_path(aps[0].paths[t]["head"],
+                                                                  aps[0].paths[t]["tail"],
+                                                                  0,
+                                                                  0)
                     if aps[1].paths[t] is not None:
-                        aps[1].paths[t] = PGMPath.create_pgm_path(aps[1].paths[t]["head"], aps[1].paths[t]["tail"], 1, 1)
+                        aps[1].paths[t] = PGMPath.create_pgm_path(aps[1].paths[t]["head"],
+                                                                  aps[1].paths[t]["tail"],
+                                                                  1,
+                                                                  1)
                     if aps[2].paths[t] is not None:
-                        aps[2].paths[t] = PGMPath.create_pgm_path(aps[2].paths[t]["head"], aps[2].paths[t]["tail"], 2, 2)
+                        aps[2].paths[t] = PGMPath.create_pgm_path(aps[2].paths[t]["head"],
+                                                                  aps[2].paths[t]["tail"],
+                                                                  2,
+                                                                  2)
 
                 ts: TreeStructure = TreeStructure(1, 3, self.gene_num, aps, self.nodes_str, self.nodes_int)
                 sp: SmallPhylogeny = SmallPhylogeny(ts)
@@ -187,9 +195,15 @@ class MedianIteration:
                             if end2 < 0:
                                 end2 = -1
                             if end1 > 0:
-                                self.all_paths[i + self.leaf_num].paths[end1] = PGMPath.create_pgm_path(end1, end2, 1, 1)
+                                self.all_paths[i + self.leaf_num].paths[end1] = PGMPath.create_pgm_path(end1,
+                                                                                                        end2,
+                                                                                                        1,
+                                                                                                        1)
                             if end2 > 0:
-                                self.all_paths[i + self.leaf_num].paths[end2] = PGMPath.create_pgm_path(end2, end1, 1, 1)
+                                self.all_paths[i + self.leaf_num].paths[end2] = PGMPath.create_pgm_path(end2,
+                                                                                                        end1,
+                                                                                                        1,
+                                                                                                        1)
 
                     for g in range(len(self.all_paths[i + self.leaf_num].paths)):
                         if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0:

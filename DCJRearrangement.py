@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List, Optional, TypeVar
 
 from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, TranslocationSubtypes
@@ -407,29 +406,23 @@ class DCJRearrangement:
                 if operation.node_4 != -1:
                     length_c = self.gene_nodes_1[operation.node_4].chromosome_position + 1
 
-                new_chromosome1 = deepcopy(  # A
-                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_a]
-                new_chromosome1[length_a:] = deepcopy(  # D
-                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[length_c:]
+                new_chromosome1 = self.chromosomes_for_gene_node_1[operation.chromosome_1][:length_a]
+                new_chromosome1[length_a:] = self.chromosomes_for_gene_node_1[operation.chromosome_2][length_c:]
 
-                new_chromosome2 = deepcopy(  # C
-                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[:length_c]
-                new_chromosome2[length_c:] = deepcopy(  # B
-                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[length_a:]
+                new_chromosome2 = self.chromosomes_for_gene_node_1[operation.chromosome_2][:length_c]
+                new_chromosome2[length_c:] = self.chromosomes_for_gene_node_1[operation.chromosome_1][length_a:]
 
             elif operation.operation_subtype == TranslocationSubtypes.AnCnBD:
                 if operation.node_2 != -1:
                     length_c = self.gene_nodes_1[operation.node_2].chromosome_position + 1
 
-                new_chromosome1 = deepcopy(  # A
-                    self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_a]
-                new_chromosome1[length_a:] = [  # -C
+                new_chromosome1 = self.chromosomes_for_gene_node_1[operation.chromosome_1][:length_a]
+                new_chromosome1[length_a:] = [
                     x for x in reversed(self.chromosomes_for_gene_node_1[operation.chromosome_2][:length_c])]
 
-                new_chromosome2 = [  # -B
+                new_chromosome2 = [
                     x for x in reversed(self.chromosomes_for_gene_node_1[operation.chromosome_1][length_a:])]
-                new_chromosome2[length_b:] = deepcopy(  # D
-                    self.chromosomes_for_gene_node_1[operation.chromosome_2])[length_c:]
+                new_chromosome2[length_b:] = self.chromosomes_for_gene_node_1[operation.chromosome_2][length_c:]
 
             for i in range(len(new_chromosome1)):
                 self.gene_nodes_1[new_chromosome1[i]].chromosome_id = operation.chromosome_1
@@ -444,8 +437,8 @@ class DCJRearrangement:
         elif operation.operation_type == OperationTypes.FISSION:
             length_1: int = self.gene_nodes_1[operation.node_1].chromosome_position + 1
 
-            new_chromosome1: List[int] = deepcopy(self.chromosomes_for_gene_node_1[operation.chromosome_1])[:length_1]
-            new_chromosome2: List[int] = deepcopy(self.chromosomes_for_gene_node_1[operation.chromosome_1])[length_1:]
+            new_chromosome1: List[int] = self.chromosomes_for_gene_node_1[operation.chromosome_1][:length_1]
+            new_chromosome2: List[int] = self.chromosomes_for_gene_node_1[operation.chromosome_1][length_1:]
 
             self.chromosomes_for_gene_node_1[operation.chromosome_1] = new_chromosome1
             self.chromosomes_for_gene_node_1.append(new_chromosome2)
@@ -460,21 +453,15 @@ class DCJRearrangement:
             if operation.operation_subtype == FusionSubtypes.TWO_REVERSED_PLUS_ONE:
                 new_chromosome = [  # -2
                     x for x in reversed(self.chromosomes_for_gene_node_1[chromosome2])]
-                new_chromosome[length_2:] = deepcopy(  # 1
-                    self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome[length_2:] = self.chromosomes_for_gene_node_1[chromosome1]
             elif operation.operation_subtype == FusionSubtypes.TWO_PLUS_ONE:
-                new_chromosome = deepcopy(  # 2
-                    self.chromosomes_for_gene_node_1[chromosome2])
-                new_chromosome[length_2:] = deepcopy(  # 1
-                    self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome = self.chromosomes_for_gene_node_1[chromosome2]
+                new_chromosome[length_2:] = self.chromosomes_for_gene_node_1[chromosome1]
             elif operation.operation_subtype == FusionSubtypes.ONE_PLUS_TWO:
-                new_chromosome = deepcopy(  # 1
-                    self.chromosomes_for_gene_node_1[chromosome1])
-                new_chromosome[length_1:] = deepcopy(  # 2
-                    self.chromosomes_for_gene_node_1[chromosome2])
+                new_chromosome = self.chromosomes_for_gene_node_1[chromosome1]
+                new_chromosome[length_1:] = self.chromosomes_for_gene_node_1[chromosome2]
             elif operation.operation_subtype == FusionSubtypes.ONE_PLUS_TWO_REVERSED:
-                new_chromosome = deepcopy(  # 1
-                    self.chromosomes_for_gene_node_1[chromosome1])
+                new_chromosome = self.chromosomes_for_gene_node_1[chromosome1]
                 new_chromosome[length_1:] = [  # -2
                     x for x in reversed(self.chromosomes_for_gene_node_1[chromosome2])]
 

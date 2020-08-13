@@ -1,10 +1,9 @@
-from copy import copy
 from typing import Optional, List, Dict
 
+import PGMPath
 from Genome import Genome
 from GenomeInString import GenomeInString
 from MedianData import MedianData
-import PGMPath
 from PGMPathForAGenome import PGMPathForAGenome
 
 
@@ -128,7 +127,7 @@ class TreeStructure:
 
             for chromosome in genome1.chromosomes:
                 for gene in chromosome.genes:
-                    first_character: str = copy(gene.name[0])
+                    first_character: str = gene.name[0]
                     node1: str
                     node2: str
 

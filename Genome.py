@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List
 
 from Chromosome import Chromosome
@@ -51,7 +50,7 @@ class Genome:
         chromosomes
             List of chromosomes making up the genome
         """
-        self.chromosomes: List[Chromosome] = deepcopy(chromosomes)
+        self.chromosomes: List[Chromosome] = chromosomes
 
     @classmethod
     def from_strings(cls, g_string: List[str]) -> "Genome":
@@ -84,7 +83,7 @@ class Genome:
         chromosome
             Chromosome to be appended to the genome
         """
-        self.chromosomes.append(deepcopy(chromosome))
+        self.chromosomes.append(chromosome)
 
     def remove_chromosome_at_index(self, index: int):
         """

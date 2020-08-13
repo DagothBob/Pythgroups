@@ -1,3 +1,4 @@
+import cProfile
 from io import StringIO
 from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
 
@@ -17,7 +18,6 @@ from MedianIteration import MedianIteration
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
-
 
 """
  Driver program for Pythgroups
@@ -517,4 +517,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cProfile.run('main()')
+    # main()

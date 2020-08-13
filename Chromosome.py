@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List
 
 from Gene import Gene
@@ -28,7 +27,7 @@ class Chromosome:
         genes
             Genes which make up this chromosome
         """
-        self.genes: List[Gene] = deepcopy(genes)
+        self.genes: List[Gene] = genes
 
     @classmethod
     def from_chromosome(cls, chromosome: "Chromosome") -> "Chromosome":
