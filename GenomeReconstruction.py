@@ -22,6 +22,8 @@ from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
 
+import datetime
+
 """
  Driver program for Pythgroups
  
@@ -335,6 +337,8 @@ def small_phylogeny():
         for j in range(0, len(ts.medians[i].median)):
             print("chr {}\n {}".format(j, ts.medians[i].median[j]))
 
+    print(datetime.datetime.now().time())
+
 
 def genome_aliquoting():
     """
@@ -512,6 +516,7 @@ def get_algorithm(alg: str):
 
 
 def main():
+    print(datetime.datetime.now().time())
     config_file: TextIO = open(CONFIG_DIR)
     config_data = yaml.safe_load(config_file)
     config_file.close()

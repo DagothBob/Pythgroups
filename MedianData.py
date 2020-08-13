@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
-from ChoiceStructure import ChoiceStructure
+import ChoiceStructure
 from PGMFragment import PGMFragment
 import PGMPath
 
@@ -135,7 +135,7 @@ class MedianData:
         Index of the gray edge
     fragments : List[PGMFragment]
         List of each fragment
-    choice_structures : List[Optional[ChoiceStructure]]
+    choice_structures : List[Optional[Dict[str, Any]]]
         List of each choice structure
     median : List[str]
         List of each median
@@ -187,7 +187,7 @@ class MedianData:
         self.gray_edge: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths1))]
         self.gray_edge_index: int = 0
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(fragment_size)]
-        self.choice_structures: List[Optional[ChoiceStructure]] = list()
+        self.choice_structures: List[Optional[Dict[str, Any]]] = list()
         self.median: Optional[List[str]] = list()
 
         # Each gene in each genome has 1 fragment initially (see 2010 paper, section 3.1.1)
@@ -197,15 +197,15 @@ class MedianData:
             self.fragments[2 * i + 2] = PGMFragment(2 * i + 2, 2 * i + 1)
 
         for i in range(1, cs_size + 1):
-            cs = ChoiceStructure()
-            cs.index_from = i
-            cs.genome_1_path = self.three_genome_paths[0][i]
-            cs.genome_2_path = self.three_genome_paths[1][i]
-            cs.genome_3_path = self.three_genome_paths[2][i]
-            cs.for_which_genome = self.which_genome
-            cs.priority = 200
-            cs.position = -1
-            cs.gray_edge = None
+            cs = ChoiceStructure.create_cs()
+            cs["index_from"] = i
+            cs["genome_1_path"] = self.three_genome_paths[0][i]
+            cs["genome_2_path"] = self.three_genome_paths[1][i]
+            cs["genome_3_path"] = self.three_genome_paths[2][i]
+            cs["for_which_genome"] = self.which_genome
+            cs["priority"] = 200
+            cs["position"] = -1
+            cs["gray_edge"] = None
 
             self.choice_structures.append(cs)
 
