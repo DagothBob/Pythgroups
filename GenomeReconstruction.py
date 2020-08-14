@@ -1,6 +1,7 @@
 import cProfile
 from io import StringIO
 from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
+import sys, time, threading
 
 import yaml
 from Bio import Phylo
@@ -46,8 +47,10 @@ CONFIG_WHICH_CHROMOSOME = "which_chromosome"
 CONFIG_NUMBER_OPERATIONS = "number_of_operations"
 CONFIG_GENOME_REPLACE = "genome_to_replace"
 
+done = False  # used in the progress spinner
 
-class GenomeNode:
+
+class NetworkxNode:
     """
     Represents a node in the networkx graph, containing additional information like a unique integer identifier
 
@@ -76,6 +79,26 @@ class GenomeNode:
         self.name: str = name
         self.neighbors: List[int] = neighbors
         self.genome_id: int = genome_id
+
+
+class SpinnerThread(threading.Thread):
+    """
+    Used for the progress spinner
+    """
+
+    def __init__(self):
+        super().__init__(target=self._spin)
+        self._stopevent = threading.Event()
+
+    def stop(self):
+        self._stopevent.set()
+
+    def _spin(self):
+        while not self._stopevent.isSet():
+            for t in '|/-\\':
+                print("\rPerforming initial reconstruction... {}".format(t), end="")
+                time.sleep(0.4)
+        print("\bComplete", end="")
 
 
 def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
@@ -147,13 +170,13 @@ def parse_tree(config_dir: str) -> Optional[Tree]:
     return tree_data
 
 
-def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
+def parse_medians(graph_nodes: List[NetworkxNode]) -> List[NetworkxNode]:
     """
     Get the median nodes from a list of GenomeNodes
 
     Parameters
     ----------
-    graph_nodes : List[GenomeNode]
+    graph_nodes : List[NetworkxNode]
         List of GraphNodes to parse the medians from
 
     Returns
@@ -161,16 +184,16 @@ def parse_medians(graph_nodes: List[GenomeNode]) -> List[GenomeNode]:
     Dict[Clade, List[Clade]]
         Key: median to reconstruct, value: list of 3 neighboring clades
     """
-    medians: List[GenomeNode] = list()
+    medians: List[NetworkxNode] = list()
     for node in graph_nodes:
         if (len(node.neighbors)) == 3:
-            medians.append(GenomeNode(node.name, node.neighbors, node.genome_id))
+            medians.append(NetworkxNode(node.name, node.neighbors, node.genome_id))
         # TODO: Exception handling for illegal tree structures (eg. node with > 3 neighbors)
 
     return medians
 
 
-def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
+def genome_nodes_from_tree(tree: Tree) -> List[NetworkxNode]:
     """
     Converts a tree into a networkx graph consisting of GenomeNode representations of each node
 
@@ -181,7 +204,7 @@ def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
 
     Returns
     -------
-    List[GenomeNode]
+    List[NetworkxNode]
         A list of GenomeNodes representing each node, their neighbors, and their unique IDs
     """
     terminals = tree.get_terminals()
@@ -208,7 +231,7 @@ def genome_nodes_from_tree(tree: Tree) -> List[GenomeNode]:
         neighbor_ids = list()
         for neighbor in graph.neighbors(node):
             neighbor_ids.append(graph_indexes[neighbor])
-        graph_nodes.append(GenomeNode(node, neighbor_ids, genome_id))
+        graph_nodes.append(NetworkxNode(node, neighbor_ids, genome_id))
 
     return graph_nodes
 
@@ -252,8 +275,8 @@ def small_phylogeny():
     """
     tree: Tree = parse_tree(CONFIG_DIR)
     genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
-    genome_nodes: List[GenomeNode] = genome_nodes_from_tree(tree)
-    median_nodes: List[GenomeNode] = parse_medians(genome_nodes)
+    genome_nodes: List[NetworkxNode] = genome_nodes_from_tree(tree)
+    median_nodes: List[NetworkxNode] = parse_medians(genome_nodes)
 
     num_ancestor = len([node for node in tree.get_nonterminals() if node.name is not None])
     num_leaves = len([node for node in tree.get_terminals() if node.name is not None])  # don't count unnamed nodes
@@ -269,7 +292,18 @@ def small_phylogeny():
                               median.neighbors[1], median.neighbors[2])
 
     sp: SmallPhylogeny = SmallPhylogeny(ts)
-    sp.get_result()
+
+    task = threading.Thread(target=sp.get_result)
+    task.start()
+
+    # progress spinner for before optimization step
+    spin_thread = SpinnerThread()
+    spin_thread.start()
+
+    task.join()
+    spin_thread.stop()
+    spin_thread.join()
+    print("\n")
 
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
@@ -304,6 +338,7 @@ def small_phylogeny():
 
     print("before optimization:\n" + before_optimization)
     print("total distance: " + str(reconstructed_dist))
+    print("")
 
     # Section 4: optimize the result
 
