@@ -25,13 +25,7 @@ def split_at_whitespace(strings: str) -> List[str]:
     List[str]
         Set of cleaned-up strings
     """
-    result: List[str] = list()
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
+    return [s.strip() for s in strings.strip().split(" ") if s.strip() != ""]
 
 
 class Genome:
@@ -67,12 +61,7 @@ class Genome:
         Genome
             Genome instance with the specified chromosomes
         """
-        chromosomes: List[Chromosome] = list()
-
-        for s in g_string:
-            chromosomes.append(Chromosome.from_strings(split_at_whitespace(s)))
-
-        return cls(chromosomes)
+        return cls([Chromosome.from_strings(split_at_whitespace(s)) for s in g_string])
 
     def add_chromosome(self, chromosome: Chromosome):
         """

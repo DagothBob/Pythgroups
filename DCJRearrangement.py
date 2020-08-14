@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar
+from typing import List, Optional
 
 from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, TranslocationSubtypes
 from Gene import Gene
@@ -23,53 +23,6 @@ from GenomeInString import GenomeInString
                                                              
  Author: Holger Jensen, Oskar Jensen                                     
 """
-
-
-def insert_character(s: str, i: int, c: str) -> str:
-    """
-    Utility function for modifying strings in a similar way to lists.
-
-    Parameters
-    ----------
-    s
-        String to modify
-    i
-        Index to insert the character at
-    c
-        Character to insert
-
-    Returns
-    -------
-    str
-        New string with the inserted character
-    """
-    return s[:i] + c + s[(i + 1):]
-
-
-T = TypeVar('T')
-
-
-def clean_empty_lists(list_: List[List[T]]) -> List[List[T]]:
-    """
-    Cleans [0] entries from the given list
-
-    Parameters
-    ----------
-    list_
-        List to be cleaned
-
-    Returns
-    -------
-    List[List[T]]
-        List without [0] entries
-    """
-    temp: List[List[T]] = list()
-
-    for item in list_:
-        if item != [0]:
-            temp.append(item)
-
-    return temp
 
 
 TELOMERE_VALUE: int = -1
@@ -217,12 +170,12 @@ class DCJRearrangement:
 
                 if genes[j].name[0] == "-":
                     genome_name = genes[j].name[1:]
-                    genome_node_string1 = insert_character(genome_name, len(genome_name), "h")
-                    genome_node_string2 = insert_character(genome_name, len(genome_name), "t")
+                    genome_node_string1 = str().join([genome_name, "h"])
+                    genome_node_string2 = str().join([genome_name, "t"])
                 else:
                     genome_name = genes[j].name
-                    genome_node_string1 = insert_character(genome_name, len(genome_name), "t")
-                    genome_node_string2 = insert_character(genome_name, len(genome_name), "h")
+                    genome_node_string1 = str().join([genome_name, "t"])
+                    genome_node_string2 = str().join([genome_name, "h"])
 
                 genome_node_index1: int = self.get_node_index(genome_node_string1)
                 genome_node_index2: int = self.get_node_index(genome_node_string2)
@@ -486,8 +439,9 @@ class DCJRearrangement:
                         self.gene_nodes_1[i].chromosome_id >= chromosome2:
                     self.gene_nodes_1[i].chromosome_id = self.gene_nodes_1[i].chromosome_id - 1
 
-            self.chromosomes_for_gene_node_1 = clean_empty_lists(
-                self.chromosomes_for_gene_node_1[:len(self.chromosomes_for_gene_node_1) - 1])
+            self.chromosomes_for_gene_node_1 = [
+                node for node in self.chromosomes_for_gene_node_1[:len(self.chromosomes_for_gene_node_1) - 1]
+                if node != [0]]
 
         if operation.node_1 != -1:
             self.gene_nodes_1[operation.node_1].adjacency = operation.node_2

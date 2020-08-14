@@ -70,7 +70,7 @@ class MedianIteration:
         self.leaf_num: int = leaf_num
         self.changed: List[int] = [1 for _ in range(ancestor_num)]
         self.gene_num: int = gene_num
-        self.leaves: List[List[int]] = leaves  # [row[:] for row in leaves]  # 2D array copy
+        self.leaves: List[List[int]] = leaves
         self.all_paths: List[PGMPathForAGenome] = all_paths
         self.medians: List[MedianData] = medians
         self.nodes_int: List[int] = nodes_int
@@ -101,11 +101,9 @@ class MedianIteration:
         int
             Total distance between median and 3 leaves
         """
-        d1 = self.medians[0].get_distance(median_paths, paths1)
-        d2 = self.medians[0].get_distance(median_paths, paths2)
-        d3 = self.medians[0].get_distance(median_paths, paths3)
-
-        return d1 + d2 + d3
+        return self.medians[0].get_distance(median_paths, paths1) + \
+            self.medians[0].get_distance(median_paths, paths2) + \
+            self.medians[0].get_distance(median_paths, paths3)
 
     def optimize_result(self, prob_threshold_top: float, runs: int):
         """
@@ -184,6 +182,7 @@ class MedianIteration:
 
                     self.medians[i] = ts.medians[0]
                     self.all_paths[i + self.leaf_num].paths = [None for _ in range(2 * self.gene_num + 1)]
+
                     # Performs optimizations on each path in gray_edge
                     for g in range(len(self.medians[i].gray_edge)):
                         if self.medians[i].gray_edge[g] is not None:
@@ -205,9 +204,10 @@ class MedianIteration:
                                                                                                         1,
                                                                                                         1)
 
-                    for g in range(len(self.all_paths[i + self.leaf_num].paths)):
-                        if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0:
-                            self.all_paths[i + self.leaf_num].paths[g] = PGMPath.create_pgm_path(g, -1, 1, 1)
+                    self.all_paths[i + self.leaf_num].paths = \
+                        [PGMPath.create_pgm_path(g, -1, 1, 1)
+                         for g in range(len(self.all_paths[i + self.leaf_num].paths))
+                         if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0]
 
         # Get the ancestors and distances
         for median in self.medians:

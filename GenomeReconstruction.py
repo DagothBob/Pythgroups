@@ -1,7 +1,8 @@
 import cProfile
+import threading
+import time
 from io import StringIO
 from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
-import sys, time, threading
 
 import yaml
 from Bio import Phylo
@@ -134,10 +135,9 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
             chromosomes: List[str] = list()
             while len(line) != 0 and not line.startswith(">") and line != "\n":
                 clean_input: str = line.replace("$", "").replace("\n", "")
-                chromosome: str = ""
-                for string in clean_input.strip().split(" "):
-                    if string.strip() != "":
-                        chromosome += string.strip() + " "
+                chromosome: str = str().join([string.strip() + " "
+                                              for string in clean_input.strip().split(" ")
+                                              if string.strip() != ""])
 
                 chromosomes.append(chromosome)
                 line = genome_file.readline()
@@ -167,6 +167,7 @@ def parse_tree(config_dir: str) -> Optional[Tree]:
     config_data = yaml.safe_load(config_file)
     tree_data = Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
     config_file.close()
+
     return tree_data
 
 
@@ -211,26 +212,29 @@ def genome_nodes_from_tree(tree: Tree) -> List[NetworkxNode]:
     nonterminals = tree.get_nonterminals()
     graph_indexes = dict()
     node_index = 0
+
     for t in terminals:
         graph_indexes[t.name] = node_index
         node_index += 1
+
     for nt in nonterminals:
         if nt.name is not None and len(nt.clades) > 0:
             graph_indexes[nt.name] = node_index
             node_index += 1
 
     graph: Graph = Graph()
+
     for nt in nonterminals:
         if nt.name is not None and len(nt.clades) > 0:
             for clade in nt.clades:
                 graph.add_edge(nt.name, clade.name)
 
     graph_nodes = list()
+
     for node in graph:
         genome_id = graph_indexes[node]
-        neighbor_ids = list()
-        for neighbor in graph.neighbors(node):
-            neighbor_ids.append(graph_indexes[neighbor])
+        neighbor_ids = [graph_indexes[neighbor] for neighbor in graph.neighbors(node)]
+
         graph_nodes.append(NetworkxNode(node, neighbor_ids, genome_id))
 
     return graph_nodes
@@ -252,8 +256,10 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
         The number of genes in each genome
     """
     final_count: int = 0
+
     for genome, chromosomes in genomes.items():
         count: int = 0
+
         for chromosome in chromosomes:
             count += len(split_at_whitespace(chromosome))
 
@@ -282,6 +288,7 @@ def small_phylogeny():
     num_leaves = len([node for node in tree.get_terminals() if node.name is not None])  # don't count unnamed nodes
     num_genes = count_genes(genomes)
     all_genomes: List[GenomeInString] = list()
+
     for chromosomes in genomes.values():
         all_genomes.append(GenomeInString(Genome.from_strings(chromosomes)))
 
@@ -308,6 +315,7 @@ def small_phylogeny():
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
         print("before optimization, reconstructed ancestors")
+
         for j in range(0, len(ts.medians[i].median)):
             print("chr {}\n {}".format(j, ts.medians[i].median[j]))
 
@@ -321,6 +329,7 @@ def small_phylogeny():
     for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
         chromosome_strings: List[str] = ts.medians[i - ts.number_of_leaves].median
         median_genome: Genome = Genome.from_strings(chromosome_strings)
+
         reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(median_genome, i)))
 
     relation: List[List[int]] = ts.get_relation()
@@ -363,6 +372,7 @@ def small_phylogeny():
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
         print("reconstructed ancestors:")
+
         for j in range(0, len(ts.medians[i].median)):
             print("chr {}\n {}".format(j, ts.medians[i].median[j]))
 

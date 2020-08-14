@@ -2,33 +2,11 @@ from random import Random
 from typing import List, Optional, Dict, Any
 
 import ChoiceStructure
+import PGMPath
 from Chromosome import Chromosome
 from Genome import Genome, split_at_whitespace
 from PGMFragment import PGMFragment, combine
-import PGMPath
 from Priority import Priority
-
-
-def insert_character(s: str, i: int, c: str) -> str:
-    """
-    Utility function for modifying strings in a similar way to lists.
-    Character c is inserted at index i into string s and returned.
-
-    Parameters
-    ----------
-    s
-        String to replace character in
-    i
-        Index to replace in string
-    c
-        Character to insert
-
-    Returns
-    -------
-    str
-        New string with the character inserted
-    """
-    return s[:i] + c + s[(i + 1):]
 
 
 def count_gene_number(genome: Genome) -> int:
@@ -219,8 +197,8 @@ class GroupGraph:
                 node_2: str
 
                 if gene.name[0] == "-":
-                    node_1 = gene.name[1:] + "h"
-                    node_2 = gene.name[1:] + "t"
+                    node_1 = str().join([gene.name[1:], "h"])
+                    node_2 = str().join([gene.name[1:], "t"])
 
                     self.node_int[index] = index + 1
                     self.node_str[index] = node_2
@@ -230,8 +208,8 @@ class GroupGraph:
                     self.node_str[index] = node_1
                     index += 1
                 else:
-                    node_1 = gene.name + "t"
-                    node_2 = gene.name + "h"
+                    node_1 = str().join([gene.name, "t"])
+                    node_2 = str().join([gene.name, "h"])
 
                     self.node_int[index] = index + 1
                     self.node_str[index] = node_1
@@ -275,11 +253,11 @@ class GroupGraph:
                 node2: str
 
                 if first_character == '-':
-                    node1 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "h")
-                    node2 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "t")
+                    node1 = str().join([chromosome.genes[j].name[1:], "h"])
+                    node2 = str().join([chromosome.genes[j].name[1:], "t"])
                 else:
-                    node1 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "t")
-                    node2 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "h")
+                    node1 = str().join([chromosome.genes[j].name, "t"])
+                    node2 = str().join([chromosome.genes[j].name, "h"])
 
                 node1_int: int = self.find_node_int(node1, ploidy)
                 node2_int: int = self.find_node_int(node2, ploidy)
@@ -1388,28 +1366,29 @@ class GroupGraph:
         path_3_2: Dict[str, int] = new_choice_structure["genome_3_path"]
 
         from_2: int
+        to_2: int
+        from_3: int
+        to_3: int
 
         if index_from > self.gene_number * 2:
             from_2 = index_from - self.gene_number * 2
         else:
             from_2 = index_from + self.gene_number * 2
 
-        to_2: int
-
         if tail > self.gene_number * 2:
             to_2 = tail - self.gene_number * 2
         else:
             to_2 = tail + self.gene_number * 2
 
-        from_3: int = index_from
-
         if index_from > self.gene_number * 2:
             from_3 = from_2
-
-        to_3: int = tail
+        else:
+            from_3 = index_from
 
         if tail > self.gene_number * 2:
             to_3 = to_2
+        else:
+            to_3 = tail
 
         path_l1: Dict[str, int] = PGMPath.create_pgm_path(index_from, tail)
         path_l2: Dict[str, int] = PGMPath.create_pgm_path(from_2, to_2)
@@ -1445,13 +1424,7 @@ class GroupGraph:
         if not self.is_a_cycle(new_path3, index_from, tail):
             temp = self.get_new_choice_structure_based_on_path(new_path3, temp, new_choice_structures, 1)
 
-        new_choice_structure_number: int = 0
-
-        for choice_structure in temp:
-            if choice_structure is not None:
-                new_choice_structure_number += 1
-
-        return temp[:new_choice_structure_number]
+        return temp[:len(temp) - temp.count(None)]
 
     def count_cycle_look_ahead(self, ancestor_choice_structure: Optional[Dict[str, Any]]) -> int:
         """

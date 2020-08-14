@@ -14,27 +14,6 @@ from Genome import Genome
 """
 
 
-def insert_character(s: str, i: int, c: str) -> str:
-    """
-    Utility function for inserting a character into a string.
-
-    Parameters
-    ----------
-    s
-        String to be modified
-    i
-        Index to change
-    c
-        Character to be inserted
-
-    Returns
-    -------
-    str
-        New string with the inserted character
-    """
-    return s[:i] + c + s[(i + 1):]
-
-
 def is_valid_cycle(edge1: int, edge2: int) -> bool:
     """
     Checks if the given path is a valid cycle.
@@ -156,8 +135,8 @@ class BPGDistance:
                 node2: str
 
                 if first_character == "-":
-                    node1 = insert_character(gene.name[1:], len(gene.name[1:]), "h")
-                    node2 = insert_character(gene.name[1:], len(gene.name[1:]), "t")
+                    node1 = str().join([gene.name[1:], "h"])
+                    node2 = str().join([gene.name[1:], "t"])
                     self.node_ints.append(index1 + 1)
                     self.node_strings_1.append(node2)
 
@@ -165,8 +144,8 @@ class BPGDistance:
                     self.node_ints.append(index1 + 1)
                     self.node_strings_1.append(node1)
                 else:
-                    node1 = insert_character(gene.name, len(gene.name), "t")
-                    node2 = insert_character(gene.name, len(gene.name), "h")
+                    node1 = str().join([gene.name, "t"])
+                    node2 = str().join([gene.name, "h"])
                     self.node_ints.append(index1 + 1)
                     self.node_strings_1.append(node1)
 
@@ -209,11 +188,11 @@ class BPGDistance:
                 node2: str
 
                 if first_character == "-":
-                    node1 = insert_character(chromosome.genes[i].name[1:], len(chromosome.genes[i].name[1:]), "h")
-                    node2 = insert_character(chromosome.genes[i].name[1:], len(chromosome.genes[i].name[1:]), "t")
+                    node1 = str().join([chromosome.genes[i].name[1:], "h"])
+                    node2 = str().join([chromosome.genes[i].name[1:], "t"])
                 else:
-                    node1 = insert_character(chromosome.genes[i].name, len(chromosome.genes[i].name), "t")
-                    node2 = insert_character(chromosome.genes[i].name, len(chromosome.genes[i].name), "h")
+                    node1 = str().join([chromosome.genes[i].name, "t"])
+                    node2 = str().join([chromosome.genes[i].name, "h"])
 
                 node1_int: int = self.get_node_int(node1, node)
                 node2_int: int = self.get_node_int(node2, node)
@@ -256,13 +235,13 @@ class BPGDistance:
         """
         if gene_int == 1:
             for i in range(len(self.node_strings_1)):
-                if self.node_strings_1[i] is not None and self.node_strings_1[i] == gene_str:
+                if self.node_strings_1[i] == gene_str:
                     self.node_strings_1[i] = None
                     return i + 1
 
         if gene_int == 2:
             for i in range(len(self.node_strings_2)):
-                if self.node_strings_2[i] is not None and self.node_strings_2[i] == gene_str:
+                if self.node_strings_2[i] == gene_str:
                     self.node_strings_2[i] = None
                     return i + 1
 
@@ -291,12 +270,15 @@ class BPGDistance:
             if node2 > 0:
                 self.genome_paths_1[node2] = None
 
-            node_big: int = node1
-            node_small: int = node2
+            node_big: int
+            node_small: int
 
-            if node_big < node_small:
+            if node1 < node2:
                 node_big = node2
                 node_small = node1
+            else:
+                node_big = node1
+                node_small = node2
 
             more: bool = True
 
@@ -324,12 +306,12 @@ class BPGDistance:
                     node1 = ancestor_path1.head
                     node2 = ancestor_path1.tail
 
-                    node_big = node1
-                    node_small = node2
-
-                    if node_big < node_small:
+                    if node1 < node2:
                         node_big = node2
                         node_small = node1
+                    else:
+                        node_big = node1
+                        node_small = node2
 
                     other_path1: int = self.genome_paths_1[l_node2].tail
 
@@ -350,12 +332,12 @@ class BPGDistance:
                     node1 = ancestor_path1.head
                     node2 = ancestor_path1.tail
 
-                    node_big = node1
-                    node_small = node2
-
-                    if node_big < node_small:
+                    if node1 < node2:
                         node_big = node2
                         node_small = node1
+                    else:
+                        node_big = node1
+                        node_small = node2
 
                     self.genome_paths_2[l_node1] = None
 
