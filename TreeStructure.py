@@ -109,7 +109,7 @@ class TreeStructure:
                                                                 for ags in ancestor_genome_string]
 
             # Fill with None
-            while len(self.all_genomes) < self.number_of_leaves + self.number_of_ancestors:
+            for i in range(len(self.all_genomes), self.number_of_leaves + self.number_of_ancestors):
                 self.all_genomes.append(None)
 
             self.all_paths: List[Optional[PGMPathForAGenome]] = [
@@ -118,6 +118,9 @@ class TreeStructure:
 
             for i in range(len(ancestor_genome_string), len(self.all_genomes)):
                 self.all_paths.append(PGMPathForAGenome(self.get_pgm_path(None, i)))
+
+            for i in range(len(self.all_paths), self.number_of_leaves + self.number_of_ancestors):
+                self.all_paths.append(None)
 
     def set_tree_structure(self, which_genome: int, genome1: int, genome2: int, genome3: int):
         """

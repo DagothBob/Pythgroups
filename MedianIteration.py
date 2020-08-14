@@ -204,10 +204,9 @@ class MedianIteration:
                                                                                                         1,
                                                                                                         1)
 
-                    self.all_paths[i + self.leaf_num].paths = \
-                        [PGMPath.create_pgm_path(g, -1, 1, 1)
-                         for g in range(len(self.all_paths[i + self.leaf_num].paths))
-                         if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0]
+                    for g in range(len(self.all_paths[i + self.leaf_num].paths)):
+                        if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0:
+                            self.all_paths[i + self.leaf_num].paths[g] = PGMPath.create_pgm_path(g, -1, 1, 1)
 
         # Get the ancestors and distances
         for median in self.medians:
