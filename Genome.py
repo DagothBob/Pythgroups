@@ -1,7 +1,5 @@
 from typing import List
 
-from numpy import array as nparray, ndarray
-
 from Chromosome import Chromosome
 
 """
@@ -37,7 +35,7 @@ class Genome:
     chromosomes: List[Chromosome]
         List of chromosomes belonging to this genome
     """
-    def __init__(self, chromosomes: ndarray):
+    def __init__(self, chromosomes: List[Chromosome]):
         """
         Constructor
 
@@ -46,7 +44,7 @@ class Genome:
         chromosomes
             List of chromosomes making up the genome
         """
-        self.chromosomes: ndarray = chromosomes
+        self.chromosomes: List[Chromosome] = chromosomes
 
     @classmethod
     def from_strings(cls, g_string: List[str]) -> "Genome":
@@ -63,7 +61,7 @@ class Genome:
         Genome
             Genome instance with the specified chromosomes
         """
-        return cls(nparray([Chromosome.from_strings(split_at_whitespace(s)) for s in g_string]))
+        return cls([Chromosome.from_strings(split_at_whitespace(s)) for s in g_string])
 
     def add_chromosome(self, chromosome: Chromosome):
         """
@@ -77,7 +75,7 @@ class Genome:
         temp: List[Chromosome] = list(self.chromosomes)
         temp.append(chromosome)
 
-        self.chromosomes = nparray(temp)
+        self.chromosomes = temp
 
     def remove_chromosome_at_index(self, index: int):
         """

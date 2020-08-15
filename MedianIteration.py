@@ -1,6 +1,8 @@
 from random import random
 from typing import List, Dict
 
+from numpy import ndarray, ones as npones
+
 import PGMPath
 from MedianData import MedianData
 from PGMPathForAGenome import PGMPathForAGenome
@@ -23,17 +25,17 @@ class MedianIteration:
     ----------
     leaf_num : int
         Number of leaves in the tree
-    changed : List[int]
+    changed : ndarray
         List of changed ancestors. Unsure of what its purpose is, as it's not used anywhere meaningfully.
     gene_num : int
         Total number of genes in the tree
-    leaves : List[List[int]]
+    leaves : List[ndarray]
         List of each leaf for each genome in the tree (in relation to the median)
     all_paths : List[PGMPathForAGenome]
         List of all paths for each genome in the tree
     medians : List[MedianData]
         List of all medians in the tree
-    nodes_int : List[int]
+    nodes_int : ndarray
         List of the integer representations of each node
     nodes_str : List[str]
         List of the string representations of each node
@@ -45,7 +47,7 @@ class MedianIteration:
                  leaves: List[List[int]],
                  all_paths: List[PGMPathForAGenome],
                  medians: List[MedianData],
-                 nodes_int: List[int],
+                 nodes_int: ndarray,
                  nodes_str: List[str]):
         """
         Parameters
@@ -56,24 +58,24 @@ class MedianIteration:
             Number of ancestors (medians) in the tree
         gene_num : int
             Total number of genes in the tree
-        leaves : List[List[int]]
+        leaves : List[ndarray]
             List of each leaf for each genome in the tree (in relation to the median)
         all_paths : List[PGMPathForAGenome]
             List of all paths for each genome in the tree
         medians : List[MedianData]
             List of all medians in the tree
-        nodes_int : List[int]
+        nodes_int : ndarray
             List of the integer representations of each node
         nodes_str : List[str]
             List of the string representations of each node
         """
         self.leaf_num: int = leaf_num
-        self.changed: List[int] = [1 for _ in range(ancestor_num)]
+        self.changed: ndarray = npones(ancestor_num)
         self.gene_num: int = gene_num
         self.leaves: List[List[int]] = leaves
         self.all_paths: List[PGMPathForAGenome] = all_paths
         self.medians: List[MedianData] = medians
-        self.nodes_int: List[int] = nodes_int
+        self.nodes_int: ndarray = nodes_int
         self.nodes_str: List[str] = nodes_str
 
     def median_total_distance(self,

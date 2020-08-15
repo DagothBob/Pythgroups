@@ -1,7 +1,7 @@
 from copy import copy
 from typing import Optional, List
 
-from numpy import array as nparray
+from numpy import zeros as npzeros, ndarray
 
 from BPGPath import BPGPath
 from Genome import Genome
@@ -99,8 +99,8 @@ class BPGDistance:
         """
         gene_count_1: int = 0
         gene_count_2: int = 0
-        self.genome_1: Genome = Genome(nparray(list()))  # Genome 1 as String
-        self.genome_2: Genome = Genome(nparray(list()))  # Genome 2 as String
+        self.genome_1: Genome = Genome(list())  # Genome 1 as String
+        self.genome_2: Genome = Genome(list())  # Genome 2 as String
 
         for chromosome in genome_1.chromosomes:
             if len(chromosome.genes) != 0:
@@ -117,7 +117,7 @@ class BPGDistance:
         else:
             raise Exception("Different numbers of genes in both genomes.\n")
 
-        self.node_ints: List[int] = list()
+        self.node_ints: ndarray = npzeros(self.gene_count * 2)
         self.node_strings_1: List[Optional[str]] = list()
         self.node_strings_2: List[Optional[str]] = list()
         self.genome_paths_1: List[Optional[BPGPath]] = list()
@@ -139,20 +139,20 @@ class BPGDistance:
                 if first_character == "-":
                     node1 = str().join([gene.name[1:], "h"])
                     node2 = str().join([gene.name[1:], "t"])
-                    self.node_ints.append(index1 + 1)
+                    self.node_ints[index1] = index1 + 1
                     self.node_strings_1.append(node2)
 
                     index1 += 1
-                    self.node_ints.append(index1 + 1)
+                    self.node_ints[index1] = index1 + 1
                     self.node_strings_1.append(node1)
                 else:
                     node1 = str().join([gene.name, "t"])
                     node2 = str().join([gene.name, "h"])
-                    self.node_ints.append(index1 + 1)
+                    self.node_ints[index1] = index1 + 1
                     self.node_strings_1.append(node1)
 
                     index1 += 1
-                    self.node_ints.append(index1 + 1)
+                    self.node_ints[index1] = index1 + 1
                     self.node_strings_1.append(node2)
 
                 index1 += 1

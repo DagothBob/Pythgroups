@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 
+from numpy import ndarray
+
 import ChoiceStructure
 import PGMPath
 from PGMFragment import PGMFragment
@@ -122,7 +124,7 @@ class MedianData:
     ----------
     three_genome_paths : List[List[Dict[str, int]]]
         All paths for genomes 1-3 in the tree structure
-    three_genomes : List[int]
+    three_genomes : ndarray
         The identifiers for the three leaves (genomes) in the tree structure
     gene_num : int
         Total number of genes in each genome
@@ -162,11 +164,11 @@ class MedianData:
             All paths for genome 2 in the tree structure
         paths3 : List[Dict[str, int]]]
             All paths for genome 3 in the tree structure
-        genome1 : List[int]
+        genome1 : int
             The identifiers for leaf 1 (genome) in the tree structure
-        genome2 : List[int]
+        genome2 : int
             The identifiers for leaf 2 (genome) in the tree structure
-        genome3 : List[int]
+        genome3 : int
             The identifiers for leaf 3 (genome) in the tree structure
         gene_num : int
             Total number of genes in each genome
@@ -175,7 +177,6 @@ class MedianData:
         node_strings : List[str]
             String representation of each node
         """
-
         self.three_genome_paths: List[List[Dict[str, int]]] = [paths1, paths2, paths3]
         self.three_genomes: List[int] = [genome1, genome2, genome3]
         self.gene_num: int = gene_num

@@ -4,7 +4,6 @@ from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, Transloca
 from Gene import Gene
 from GeneNode import GeneNode
 from Genome import Genome
-from GenomeInString import GenomeInString
 
 """                               
  Double-Cut-and-Join Rearrangement class                        
@@ -67,8 +66,8 @@ class DCJRearrangement:
         genome2
             Second genome for DCJ operations
         """
-        self.genome1: GenomeInString = GenomeInString(genome1)
-        self.genome2: GenomeInString = GenomeInString(genome2)
+        self.genome1: Genome = genome1
+        self.genome2: Genome = genome2
 
         self.gene_count: int = int()
 
@@ -216,7 +215,7 @@ class DCJRearrangement:
 
         return -1
 
-    def get_genome_in_string(self, node_list: List[List[int]]) -> GenomeInString:
+    def get_genome_in_string(self, node_list: List[List[int]]) -> Genome:
         """
         Creates a GenomeInString from the given list of nodes
 
@@ -247,14 +246,14 @@ class DCJRearrangement:
                     if gene_node_1 == gene_node_2 and tail_or_head1 == "h" and tail_or_head2 == "t":
                         chromosomes[i] = chromosomes[i] + " -" + gene_node_1
 
-        return GenomeInString(Genome.from_strings(chromosomes))
+        return Genome.from_strings(chromosomes)
 
     def get_result(self,
                    min_chromosome: int,
                    max_chromosome: int,
                    which_chromosome: int,
                    types_of_operation: List[int],
-                   number_of_operations: int) -> List[Optional[GenomeInString]]:
+                   number_of_operations: int) -> List[Optional[Genome]]:
         """
         Performs a DCJ operation
 
@@ -276,7 +275,7 @@ class DCJRearrangement:
         List[GenomeInString]
             New list of GenomeInStrings after operations performed
         """
-        all_steps: List[Optional[GenomeInString]] = list()
+        all_steps: List[Optional[Genome]] = list()
         current_operation: int = 0
 
         self.touched_chromosome = [int() for _ in range(len(self.chromosomes_for_gene_node_1))]

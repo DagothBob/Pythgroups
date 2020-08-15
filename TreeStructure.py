@@ -1,8 +1,9 @@
 from typing import Optional, List, Dict
 
+from numpy import ndarray, zeros as npzeros, int32
+
 import PGMPath
 from Genome import Genome
-from GenomeInString import GenomeInString
 from MedianData import MedianData
 from PGMPathForAGenome import PGMPathForAGenome
 
@@ -17,11 +18,11 @@ class TreeStructure:
         Number of leaf nodes in the tree structure
     gene_number : int
         Number of genes in the structure
-    leaves : List[List[int]]
+    leaves : ndarray
         List of leaf nodes
     medians : Optional[List[MedianData]]
         List of MedianData information
-    node_int : List[int]
+    node_int : ndarray
         Current node as a list of integers
     node_string : List[str]
         Current node as a list of strings
@@ -35,8 +36,8 @@ class TreeStructure:
                  gene_number: int,
                  paths: Optional[List[PGMPathForAGenome]] = None,
                  node_strings: Optional[List[str]] = None,
-                 node_ints: Optional[List[int]] = None,
-                 ancestor_genome_string: Optional[List[GenomeInString]] = None):
+                 node_ints: Optional[ndarray] = None,
+                 ancestor_genome_string: Optional[List[Genome]] = None):
         """
         Constructor
 
@@ -62,7 +63,7 @@ class TreeStructure:
         self.gene_number: int = gene_number
         self.leaves: List[List[int]] = [[-1, -1, -1] for _ in range((self.number_of_ancestors + self.number_of_leaves))]
         self.medians: List[Optional[MedianData]] = [None for _ in range(self.number_of_ancestors)]
-        self.node_int: List[int] = [int() for _ in range(self.gene_number * 2)]
+        self.node_int: ndarray = npzeros(self.gene_number * 2, int32)
         self.node_string: List[str] = [str() for _ in range(self.gene_number * 2)]
 
         if ancestor_genome_string is None:
@@ -105,8 +106,7 @@ class TreeStructure:
 
                     index1 += 1
 
-            self.all_genomes: List[Optional[GenomeInString]] = [GenomeInString(Genome(ags.chromosomes))
-                                                                for ags in ancestor_genome_string]
+            self.all_genomes: List[Optional[Genome]] = [ags for ags in ancestor_genome_string]
 
             # Fill with None
             for i in range(len(self.all_genomes), self.number_of_leaves + self.number_of_ancestors):
@@ -150,14 +150,14 @@ class TreeStructure:
                                                                         genome3,
                                                                         self.node_string)
 
-    def get_relation(self) -> List[List[int]]:
+    def get_relation(self) -> ndarray:
         """
         Returns
         -------
         Relation between leaves
         """
-        relation: List[List[int]] = [[int() for _ in range((self.number_of_leaves + self.number_of_ancestors))]
-                                     for _ in range((self.number_of_leaves + self.number_of_ancestors))]
+        size: int = self.number_of_leaves + self.number_of_ancestors
+        relation: ndarray = npzeros((size, size), int32)
 
         for i in range(len(self.leaves)):
             for j in range(len(self.leaves[i])):

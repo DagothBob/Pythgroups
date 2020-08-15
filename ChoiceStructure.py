@@ -37,24 +37,23 @@ def create_cs(source: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     cs["gray_edge"]: Optional[Dict[str, int]]
 
     if source is None:
-        cs["index_from"], \
-            cs["for_which_genome"], \
-            cs["priority"], \
-            cs["position"], \
-            cs["genome_1_path"], \
-            cs["genome_2_path"], \
-            cs["genome_3_path"], \
-            cs["gray_edge"] = int(), int(), int(), int(), None, None, None, None
+        cs["index_from"] = int()
+        cs["for_which_genome"] = int()
+        cs["priority"] = int()
+        cs["position"] = int()
+        cs["genome_1_path"] = None
+        cs["genome_2_path"] = None
+        cs["genome_3_path"] = None
+        cs["gray_edge"] = None
     else:
-        cs["index_from"], \
-            cs["for_which_genome"], \
-            cs["priority"], \
-            cs["position"], \
-            cs["genome_1_path"], \
-            cs["genome_2_path"], \
-            cs["genome_3_path"], \
-            cs["gray_edge"] = source["index_from"], source["for_which_genome"], source["priority"], source["position"],\
-            source["genome_1_path"], source["genome_2_path"], source["genome_3_path"], source["gray_edge"]
+        cs["index_from"] = source["index_from"]
+        cs["for_which_genome"] = source["for_which_genome"]
+        cs["priority"] = source["priority"]
+        cs["position"] = source["position"]
+        cs["genome_1_path"] = source["genome_1_path"]
+        cs["genome_2_path"] = source["genome_2_path"]
+        cs["genome_3_path"] = source["genome_3_path"]
+        cs["gray_edge"] = source["gray_edge"]
 
     return cs
 

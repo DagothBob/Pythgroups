@@ -1,8 +1,6 @@
 from random import Random
 from typing import List, Optional, Dict, Any
 
-from numpy import array as nparray
-
 import ChoiceStructure
 import PGMPath
 from Chromosome import Chromosome
@@ -515,7 +513,7 @@ class GroupGraph:
             if fragment is not None:
                 median_chromosome += 1
 
-        self.ancestor_AA = Genome(nparray(list()))
+        self.ancestor_AA = Genome(list())
 
         for fragment in self.fragments:
             if fragment is not None:
@@ -526,7 +524,7 @@ class GroupGraph:
                 self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(
                     start_index + self.gene_number * 2, end_index, 2))
 
-        self.ancestor_A = Genome(nparray(list()))
+        self.ancestor_A = Genome(list())
 
         for fragment in self.fragments:
             if fragment is not None:
