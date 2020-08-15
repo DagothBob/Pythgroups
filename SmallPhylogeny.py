@@ -1,6 +1,5 @@
 from typing import Optional, List, Dict, Any
-
-from numpy import array as nparray, ndarray
+import random
 
 import ChoiceStructure
 import PGMPath
@@ -140,7 +139,7 @@ class SmallPhylogeny:
         Which to replace
     """
 
-    def __init__(self, tree_structure: TreeStructure):
+    def __init__(self, tree_structure: TreeStructure, deterministic: bool = True):
         """
         Constructor
 
@@ -151,6 +150,7 @@ class SmallPhylogeny:
         """
         self.tree: TreeStructure = tree_structure
         self.to_replace: int = 2
+        self.deterministic = deterministic
 
         priority_size: int = (self.tree.number_of_ancestors * (self.tree.gene_number + 500)) * 2
         self.priorities: List[Priority] = [Priority(priority_size) for _ in range(163)]
@@ -205,6 +205,9 @@ class SmallPhylogeny:
         add_tail1: bool = False
         add_tail2: bool = False
 
+        if not self.deterministic:
+            self.to_replace = random.randint(0, 2)
+
         if self.tree.medians[median_index]. \
            choice_structures[choice_structure_index]["genome_1_path"]["genome_head"] == \
            self.tree.medians[median_index]. \
@@ -224,7 +227,10 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                     PGMPath.create_pgm_path(index_from, tail_of1, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
+        else:
+            self.to_replace = random.randint(0, 2)
 
         if self.tree.medians[median_index]. \
            choice_structures[choice_structure_index]["genome_2_path"]["genome_head"] == \
@@ -245,13 +251,16 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                         PGMPath.create_pgm_path(index_from, tail_of2, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
+        else:
+            self.to_replace = random.randint(0, 2)
 
         if self.tree.medians[median_index]. \
            choice_structures[choice_structure_index]["genome_3_path"]["genome_head"] == \
            self.tree.medians[median_index]. \
            choice_structures[choice_structure_index]["genome_3_path"]["genome_tail"]:
-            
+
             if ((not add_tail1) or tail_of3 != tail_of1) and ((not add_tail2) or tail_of3 != tail_of2):
                 ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of3)
 
@@ -260,7 +269,8 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                         PGMPath.create_pgm_path(index_from, tail_of3, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
 
         return result
 
@@ -299,7 +309,7 @@ class SmallPhylogeny:
                                                                                        index_from,
                                                                                        tail)
 
-        look_ahead_cycles: ndarray = self.count_all_look_ahead_cycles(created_choice_structure)
+        look_ahead_cycles: List[int] = self.count_all_look_ahead_cycles(created_choice_structure)
         max_cycle_look_ahead: int = look_ahead_cycles[0]
         how_many_more_cycles: int = look_ahead_cycles[1]
         max_cycle_look_ahead2: int = look_ahead_cycles[2]
@@ -444,7 +454,7 @@ class SmallPhylogeny:
             self.tree.medians[median_index].fragments[created_fragment[2].end2] = PGMFragment(created_fragment[2].end2,
                                                                                               created_fragment[2].end1)
 
-    def count_all_look_ahead_cycles(self, created_choice_structures: List[Dict[str, Any]]) -> ndarray:
+    def count_all_look_ahead_cycles(self, created_choice_structures: List[Dict[str, Any]]) -> List[int]:
         """
         Counts all look ahead cycles for the set of ChoiceStructures
 
@@ -474,7 +484,7 @@ class SmallPhylogeny:
 
                 total += new_cycle - old_cycle
 
-        return nparray([max_cycle, total, self.count_2_steps_look_ahead_cycle(created_choice_structures, max_cycle)])
+        return [max_cycle, total, self.count_2_steps_look_ahead_cycle(created_choice_structures, max_cycle)]
 
     def count_2_steps_look_ahead_cycle(self, created_choice_structures: List[Dict[str, Any]], max_cycle: int) -> int:
         """
@@ -609,7 +619,7 @@ class SmallPhylogeny:
         new_path2: PGMPath = PGMPath.connect(path_2_1, path_2_2, path_l2, for_which_genome)
         new_path3: PGMPath = PGMPath.connect(path_3_1, path_3_2, path_l3, for_which_genome)
 
-        leaf: ndarray = self.tree.leaves[median_index + self.tree.number_of_leaves]
+        leaf: List[int] = self.tree.leaves[median_index + self.tree.number_of_leaves]
 
         path_1_genome: int
         path_2_genome: int
@@ -687,7 +697,7 @@ class SmallPhylogeny:
 
         median_index: int = for_which_genome - self.tree.number_of_leaves
 
-        leaf: ndarray = self.tree.leaves[for_which_genome]
+        leaf: List[int] = self.tree.leaves[for_which_genome]
 
         path_1_genome: int
         path_2_genome: int
@@ -837,7 +847,7 @@ class SmallPhylogeny:
         """
         self.group_pathgroup_into_priorities()
 
-        best_choice_structure: ndarray = self.find_the_best_choice_structure()
+        best_choice_structure: List[int] = self.find_the_best_choice_structure()
 
         while best_choice_structure[0] != -1:
             priority: int = best_choice_structure[0]
@@ -977,17 +987,17 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["priority"] = priority
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["position"] = new_position
 
-    def find_the_best_choice_structure(self) -> ndarray:
+    def find_the_best_choice_structure(self) -> List[int]:
         """
         Finds the best choice structure
 
         Returns
         -------
-        ndarray
+        List[int]
             Result of the operation
         """
         for i in range(len(self.priorities)):
             if self.priorities[i].taken_start != -1:
-                return nparray([i, self.priorities[i].taken_start])
+                return [i, self.priorities[i].taken_start]
 
-        return nparray([-1, -1])
+        return [-1, -1]
