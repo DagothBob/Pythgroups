@@ -62,159 +62,173 @@ def connect(path1: Dict[str, int],
     tail: int
     genome_head: int
     genome_tail: int
+    
+    p1_head: int = path1["head"]
+    p1_tail: int = path1["tail"]
+    p2_head: int = path2["head"]
+    p2_tail: int = path2["tail"]
+    pl_head: int = path_l["head"]
+    pl_tail: int = path_l["tail"]
 
     if which_genome is not None:
-        if path1["head"] == path_l["head"] and path1["genome_head"] == path_l["genome_head"] and \
-                path2["head"] == path_l["tail"] and path2["genome_head"] == path_l["genome_tail"]:
-            head = path1["tail"]
-            genome_head = path1["genome_tail"]
-            tail = path2["tail"]
-            genome_tail = path2["genome_tail"]
+        p1_ghead: int = path1["genome_head"]
+        p1_gtail: int = path1["genome_tail"]
+        p2_ghead: int = path2["genome_head"]
+        p2_gtail: int = path2["genome_tail"]
+        pl_ghead: int = path_l["genome_head"]
+        pl_gtail: int = path_l["genome_tail"]
+
+        if p1_head == pl_head and p1_ghead == pl_ghead and \
+                p2_head == pl_tail and p2_ghead == pl_gtail:
+            head = p1_tail
+            genome_head = p1_gtail
+            tail = p2_tail
+            genome_tail = p2_gtail
 
             if head == 0 and genome_head == -1:
-                head = path1["head"]
+                head = p1_head
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["head"]
+                tail = p2_head
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["head"] == path_l["tail"] and path1["genome_head"] == path_l["genome_tail"] and \
-                path2["head"] == path_l["head"] and path2["genome_head"] == path_l["genome_head"]:
-            head = path1["tail"]
-            genome_head = path1["genome_tail"]
-            tail = path2["tail"]
-            genome_tail = path2["genome_tail"]
+        elif p1_head == pl_tail and p1_ghead == pl_gtail and \
+                p2_head == pl_head and p2_ghead == pl_ghead:
+            head = p1_tail
+            genome_head = p1_gtail
+            tail = p2_tail
+            genome_tail = p2_gtail
 
             if head == 0 and genome_head == -1:
-                head = path1["head"]
+                head = p1_head
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["head"]
+                tail = p2_head
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["head"] == path_l["tail"] and path1["genome_head"] == path_l["genome_tail"] and \
-                path2["tail"] == path_l["head"] and path2["genome_tail"] == path_l["genome_head"]:
-            head = path1["tail"]
-            genome_head = path1["genome_tail"]
-            tail = path2["head"]
-            genome_tail = path2["genome_head"]
+        elif p1_head == pl_tail and p1_ghead == pl_gtail and \
+                p2_tail == pl_head and p2_gtail == pl_ghead:
+            head = p1_tail
+            genome_head = p1_gtail
+            tail = p2_head
+            genome_tail = p2_ghead
 
             if head == 0 and genome_head == -1:
-                head = path1["head"]
+                head = p1_head
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["tail"]
+                tail = p2_tail
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["head"] == path_l["head"] and path1["genome_head"] == path_l["genome_head"] and \
-                path2["tail"] == path_l["tail"] and path2["genome_tail"] == path_l["genome_tail"]:
-            head = path1["tail"]
-            genome_head = path1["genome_tail"]
-            tail = path2["head"]
-            genome_tail = path2["genome_head"]
+        elif p1_head == pl_head and p1_ghead == pl_ghead and \
+                p2_tail == pl_tail and p2_gtail == pl_gtail:
+            head = p1_tail
+            genome_head = p1_gtail
+            tail = p2_head
+            genome_tail = p2_ghead
 
             if head == 0 and genome_head == -1:
-                head = path1["head"]
+                head = p1_head
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["tail"]
+                tail = p2_tail
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["tail"] == path_l["head"] and path1["genome_tail"] == path_l["genome_head"] and \
-                path2["head"] == path_l["tail"] and path2["genome_head"] == path_l["genome_tail"]:
-            head = path1["head"]
-            genome_head = path1["genome_head"]
-            tail = path2["tail"]
-            genome_tail = path2["genome_tail"]
+        elif p1_tail == pl_head and p1_gtail == pl_ghead and \
+                p2_head == pl_tail and p2_ghead == pl_gtail:
+            head = p1_head
+            genome_head = p1_ghead
+            tail = p2_tail
+            genome_tail = p2_gtail
 
             if head == 0 and genome_head == -1:
-                head = path1["tail"]
+                head = p1_tail
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["head"]
+                tail = p2_head
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["tail"] == path_l["tail"] and path1["genome_tail"] == path_l["genome_tail"] and \
-                path2["head"] == path_l["head"] and path2["genome_head"] == path_l["genome_head"]:
-            head = path1["head"]
-            genome_head = path1["genome_head"]
-            tail = path2["tail"]
-            genome_tail = path2["genome_tail"]
+        elif p1_tail == pl_tail and p1_gtail == pl_gtail and \
+                p2_head == pl_head and p2_ghead == pl_ghead:
+            head = p1_head
+            genome_head = p1_ghead
+            tail = p2_tail
+            genome_tail = p2_gtail
 
             if head == 0 and genome_head == -1:
-                head = path1["tail"]
+                head = p1_tail
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["head"]
+                tail = p2_head
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["tail"] == path_l["head"] and path1["genome_tail"] == path_l["genome_head"] and \
-                path2["tail"] == path_l["tail"] and path2["genome_tail"] == path_l["genome_tail"]:
-            head = path1["head"]
-            genome_head = path1["genome_head"]
-            tail = path2["head"]
-            genome_tail = path2["genome_head"]
+        elif p1_tail == pl_head and p1_gtail == pl_ghead and \
+                p2_tail == pl_tail and p2_gtail == pl_gtail:
+            head = p1_head
+            genome_head = p1_ghead
+            tail = p2_head
+            genome_tail = p2_ghead
 
             if head == 0 and genome_head == -1:
-                head = path1["tail"]
+                head = p1_tail
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["tail"]
+                tail = p2_tail
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif path1["tail"] == path_l["tail"] and path1["genome_tail"] == path_l["genome_tail"] and \
-                path2["tail"] == path_l["head"] and path2["genome_tail"] == path_l["genome_head"]:
-            head = path1["head"]
-            genome_head = path1["genome_head"]
-            tail = path2["head"]
-            genome_tail = path2["genome_head"]
+        elif p1_tail == pl_tail and p1_gtail == pl_gtail and \
+                p2_tail == pl_head and p2_gtail == pl_ghead:
+            head = p1_head
+            genome_head = p1_ghead
+            tail = p2_head
+            genome_tail = p2_ghead
 
             if head == 0 and genome_head == -1:
-                head = path1["tail"]
+                head = p1_tail
                 genome_head = which_genome
 
             if tail == 0 and genome_tail == -1:
-                tail = path2["tail"]
+                tail = p2_tail
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
     else:  # GGH version
-        if path1["head"] == path_l["head"] and path2["head"] == path_l["tail"]:
-            return create_pgm_path(path1["tail"], path2["tail"])
-        elif path1["head"] == path_l["tail"] and path2["head"] == path_l["head"]:
-            return create_pgm_path(path1["tail"], path2["tail"])
-        elif path1["head"] == path_l["tail"] and path2["tail"] == path_l["head"]:
-            return create_pgm_path(path1["tail"], path2["head"])
-        elif path1["head"] == path_l["head"] and path2["tail"] == path_l["tail"]:
-            return create_pgm_path(path1["tail"], path2["head"])
-        elif path1["tail"] == path_l["head"] and path2["head"] == path_l["tail"]:
-            return create_pgm_path(path1["head"], path2["tail"])
-        elif path1["tail"] == path_l["tail"] and path2["head"] == path_l["head"]:
-            return create_pgm_path(path1["head"], path2["tail"])
-        elif path1["tail"] == path_l["head"] and path2["tail"] == path_l["tail"]:
-            return create_pgm_path(path1["head"], path2["head"])
-        elif path1["tail"] == path_l["tail"] and path2["tail"] == path_l["head"]:
-            return create_pgm_path(path1["head"], path2["head"])
+        if p1_head == pl_head and p2_head == pl_tail:
+            return create_pgm_path(p1_tail, p2_tail)
+        elif p1_head == pl_tail and p2_head == pl_head:
+            return create_pgm_path(p1_tail, p2_tail)
+        elif p1_head == pl_tail and p2_tail == pl_head:
+            return create_pgm_path(p1_tail, p2_head)
+        elif p1_head == pl_head and p2_tail == pl_tail:
+            return create_pgm_path(p1_tail, p2_head)
+        elif p1_tail == pl_head and p2_head == pl_tail:
+            return create_pgm_path(p1_head, p2_tail)
+        elif p1_tail == pl_tail and p2_head == pl_head:
+            return create_pgm_path(p1_head, p2_tail)
+        elif p1_tail == pl_head and p2_tail == pl_tail:
+            return create_pgm_path(p1_head, p2_head)
+        elif p1_tail == pl_tail and p2_tail == pl_head:
+            return create_pgm_path(p1_head, p2_head)
 
     return None

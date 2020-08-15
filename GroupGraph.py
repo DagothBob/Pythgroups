@@ -1,6 +1,8 @@
 from random import Random
 from typing import List, Optional, Dict, Any
 
+from numpy import array as nparray
+
 import ChoiceStructure
 import PGMPath
 from Chromosome import Chromosome
@@ -167,13 +169,13 @@ class GroupGraph:
         priority_size: int = self.gene_number * 2 + 1000
         priorities: List[Priority] = list()
 
-        priorities.append(Priority(3, 0, 0, None, priority_size))
+        priorities.append(Priority(priority_size))
 
         for cn in range(2, 0, -1):
             for bcla in range(3, 0, -1):
                 for bw in range(4, -5, -1):
                     for bcla2 in range(3, 0, -1):
-                        priorities.append(Priority(cn, bcla, bw, bcla2, priority_size))
+                        priorities.append(Priority(priority_size))
 
         return priorities
 
@@ -513,7 +515,7 @@ class GroupGraph:
             if fragment is not None:
                 median_chromosome += 1
 
-        self.ancestor_AA = Genome(list())
+        self.ancestor_AA = Genome(nparray(list()))
 
         for fragment in self.fragments:
             if fragment is not None:
@@ -524,7 +526,7 @@ class GroupGraph:
                 self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(
                     start_index + self.gene_number * 2, end_index, 2))
 
-        self.ancestor_A = Genome(list())
+        self.ancestor_A = Genome(nparray(list()))
 
         for fragment in self.fragments:
             if fragment is not None:

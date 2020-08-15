@@ -1,6 +1,5 @@
-from typing import List
+from numpy import ndarray
 
-from Chromosome import Chromosome
 from Genome import Genome
 
 """
@@ -29,4 +28,4 @@ class GenomeInString:
         genome
             Chromosomes to construct from
         """
-        self.chromosomes: List[Chromosome] = genome.chromosomes
+        self.chromosomes: ndarray = genome.chromosomes

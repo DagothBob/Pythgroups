@@ -1,6 +1,8 @@
 from copy import copy
 from typing import Optional, List
 
+from numpy import array as nparray
+
 from BPGPath import BPGPath
 from Genome import Genome
 
@@ -97,8 +99,8 @@ class BPGDistance:
         """
         gene_count_1: int = 0
         gene_count_2: int = 0
-        self.genome_1: Genome = Genome(list())  # Genome 1 as String
-        self.genome_2: Genome = Genome(list())  # Genome 2 as String
+        self.genome_1: Genome = Genome(nparray(list()))  # Genome 1 as String
+        self.genome_2: Genome = Genome(nparray(list()))  # Genome 2 as String
 
         for chromosome in genome_1.chromosomes:
             if len(chromosome.genes) != 0:

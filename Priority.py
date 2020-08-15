@@ -1,3 +1,7 @@
+from typing import List, Optional
+
+from numpy import full as npfull, empty as npempty, array as nparray, ndarray, arange, int32
+
 """
 Priority for use in the PathGroups Algorithm
 
@@ -5,9 +9,6 @@ Based on Priority.java from C. Zheng and D. Sankoff (2011)
 
 Author: Holger Jensen, Oskar Jensen
 """
-from typing import List, Optional
-
-import numpy as np
 
 
 class Priority:
@@ -16,12 +17,6 @@ class Priority:
 
     Attributes
     ----------
-    cn : int
-        Current cycle
-    bcla : int
-        Best cycle look ahead
-    bw : int
-        Better or worse heuristic
     size : int
         Size of each array in this class
     cs_indexes : List[int]
@@ -36,8 +31,6 @@ class Priority:
         Starting taken position
     taken_end : int
         Ending taken position
-    empty_previous : List[int]
-        Previous empty values
     empty_next : List[int]
         Next empty values
     taken_previous : List[int]
@@ -47,45 +40,20 @@ class Priority:
 
     """
 
-    def __init__(self,
-                 cycle_now: int,
-                 best_cycle_look_ahead: int,
-                 better_or_worse: int,
-                 best_cycle_look_ahead2: Optional[int],
-                 size: int):
+    def __init__(self, size: int):
         """
         Constructor
 
         Parameters
         ----------
-        cycle_now
-            Current cycle
-        best_cycle_look_ahead
-            Best cycle look ahead
-        better_or_worse
-            Better or worse heuristic
-        best_cycle_look_ahead2
-            For certain operations
         size
             Size of each array in this class
         """
-        self.bcla: int
-
-        self.cn: int = cycle_now
-
-        if best_cycle_look_ahead2 is not None:
-            self.bcla = best_cycle_look_ahead2
-        else:
-            self.bcla = best_cycle_look_ahead
-
-        self.bw: int = better_or_worse
-
-        self.cs_indexes: np.ndarray = np.full(size, -1, np.int32)
-        self.median_indexes: np.ndarray = np.full(size, -1, np.int32)
-        self.taken_previous: np.ndarray = np.empty(size, np.int32)
-        self.taken_next: np.ndarray = np.empty(size, np.int32)
-        self.empty_previous: np.ndarray = np.array([i - 1 for i in np.arange(size)], np.int32)
-        self.empty_next: np.ndarray = np.array([i + 1 for i in np.arange(size)], np.int32)
+        self.cs_indexes: ndarray = npfull(size, -1, int32)
+        self.median_indexes: ndarray = npfull(size, -1, int32)
+        self.taken_previous: ndarray = npempty(size, int32)
+        self.taken_next: ndarray = npempty(size, int32)
+        self.empty_next: ndarray = nparray([i + 1 for i in arange(size)], int32)
 
         self.empty_next[size - 1] = -1     # last entry set to -1
 
@@ -120,7 +88,6 @@ class Priority:
 
         self.cs_indexes[self.empty_start] = cs_index
         self.empty_start = first_empty_pos
-        self.empty_previous[first_empty_pos] = -1
 
         # Update various taken values based on whether or not
         # the taken_start/end values at the current empty start position are both empty.

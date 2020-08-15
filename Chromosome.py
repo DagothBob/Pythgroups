@@ -1,5 +1,7 @@
 from typing import List
 
+from numpy import array as nparray, ndarray
+
 from Gene import Gene
 
 """
@@ -18,7 +20,7 @@ class Chromosome:
     genes: List[Gene]
         Genes which make up this chromosome
     """
-    def __init__(self, genes: List[Gene]):
+    def __init__(self, genes: ndarray):
         """
         Constructor
 
@@ -27,7 +29,7 @@ class Chromosome:
         genes
             Genes which make up this chromosome
         """
-        self.genes: List[Gene] = genes
+        self.genes: ndarray = nparray(genes)
 
     @classmethod
     def from_chromosome(cls, chromosome: "Chromosome") -> "Chromosome":
@@ -61,7 +63,7 @@ class Chromosome:
         Chromosome
             New Chromosome with constructed genes as object data
         """
-        return cls([Gene.with_name(s) for s in gene_strings])
+        return cls(nparray([Gene.with_name(s) for s in gene_strings]))
 
     def to_strings(self) -> List[str]:
         """
@@ -73,20 +75,6 @@ class Chromosome:
             String list representation of the chromosome
         """
         return [gene.name for gene in self.genes]
-
-    def add_gene(self, gene: Gene):
-        """
-        Adds a Gene to the Chromosome and strips whitespace from its name
-
-        Parameters
-        ----------
-        gene
-            Gene to add
-        """
-        strip: Gene = gene
-        strip.name.strip()
-
-        self.genes.append(strip)
 
     def __str__(self) -> str:
         """
