@@ -47,8 +47,6 @@ CONFIG_WHICH_CHROMOSOME = "which_chromosome"
 CONFIG_NUMBER_OPERATIONS = "number_of_operations"
 CONFIG_GENOME_REPLACE = "genome_to_replace"
 
-done = False  # used in the progress spinner
-
 
 class NetworkxNode:
     """
@@ -291,8 +289,9 @@ def small_phylogeny():
         ts.set_tree_structure(median.genome_id, median.neighbors[0],
                               median.neighbors[1], median.neighbors[2])
 
-    sp: SmallPhylogeny = SmallPhylogeny(ts)
+    sp: SmallPhylogeny = SmallPhylogeny(ts, True)
 
+    # run sp.get_result in a separate thread from the progress spinner
     task = threading.Thread(target=sp.get_result)
     task.start()
 
@@ -351,9 +350,9 @@ def small_phylogeny():
     for i in range(0, len(relation) - 1):
         for j in range(i + 1, len(relation)):
             if relation[i][j] == 2 or relation[j][i] == 2:
-                p1: List[Dict[str, int]] = reconstructed_paths[i].paths
-                p2: List[Dict[str, int]] = reconstructed_paths[j].paths
-                cur_dist: int = ts.medians[0].get_distance(p1, p2)
+                p1: List[Dict[str, int]] = mi.all_paths[i].paths
+                p2: List[Dict[str, int]] = mi.all_paths[j].paths
+                cur_dist: int = mi.medians[0].get_distance(p1, p2)
                 optimized_dist += cur_dist
                 after_optimization += "  d({r},{c})={d}".format(r=str(i), c=str(j), d=str(cur_dist))
 

@@ -1,4 +1,5 @@
 from typing import Optional, List, Dict, Any
+import random
 
 import ChoiceStructure
 from PGMFragment import PGMFragment
@@ -138,7 +139,7 @@ class SmallPhylogeny:
         Which to replace
     """
 
-    def __init__(self, tree_structure: TreeStructure):
+    def __init__(self, tree_structure: TreeStructure, deterministic: bool = True):
         """
         Constructor
 
@@ -150,6 +151,7 @@ class SmallPhylogeny:
         self.tree: TreeStructure = tree_structure
         self.priorities: List[Priority] = list()
         self.to_replace: int = 2
+        self.deterministic = deterministic
 
         priority_size: int = (self.tree.number_of_ancestors * (self.tree.gene_number + 500)) * 2
         self.priorities.append(Priority(3, 0, 0, None, priority_size))
@@ -202,6 +204,9 @@ class SmallPhylogeny:
         add_tail1: bool = False
         add_tail2: bool = False
 
+        if not self.deterministic:
+            self.to_replace = random.randint(0, 2)
+
         if self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_1_path"]["genome_head"] == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_1_path"]["genome_tail"]:
             ancestor_priority = self.calculate_case(median_index, choice_structure_index, index_from, tail_of1)
@@ -221,7 +226,10 @@ class SmallPhylogeny:
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                     PGMPath.create_pgm_path(index_from, tail_of1, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
+        else:
+            self.to_replace = random.randint(0, 2)
 
         if self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_2_path"]["genome_head"] == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_2_path"]["genome_tail"]:
@@ -242,7 +250,10 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                         PGMPath.create_pgm_path(index_from, tail_of2, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
+        else:
+            self.to_replace = random.randint(0, 2)
 
         if self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_3_path"]["genome_head"] == \
                 self.tree.medians[median_index].choice_structures[choice_structure_index]["genome_3_path"]["genome_tail"]:
@@ -258,7 +269,8 @@ class SmallPhylogeny:
                     self.tree.medians[median_index].choice_structures[choice_structure_index]["gray_edge"] = \
                         PGMPath.create_pgm_path(index_from, tail_of3, which_genome, which_genome)
 
-        self.to_replace = 3 - self.to_replace
+        if self.deterministic:
+            self.to_replace = 3 - self.to_replace
 
         return result
 
