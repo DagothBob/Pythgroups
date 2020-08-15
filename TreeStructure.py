@@ -1,56 +1,11 @@
-from copy import copy
 from typing import Optional, List, Dict
 
-from Genome import Genome
-from GenomeInString import GenomeInString
-from MedianData import MedianData
+from numpy import ndarray, zeros as npzeros, int32
+
 import PGMPath
+from Genome import Genome
+from MedianData import MedianData
 from PGMPathForAGenome import PGMPathForAGenome
-
-
-def insert_character(s: str, i: int, c: str) -> str:
-    """
-    Utility function for modifying strings in a similar way to lists.
-    Character c is inserted at index i into string s and returned.
-
-    Parameters
-    ----------
-    s
-        String to replace character in
-    i
-        Index to replace in string
-    c
-        Character to insert
-
-    Returns
-    -------
-    str
-        New string with the character inserted
-    """
-    return s[:i] + c + s[(i + 1):]
-
-
-def split_at_whitespace(strings: str) -> List[str]:
-    """
-    Strips, then splits, a string, then strips the substrings again
-
-    Parameters
-    ----------
-    strings
-        List of strings to operate on
-
-    Returns
-    -------
-    [str]
-        Set of cleaned-up strings
-    """
-    result: List[str] = list()
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
 
 
 class TreeStructure:
@@ -63,11 +18,11 @@ class TreeStructure:
         Number of leaf nodes in the tree structure
     gene_number : int
         Number of genes in the structure
-    leaves : List[List[int]]
+    leaves : ndarray
         List of leaf nodes
     medians : Optional[List[MedianData]]
         List of MedianData information
-    node_int : List[int]
+    node_int : ndarray
         Current node as a list of integers
     node_string : List[str]
         Current node as a list of strings
@@ -81,8 +36,8 @@ class TreeStructure:
                  gene_number: int,
                  paths: Optional[List[PGMPathForAGenome]] = None,
                  node_strings: Optional[List[str]] = None,
-                 node_ints: Optional[List[int]] = None,
-                 ancestor_genome_string: Optional[List[GenomeInString]] = None):
+                 node_ints: Optional[ndarray] = None,
+                 ancestor_genome_string: Optional[List[Genome]] = None):
         """
         Constructor
 
@@ -108,19 +63,17 @@ class TreeStructure:
         self.gene_number: int = gene_number
         self.leaves: List[List[int]] = [[-1, -1, -1] for _ in range((self.number_of_ancestors + self.number_of_leaves))]
         self.medians: List[Optional[MedianData]] = [None for _ in range(self.number_of_ancestors)]
-        self.node_int: List[int] = [int() for _ in range(self.gene_number * 2)]
+        self.node_int: ndarray = npzeros(self.gene_number * 2, int32)
         self.node_string: List[str] = [str() for _ in range(self.gene_number * 2)]
 
         if ancestor_genome_string is None:
             self.node_int = node_ints
             self.node_string = node_strings
 
-            self.all_paths: List[Optional[PGMPathForAGenome]] = [None for _ in range(len(paths) + 1)]
-
-            for i in range(len(paths)):
-                self.all_paths[i] = PGMPathForAGenome(paths[i].paths)
-
+            self.all_paths: List[Optional[PGMPathForAGenome]] = [PGMPathForAGenome(p.paths) for p in paths]
+            self.all_paths.append(None)
             self.all_paths[3] = PGMPathForAGenome(self.get_pgm_path(None, 3))
+
             self.set_tree_structure(3, 0, 1, 2)
         else:
             genome1: Genome = Genome(ancestor_genome_string[0].chromosomes)
@@ -128,13 +81,13 @@ class TreeStructure:
 
             for chromosome in genome1.chromosomes:
                 for gene in chromosome.genes:
-                    first_character: str = copy(gene.name[0])
+                    first_character: str = gene.name[0]
                     node1: str
                     node2: str
 
                     if first_character == '-':
-                        node1 = insert_character(gene.name[1:], len(gene.name[1:]), "h")
-                        node2 = insert_character(gene.name[1:], len(gene.name[1:]), "t")
+                        node1 = str().join([gene.name[1:], "h"])
+                        node2 = str().join([gene.name[1:], "t"])
 
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node2
@@ -142,8 +95,8 @@ class TreeStructure:
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node1
                     else:
-                        node1 = insert_character(gene.name, len(gene.name), "t")
-                        node2 = insert_character(gene.name, len(gene.name), "h")
+                        node1 = str().join([gene.name, "t"])
+                        node2 = str().join([gene.name, "h"])
 
                         self.node_int[index1] = index1 + 1
                         self.node_string[index1] = node1
@@ -153,20 +106,21 @@ class TreeStructure:
 
                     index1 += 1
 
-            self.all_genomes: List[Optional[GenomeInString]] = [
-                None for _ in range((self.number_of_leaves + self.number_of_ancestors))]
+            self.all_genomes: List[Optional[Genome]] = [ags for ags in ancestor_genome_string]
 
-            for i in range(len(ancestor_genome_string)):
-                self.all_genomes[i] = GenomeInString(Genome(ancestor_genome_string[i].chromosomes))
+            # Fill with None
+            for i in range(len(self.all_genomes), self.number_of_leaves + self.number_of_ancestors):
+                self.all_genomes.append(None)
 
             self.all_paths: List[Optional[PGMPathForAGenome]] = [
-                None for _ in range((self.number_of_leaves + self.number_of_ancestors))]
-
-            for i in range(len(ancestor_genome_string)):
-                self.all_paths[i] = PGMPathForAGenome(self.get_pgm_path(Genome(self.all_genomes[i].chromosomes), i))
+                PGMPathForAGenome(self.get_pgm_path(Genome(self.all_genomes[i].chromosomes), i))
+                for i in range(len(ancestor_genome_string))]
 
             for i in range(len(ancestor_genome_string), len(self.all_genomes)):
-                self.all_paths[i] = PGMPathForAGenome(self.get_pgm_path(None, i))
+                self.all_paths.append(PGMPathForAGenome(self.get_pgm_path(None, i)))
+
+            for i in range(len(self.all_paths), self.number_of_leaves + self.number_of_ancestors):
+                self.all_paths.append(None)
 
     def set_tree_structure(self, which_genome: int, genome1: int, genome2: int, genome3: int):
         """
@@ -196,14 +150,14 @@ class TreeStructure:
                                                                         genome3,
                                                                         self.node_string)
 
-    def get_relation(self) -> List[List[int]]:
+    def get_relation(self) -> ndarray:
         """
         Returns
         -------
         Relation between leaves
         """
-        relation: List[List[int]] = [[int() for _ in range((self.number_of_leaves + self.number_of_ancestors))]
-                                     for _ in range((self.number_of_leaves + self.number_of_ancestors))]
+        size: int = self.number_of_leaves + self.number_of_ancestors
+        relation: ndarray = npzeros((size, size), int32)
 
         for i in range(len(self.leaves)):
             for j in range(len(self.leaves[i])):
@@ -229,10 +183,9 @@ class TreeStructure:
             List of PGMPaths for the genome
         """
         if genome is None:
-            path2: List[Optional[Dict[str, int]]] = [None for _ in range((2 * self.gene_number) + 1)]
-
-            for i in range(1, len(path2)):
-                path2[i] = PGMPath.create_pgm_path(i, 0, which_genome, -1)
+            path2: List[Optional[Dict[str, int]]] = [PGMPath.create_pgm_path(i, 0, which_genome, -1)
+                                                     for i in range((2 * self.gene_number) + 1)]
+            path2[0] = None
 
             return path2
 
@@ -248,11 +201,11 @@ class TreeStructure:
                 node2: str
 
                 if first_character == '-':
-                    node1 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "h")
-                    node2 = insert_character(chromosome.genes[j].name[1:], len(chromosome.genes[j].name[1:]), "t")
+                    node1 = str().join([chromosome.genes[j].name[1:], "h"])
+                    node2 = str().join([chromosome.genes[j].name[1:], "t"])
                 else:
-                    node1 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "t")
-                    node2 = insert_character(chromosome.genes[j].name, len(chromosome.genes[j].name), "h")
+                    node1 = str().join([chromosome.genes[j].name, "t"])
+                    node2 = str().join([chromosome.genes[j].name, "h"])
 
                 node1_int: int = self.find_node_int(node1)
                 node2_int: int = self.find_node_int(node2)

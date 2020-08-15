@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List
 
 from Chromosome import Chromosome
@@ -26,13 +25,7 @@ def split_at_whitespace(strings: str) -> List[str]:
     List[str]
         Set of cleaned-up strings
     """
-    result: List[str] = list()
-
-    for string in strings.strip().split(" "):
-        if string.strip() != "":
-            result.append(string.strip())
-
-    return result
+    return [s.strip() for s in strings.strip().split(" ") if s.strip() != ""]
 
 
 class Genome:
@@ -51,7 +44,7 @@ class Genome:
         chromosomes
             List of chromosomes making up the genome
         """
-        self.chromosomes: List[Chromosome] = deepcopy(chromosomes)
+        self.chromosomes: List[Chromosome] = chromosomes
 
     @classmethod
     def from_strings(cls, g_string: List[str]) -> "Genome":
@@ -68,12 +61,7 @@ class Genome:
         Genome
             Genome instance with the specified chromosomes
         """
-        chromosomes: List[Chromosome] = list()
-
-        for s in g_string:
-            chromosomes.append(Chromosome.from_strings(split_at_whitespace(s)))
-
-        return cls(chromosomes)
+        return cls([Chromosome.from_strings(split_at_whitespace(s)) for s in g_string])
 
     def add_chromosome(self, chromosome: Chromosome):
         """
@@ -84,7 +72,10 @@ class Genome:
         chromosome
             Chromosome to be appended to the genome
         """
-        self.chromosomes.append(deepcopy(chromosome))
+        temp: List[Chromosome] = list(self.chromosomes)
+        temp.append(chromosome)
+
+        self.chromosomes = temp
 
     def remove_chromosome_at_index(self, index: int):
         """

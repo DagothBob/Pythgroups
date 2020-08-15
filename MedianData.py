@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any
 
+from numpy import ndarray
+
 import ChoiceStructure
-from PGMFragment import PGMFragment
 import PGMPath
+from PGMFragment import PGMFragment
 
 """                            
  Represents data related to medians (ancestors) in the Pathgroups algorithm, 
@@ -89,6 +91,7 @@ def get_next_path(start_pos: int, paths: List[Dict[str, int]]) -> Optional[Dict[
         if paths[i] is not None:
             return PGMPath.create_pgm_path(paths[i]["head"], paths[i]["tail"],
                                            paths[i]["genome_head"], paths[i]["genome_tail"])
+
     return None
 
 
@@ -121,7 +124,7 @@ class MedianData:
     ----------
     three_genome_paths : List[List[Dict[str, int]]]
         All paths for genomes 1-3 in the tree structure
-    three_genomes : List[int]
+    three_genomes : ndarray
         The identifiers for the three leaves (genomes) in the tree structure
     gene_num : int
         Total number of genes in each genome
@@ -161,11 +164,11 @@ class MedianData:
             All paths for genome 2 in the tree structure
         paths3 : List[Dict[str, int]]]
             All paths for genome 3 in the tree structure
-        genome1 : List[int]
+        genome1 : int
             The identifiers for leaf 1 (genome) in the tree structure
-        genome2 : List[int]
+        genome2 : int
             The identifiers for leaf 2 (genome) in the tree structure
-        genome3 : List[int]
+        genome3 : int
             The identifiers for leaf 3 (genome) in the tree structure
         gene_num : int
             Total number of genes in each genome
@@ -174,7 +177,6 @@ class MedianData:
         node_strings : List[str]
             String representation of each node
         """
-
         self.three_genome_paths: List[List[Dict[str, int]]] = [paths1, paths2, paths3]
         self.three_genomes: List[int] = [genome1, genome2, genome3]
         self.gene_num: int = gene_num
@@ -224,10 +226,9 @@ class MedianData:
         int
             Total distance between three genome paths from the given median and this instance's gray edge
         """
-        d1 = self.get_distance(median.three_genome_paths[0], self.gray_edge)
-        d2 = self.get_distance(median.three_genome_paths[1], self.gray_edge)
-        d3 = self.get_distance(median.three_genome_paths[2], self.gray_edge)
-        return d1 + d2 + d3
+        return self.get_distance(median.three_genome_paths[0], self.gray_edge) + \
+            self.get_distance(median.three_genome_paths[1], self.gray_edge) + \
+            self.get_distance(median.three_genome_paths[2], self.gray_edge)
 
     def get_distance(self, p1: List[Dict[str, int]], p2: List[Dict[str, int]]) -> int:
         """
@@ -258,6 +259,7 @@ class MedianData:
             if path is not None:
                 end1: int = path["head"]
                 end2: int = path["tail"]
+
                 if end1 < 0:
                     end1 = -1
                 if end2 < 0:
@@ -270,20 +272,23 @@ class MedianData:
         # Counts the number of chromosomes in paths1
         # Fills in None values with paths where head is i and tail is -1
         # Count gets divided by 2 in the end I think because there are two paths for each gene?
-        for i in range(0, len(paths1)):
+        for i in range(len(paths1)):
             if paths1[i] is not None and paths1[i]["tail"] == -1:
                 chromosome_count += 1
             elif paths1[i] is None and i != 0:
                 paths1[i] = PGMPath.create_pgm_path(i, -1, 1, 1)
                 chromosome_count += 1
+
         chromosome_count = int(chromosome_count / 2)
 
         # Same as paths1, except without chromosome_count
         paths2: List[Optional[Dict[str, int]]] = [None for _ in range(2 * self.gene_num + 1)]
+
         for path in p2:
             if path is not None:
                 end1: int = path["head"]
                 end2: int = path["tail"]
+
                 if end1 < 0:
                     end1 = -2
                 if end2 < 0:
@@ -299,6 +304,7 @@ class MedianData:
 
         # Iterates through paths1 until all paths have been checked
         next_path = get_next_path(0, paths1)
+
         while next_path is not None:
             n1: int = next_path["head"]
             n2: int = next_path["tail"]
@@ -317,15 +323,18 @@ class MedianData:
                 n_small = n1
 
             more: bool = True
+
             while more:
                 if next_path["head"] < 0 and next_path["tail"] < 0:
                     if good_cycle(next_path["head"], next_path["tail"]):
                         good_path_count += 1
+
                     break
 
                 path_l: Optional[Dict[str, int]] = paths2[n_big]
                 m1: int = path_l["head"]
                 m2: int = path_l["tail"]
+
                 if m2 > 0:
                     if m2 == n_small:
                         cycle_count += 1
@@ -337,6 +346,7 @@ class MedianData:
                         next_path = PGMPath.create_pgm_path(m2_path["tail"], n_small, 1, 1)
                         n1 = next_path["head"]
                         n2 = next_path["tail"]
+
                         if n1 > n2:
                             n_big = n1
                             n_small = n2
@@ -345,8 +355,10 @@ class MedianData:
                             n_small = n1
 
                         other_path = paths1[m2]["tail"]
+
                         if other_path > 0:
                             paths1[other_path] = None
+
                         paths2[m1] = None
                         paths2[m2] = None
                         paths1[m2] = None
@@ -354,18 +366,21 @@ class MedianData:
                     if n_small < 0:
                         if good_cycle(m2, n_small):
                             good_path_count += 1
+
                         more = False
                         paths2[m1] = None
                     elif n_small > 0:
                         next_path = PGMPath.create_pgm_path(n_small, m2, 1, 2)
                         n1 = next_path["head"]
                         n2 = next_path["tail"]
+
                         if n1 > n2:
                             n_big = n1
                             n_small = n2
                         else:
                             n_big = n2
                             n_small = n1
+
                         paths2[m1] = None
 
             next_path = get_next_path(start_point, paths1)
@@ -377,41 +392,39 @@ class MedianData:
         Fills medians[] with all the genome's medians (ancestors),
         which are formatted for the purpose of printing to screen.
         """
-        median_chr = 0
-        for i in range(0, len(self.fragments)):
+        for i in range(len(self.fragments)):
             if self.fragments[i] is not None:
                 other_frag: int = self.fragments[i].end2
                 self.fragments[other_frag] = None
-        for frag in self.fragments:
-            if frag is not None:
-                median_chr += 1
 
-        self.median = [str() for _ in range(0, median_chr)]
+        self.median = [str() for _ in range(len(self.fragments) - self.fragments.count(None))]
 
         gene_index: int = 0
+
         for frag in self.fragments:
             if frag is not None:
                 start_index: int = frag.end1
                 end_index: int = frag.end2
 
                 node_str = self.node_strings[frag.end1 - 1]
+
                 if node_str.endswith("h"):
-                    self.median[gene_index] = "-" + node_str[0: len(node_str) - 1]
+                    self.median[gene_index] = "-" + node_str[:len(node_str) - 1]
                 else:
-                    self.median[gene_index] = node_str[0: len(node_str) - 1]
+                    self.median[gene_index] = node_str[:len(node_str) - 1]
 
                 start_index = get_gene_next_node(start_index)
                 node_gene_index = find_gray_edge_node(start_index, self.gray_edge)
 
-                while not (start_index == end_index or node_gene_index is None):
+                while start_index != end_index and node_gene_index is not None:
                     node_gene = self.node_strings[node_gene_index - 1]
 
-                    if node_gene.startswith("h", len(node_gene) - 1):
-                        self.median[gene_index] = self.median[gene_index] + "  -" + \
-                                                   node_gene[0: len(node_gene) - 1]
+                    if node_gene.endswith("h"):
+                        self.median[gene_index] = str().join(
+                            [self.median[gene_index], " -", node_gene[:len(node_gene) - 1]])
                     else:
-                        self.median[gene_index] = self.median[gene_index] + "  " + \
-                                                   node_gene[0: len(node_gene) - 1]
+                        self.median[gene_index] = str().join(
+                            [self.median[gene_index], " ", node_gene[:len(node_gene) - 1]])
 
                     start_index = get_gene_next_node(node_gene_index)
                     node_gene_index = find_gray_edge_node(start_index, self.gray_edge)

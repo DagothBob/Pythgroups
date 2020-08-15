@@ -1,9 +1,10 @@
-from copy import deepcopy, copy
 from random import random
 from typing import List, Dict
 
-from MedianData import MedianData
+from numpy import ndarray, ones as npones
+
 import PGMPath
+from MedianData import MedianData
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
@@ -24,25 +25,30 @@ class MedianIteration:
     ----------
     leaf_num : int
         Number of leaves in the tree
-    changed : List[int]
+    changed : ndarray
         List of changed ancestors. Unsure of what its purpose is, as it's not used anywhere meaningfully.
     gene_num : int
         Total number of genes in the tree
-    leaves : List[List[int]]
+    leaves : List[ndarray]
         List of each leaf for each genome in the tree (in relation to the median)
     all_paths : List[PGMPathForAGenome]
         List of all paths for each genome in the tree
     medians : List[MedianData]
         List of all medians in the tree
-    nodes_int : List[int]
+    nodes_int : ndarray
         List of the integer representations of each node
     nodes_str : List[str]
         List of the string representations of each node
     """
 
-    def __init__(self, leaf_num: int, ancestor_num: int, gene_num: int, leaves: List[List[int]],
-                 all_paths: List[PGMPathForAGenome], medians: List[MedianData],
-                 nodes_int: List[int], nodes_str: List[str]):
+    def __init__(self, leaf_num: int,
+                 ancestor_num: int,
+                 gene_num: int,
+                 leaves: List[List[int]],
+                 all_paths: List[PGMPathForAGenome],
+                 medians: List[MedianData],
+                 nodes_int: ndarray,
+                 nodes_str: List[str]):
         """
         Parameters
         ----------
@@ -52,28 +58,31 @@ class MedianIteration:
             Number of ancestors (medians) in the tree
         gene_num : int
             Total number of genes in the tree
-        leaves : List[List[int]]
+        leaves : List[ndarray]
             List of each leaf for each genome in the tree (in relation to the median)
         all_paths : List[PGMPathForAGenome]
             List of all paths for each genome in the tree
         medians : List[MedianData]
             List of all medians in the tree
-        nodes_int : List[int]
+        nodes_int : ndarray
             List of the integer representations of each node
         nodes_str : List[str]
             List of the string representations of each node
         """
         self.leaf_num: int = leaf_num
-        self.changed: List[int] = [1 for _ in range(ancestor_num)]
+        self.changed: ndarray = npones(ancestor_num)
         self.gene_num: int = gene_num
-        self.leaves: List[List[int]] = leaves  # [row[:] for row in leaves]  # 2D array copy
+        self.leaves: List[List[int]] = leaves
         self.all_paths: List[PGMPathForAGenome] = all_paths
         self.medians: List[MedianData] = medians
-        self.nodes_int: List[int] = nodes_int
+        self.nodes_int: ndarray = nodes_int
         self.nodes_str: List[str] = nodes_str
 
-    def median_total_distance(self, median_paths: List[Dict[str, int]], paths1: List[Dict[str, int]],
-                              paths2: List[Dict[str, int]], paths3: List[Dict[str, int]]) -> int:
+    def median_total_distance(self,
+                              median_paths: List[Dict[str, int]],
+                              paths1: List[Dict[str, int]],
+                              paths2: List[Dict[str, int]],
+                              paths3: List[Dict[str, int]]) -> int:
         """
         Returns the sum of all distances between the paths of the given median and three leaves
         Renamed from countTotalDistance
@@ -94,11 +103,9 @@ class MedianIteration:
         int
             Total distance between median and 3 leaves
         """
-        d1 = self.medians[0].get_distance(median_paths, paths1)
-        d2 = self.medians[0].get_distance(median_paths, paths2)
-        d3 = self.medians[0].get_distance(median_paths, paths3)
-
-        return d1 + d2 + d3
+        return self.medians[0].get_distance(median_paths, paths1) + \
+            self.medians[0].get_distance(median_paths, paths2) + \
+            self.medians[0].get_distance(median_paths, paths3)
 
     def optimize_result(self, prob_threshold_top: float, runs: int):
         """
@@ -171,6 +178,7 @@ class MedianIteration:
 
                     self.medians[i] = ts.medians[0]
                     self.all_paths[i + self.leaf_num].paths = [None for _ in range(2 * self.gene_num + 1)]
+
                     # Performs optimizations on each path in gray_edge
                     for g in range(len(self.medians[i].gray_edge)):
                         if self.medians[i].gray_edge[g] is not None:
@@ -182,9 +190,15 @@ class MedianIteration:
                             if end2 < 0:
                                 end2 = -1
                             if end1 > 0:
-                                self.all_paths[i + self.leaf_num].paths[end1] = PGMPath.create_pgm_path(end1, end2, 1, 1)
+                                self.all_paths[i + self.leaf_num].paths[end1] = PGMPath.create_pgm_path(end1,
+                                                                                                        end2,
+                                                                                                        1,
+                                                                                                        1)
                             if end2 > 0:
-                                self.all_paths[i + self.leaf_num].paths[end2] = PGMPath.create_pgm_path(end2, end1, 1, 1)
+                                self.all_paths[i + self.leaf_num].paths[end2] = PGMPath.create_pgm_path(end2,
+                                                                                                        end1,
+                                                                                                        1,
+                                                                                                        1)
 
                     for g in range(len(self.all_paths[i + self.leaf_num].paths)):
                         if self.all_paths[i + self.leaf_num].paths[g] is None and g != 0:

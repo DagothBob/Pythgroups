@@ -1,6 +1,6 @@
-import yaml
-from typing import List, Dict, Set
+from typing import List, Dict
 
+import yaml
 
 CONFIG_DIR = "config.yaml"
 CONFIG_GENOME_FILE = "genome_file"
@@ -91,7 +91,8 @@ def to_pathgroups_format(genome_data: Dict[str, List[List[str]]]) -> str:
     str
         Genome data in the format required for the pathgroups algorithm
     """
-    output: str = ""
+    output: str = str()
+
     for genome, genes in genome_data.items():
         output += ">{}\n".format(genome)
         genes.sort(key=lambda x: int(x[2]))
@@ -99,10 +100,14 @@ def to_pathgroups_format(genome_data: Dict[str, List[List[str]]]) -> str:
         all_chromosomes: List[int] = [int(gene[1]) for gene in genes]
         chromosomes: List[int] = list(set(all_chromosomes))
         chromosomes.sort()
+
         for chromosome in chromosomes:
             chromosome_str = ["{} ".format(gene[0]) for gene in genes if int(gene[1]) == chromosome]
-            for gene in chromosome_str:
-                output += gene
+
+            output += str().join([gene for gene in chromosome_str])
+
             output += "$\n"
+
         output += "\n"
+
     return output

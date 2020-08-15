@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import List
 
 from Gene import Gene
@@ -28,7 +27,7 @@ class Chromosome:
         genes
             Genes which make up this chromosome
         """
-        self.genes: List[Gene] = deepcopy(genes)
+        self.genes: List[Gene] = genes
 
     @classmethod
     def from_chromosome(cls, chromosome: "Chromosome") -> "Chromosome":
@@ -62,12 +61,7 @@ class Chromosome:
         Chromosome
             New Chromosome with constructed genes as object data
         """
-        genes: List[Gene] = list()
-
-        for s in gene_strings:
-            genes.append(Gene.with_name(s))
-
-        return cls(genes)
+        return cls([Gene.with_name(s) for s in gene_strings])
 
     def to_strings(self) -> List[str]:
         """
@@ -78,26 +72,7 @@ class Chromosome:
         List[str]
             String list representation of the chromosome
         """
-        value: List[str] = list()
-
-        for gene in self.genes:
-            value.append(gene.name)
-
-        return value
-
-    def add_gene(self, gene: Gene):
-        """
-        Adds a Gene to the Chromosome and strips whitespace from its name
-
-        Parameters
-        ----------
-        gene
-            Gene to add
-        """
-        strip: Gene = gene
-        strip.name.strip()
-
-        self.genes.append(strip)
+        return [gene.name for gene in self.genes]
 
     def __str__(self) -> str:
         """

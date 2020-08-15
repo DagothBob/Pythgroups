@@ -27,24 +27,33 @@ def create_cs(source: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         Newly created Choice Structure
     """
     cs: Dict[str, Any] = dict()
+    cs["index_from"]: int
+    cs["for_which_genome"]: int
+    cs["priority"]: int
+    cs["position"]: int
+    cs["genome_1_path"]: Optional[Dict[str, int]]
+    cs["genome_2_path"]: Optional[Dict[str, int]]
+    cs["genome_3_path"]: Optional[Dict[str, int]]
+    cs["gray_edge"]: Optional[Dict[str, int]]
+
     if source is None:
-        cs["index_from"]: int = int()
-        cs["for_which_genome"]: int = int()
-        cs["priority"]: int = int()
-        cs["position"]: int = int()
-        cs["genome_1_path"]: Optional[Dict[str, int]] = None
-        cs["genome_2_path"]: Optional[Dict[str, int]] = None
-        cs["genome_3_path"]: Optional[Dict[str, int]] = None
-        cs["gray_edge"]: Optional[Dict[str, int]] = None
+        cs["index_from"] = int()
+        cs["for_which_genome"] = int()
+        cs["priority"] = int()
+        cs["position"] = int()
+        cs["genome_1_path"] = None
+        cs["genome_2_path"] = None
+        cs["genome_3_path"] = None
+        cs["gray_edge"] = None
     else:
-        cs["index_from"]: int = source["index_from"]
-        cs["for_which_genome"]: int = source["for_which_genome"]
-        cs["priority"]: int = source["priority"]
-        cs["position"]: int = source["position"]
-        cs["genome_1_path"]: Optional[Dict[str, int]] = source["genome_1_path"]
-        cs["genome_2_path"]: Optional[Dict[str, int]] = source["genome_2_path"]
-        cs["genome_3_path"]: Optional[Dict[str, int]] = source["genome_3_path"]
-        cs["gray_edge"]: Optional[Dict[str, int]] = source["gray_edge"]
+        cs["index_from"] = source["index_from"]
+        cs["for_which_genome"] = source["for_which_genome"]
+        cs["priority"] = source["priority"]
+        cs["position"] = source["position"]
+        cs["genome_1_path"] = source["genome_1_path"]
+        cs["genome_2_path"] = source["genome_2_path"]
+        cs["genome_3_path"] = source["genome_3_path"]
+        cs["gray_edge"] = source["gray_edge"]
 
     return cs
 
