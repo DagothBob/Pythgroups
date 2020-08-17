@@ -31,7 +31,7 @@ Now we'll create the virtual environment directory inside the Pythgroups directo
     $ python3 -m venv env     (Mac/Linux)
     > python -m venv env        (Windows)
 
-We recommend creating this in the Pythgroups directory, but you could technically create it anywhere you want. `env` is the name of the virtual environment directory you wish to create, which can be named whatever you want, but we’ll use `venv` for the rest of this section.
+We recommend creating this in the Pythgroups directory, but you could technically create it anywhere you want. `env` is the name of the virtual environment directory you wish to create, which can be named whatever you want, but we’ll use `env` for the rest of this section.
 
 Now we are ready to activate the virtual environment with the following command:
 
@@ -42,16 +42,16 @@ For Linux users: if there isn't a `bin` directory, look for the directory contai
 
 Note that now the virtual environment's name will show on the command line in brackets indicating that you are now running in the virtual environment. Now we can install Pythgroup's dependencies in the virtual environment with the following command:
 
-    (venv) $ pip install -r requirements.txt
+    (env) $ pip install -r requirements.txt
 
 To exit the virtual environment, simply use the `deactivate` command:
     
-    (venv) $ deactivate
+    (env) $ deactivate
 
 Now our virtual environment is all set up! Now, whenever you want to use Pythgroups through the virtual environment, simply run the following command as described above before using Pythgroups:
 
-    $ source venv/bin/activate     (Mac/Linux)
-    > venv\Scripts\activate.bat        (Windows)
+    $ source env/bin/activate     (Mac/Linux)
+    > env\Scripts\activate.bat        (Windows)
 
 
 # Usage
