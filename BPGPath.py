@@ -56,12 +56,7 @@ class BPGPath:
         BPGPath
             New path
         """
-        head: int = path.head
-        tail: int = path.tail
-        genome_head: int = path.genome_head
-        genome_tail: int = path.genome_tail
-
-        return cls(head, tail, genome_head, genome_tail)
+        return cls(path.head, path.tail, path.genome_head, path.genome_tail)
 
     def __str__(self) -> str:
         """

@@ -2,11 +2,12 @@
 # - General options - #
 # # # # # # # # # # # #
 
-# Genome reconstruction algorithm (not in use currently)
-# [ "SmallPhylogeny" | "DCJRearrangements" | "GenomeAliquoting" | "GenomeHalving" ]
+# Genome reconstruction algorithm to use
+# [ SmallPhylogeny | DCJRearrangements | GenomeAliquoting | GenomeHalving ]
 algorithm: [algorithm]
 
 # Path to the aligned genome data file
+# (Relative to pythgroups folder)
 genome_file: [path]
 
 # # # # # # # # # # # #
@@ -14,7 +15,7 @@ genome_file: [path]
 # # # # # # # # # # # #
 
 # Tree structure in Newick format,
-# example: "(ancestor:0(B.rapa:26,B.oleracea:28,B.nigra:70))"
+# example: "(ancestor(B.rapa,B.oleracea,B.nigra))"
 tree_structure: [tree]
 
 # # # # # # # # # # # # # #
@@ -47,5 +48,3 @@ number_of_operations: 10
 
 # Which genome to replace (1 or 2 -- 0 for a random one)
 genome_to_replace: 1
-
-...

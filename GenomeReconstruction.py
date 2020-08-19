@@ -1,3 +1,5 @@
+import cProfile
+import threading
 from io import StringIO
 from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
 import time
@@ -6,20 +8,20 @@ import threading
 import yaml
 from Bio import Phylo
 from Bio.Phylo.Newick import Tree
+from networkx import Graph
+from numpy.core.multiarray import ndarray
 
 import InputPreprocessing
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
 from Genome import Genome, split_at_whitespace
-from GenomeInString import GenomeInString
 from GroupGraph import GroupGraph
 from MedianIteration import MedianIteration
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
 import NetworkxNode
-
 
 """
  Driver program for Pythgroups
@@ -102,10 +104,9 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
             chromosomes: List[str] = list()
             while len(line) != 0 and not line.startswith(">") and line != "\n":
                 clean_input: str = line.replace("$", "").replace("\n", "")
-                chromosome: str = ""
-                for string in clean_input.strip().split(" "):
-                    if string.strip() != "":
-                        chromosome += string.strip() + " "
+                chromosome: str = str().join([string.strip() + " "
+                                              for string in clean_input.strip().split(" ")
+                                              if string.strip() != ""])
 
                 chromosomes.append(chromosome)
                 line = genome_file.readline()
@@ -135,6 +136,7 @@ def parse_tree(config_dir: str) -> Optional[Tree]:
     config_data = yaml.safe_load(config_file)
     tree_data = Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
     config_file.close()
+
     return tree_data
 
 
@@ -154,8 +156,10 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
         The number of genes in each genome
     """
     final_count: int = 0
+
     for genome, chromosomes in genomes.items():
         count: int = 0
+
         for chromosome in chromosomes:
             count += len(split_at_whitespace(chromosome))
 
@@ -191,9 +195,10 @@ def small_phylogeny():
     num_ancestor = len([node for node in tree.get_nonterminals() if node.name is not None])
     num_leaves = len([node for node in tree.get_terminals() if node.name is not None])  # don't count unnamed nodes
     num_genes = count_genes(genomes)
-    all_genomes: List[GenomeInString] = list()
+    all_genomes: List[Genome] = list()
+
     for chromosomes in genomes.values():
-        all_genomes.append(GenomeInString(Genome.from_strings(chromosomes)))
+        all_genomes.append(Genome.from_strings(chromosomes))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
 
@@ -237,9 +242,10 @@ def small_phylogeny():
     for i in range(ts.number_of_leaves, ts.number_of_leaves + ts.number_of_ancestors):
         chromosome_strings: List[str] = ts.medians[i - ts.number_of_leaves].median
         median_genome: Genome = Genome.from_strings(chromosome_strings)
+
         reconstructed_paths.append(PGMPathForAGenome(ts.get_pgm_path(median_genome, i)))
 
-    relation: List[List[int]] = ts.get_relation()
+    relation: ndarray = ts.get_relation()
     reconstructed_dist: int = int()
     before_optimization: str = str()
 
@@ -375,11 +381,11 @@ def dcj_rearrangements():
 
     while cur_dist > 0 and more:
         more = False
-        rearrange_state: List[GenomeInString] = dcj.get_result(minimum_chromosome,
-                                                               maximum_chromosome,
-                                                               which_chromosome,
-                                                               operation_types,
-                                                               number_operations)
+        rearrange_state: List[Genome] = dcj.get_result(minimum_chromosome,
+                                                       maximum_chromosome,
+                                                       which_chromosome,
+                                                       operation_types,
+                                                       number_operations)
 
         if len(rearrange_state) != 0:
             more = True
@@ -388,7 +394,7 @@ def dcj_rearrangements():
                 for i in range(len(genome.chromosomes)):
                     print("Chromosome " + str(i) + "\n" + str(genome.chromosomes[i]))
 
-            new_genome: GenomeInString = rearrange_state[len(rearrange_state) - 1]
+            new_genome: Genome = rearrange_state[len(rearrange_state) - 1]
             bpg_dist = BPGDistance(Genome(new_genome.chromosomes), Genome.from_strings(genome2))
             bpg_dist.calculate_distance()
             cur_dist = bpg_dist.distance
@@ -483,4 +489,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cProfile.run('main()')
+    # main()
