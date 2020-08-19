@@ -193,3 +193,5 @@ class MedianIteration:
         # Get the ancestors and distances
         for median in self.medians:
             median.get_ancestors()
+
+        print("\rOptimizating result: Complete!")

@@ -138,7 +138,7 @@ class MedianData:
     choice_structures : List[Optional[Dict[str, Any]]]
         List of each choice structure
     median : List[str]
-        List of each median
+        List of each gene in a median
     """
 
     def __init__(self, paths1: List[Dict[str, int]],
