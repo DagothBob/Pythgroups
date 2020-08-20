@@ -1,14 +1,10 @@
-import cProfile
-import threading
 from io import StringIO
-from typing import List, Dict, Optional, ValuesView, Iterator, TextIO
+from typing import List, Dict, ValuesView, Iterator, TextIO, Any
 import time
 import threading
 
 import yaml
 from Bio import Phylo
-from Bio.Phylo.Newick import Tree
-from networkx import Graph
 from numpy.core.multiarray import ndarray
 
 import InputPreprocessing
@@ -39,15 +35,24 @@ import NetworkxNode
  Author: Oskar Jensen
 """
 
+# General
 CONFIG_DIR = "config.yaml"
-CONFIG_GENOME_FILE = "genome_file"
 CONFIG_ALGORITHM = "algorithm"
+CONFIG_GENOME_FILE = "genome_file"
+
+# SmallPhylogeny
 CONFIG_TREE_STRUCTURE = "tree_structure"
+CONFIG_SHOW_DCJR = "show_DCJR"
+
+# DCJRearrangements
 CONFIG_OPERATIONS = "operations"
+CONFIG_VERBOSE_OUTPUT = "verbose_output"
 CONFIG_MINIMUM_CHROMOSOME = "minimum_chromosome"
 CONFIG_MAXIMUM_CHROMOSOME = "maximum_chromosome"
 CONFIG_WHICH_CHROMOSOME = "which_chromosome"
 CONFIG_NUMBER_OPERATIONS = "number_of_operations"
+
+# GGH
 CONFIG_GENOME_REPLACE = "genome_to_replace"
 
 
@@ -71,14 +76,29 @@ class SpinnerThread(threading.Thread):
         print("\bComplete", end="")
 
 
-def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
-    """
-    Parses the genome data from a file into a dictionary containing each genome and their chromosomes
+def config_get(parameter: str) -> Any:
+    """ Shorthand for getting a parameter from the config file
 
     Parameters
     ----------
-    config_dir : str
-        Directory of the config file from which to get the genome file directory
+    parameter :
+        Parameter to get the data from in the config file
+
+    Returns
+    -------
+    Any
+        The data from the specified parameter
+    """
+    with open(CONFIG_DIR, "r") as config_file:
+        config_contents = yaml.safe_load(config_file)
+        parameter_data = config_contents.get(parameter)
+
+    return parameter_data
+
+
+def parse_genomes() -> Dict[str, List[str]]:
+    """
+    Parses the genome data from a file into a dictionary containing each genome and their chromosomes
 
     Returns
     -------
@@ -86,9 +106,7 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
         A dictionary containing each genome's chromosomes,
         where keys are genome headers and values are lists of chromosomes
     """
-    config_file = open(config_dir, "r")
-    config_data = yaml.safe_load(config_file)
-    genome_file = open(config_data.get(CONFIG_GENOME_FILE))
+    genome_file = open(config_get(CONFIG_GENOME_FILE))
     genomes: Dict[str, List[str]] = dict()
     line: str = genome_file.readline()
     header: str = str()
@@ -113,31 +131,7 @@ def parse_genomes(config_dir: str) -> Dict[str, List[str]]:
             genomes[header] = chromosomes
         line = genome_file.readline()
 
-    config_file.close()
-
     return genomes
-
-
-def parse_tree(config_dir: str) -> Optional[Tree]:
-    """
-    Parses the newick tree structure given in config.yaml
-
-    Parameters
-    ----------
-    config_dir : str
-        Directory of config.yaml containing the tree structure
-
-    Returns
-    -------
-    Optional[Tree]
-        Tree object converted from the newick tree found in the yaml file
-    """
-    config_file = open(config_dir, "r")
-    config_data = yaml.safe_load(config_file)
-    tree_data = Phylo.read(StringIO(config_data.get(CONFIG_TREE_STRUCTURE)), "newick")
-    config_file.close()
-
-    return tree_data
 
 
 def count_genes(genomes: Dict[str, List[str]]) -> int:
@@ -183,8 +177,8 @@ def small_phylogeny():
     # Step 1: Parse input data  #
     # # # # # # # # # # # # # # #
 
-    tree: Tree = parse_tree(CONFIG_DIR)
-    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
+    tree = Phylo.read(StringIO(config_get(CONFIG_TREE_STRUCTURE)), "newick")
+    genomes: Dict[str, List[str]] = parse_genomes()
     genome_nodes: List[NetworkxNode] = NetworkxNode.genome_nodes_from_tree(tree, list(genomes.keys()))
     median_nodes: List[NetworkxNode] = NetworkxNode.parse_medians(genome_nodes)
 
@@ -325,14 +319,21 @@ def dcj_rearrangements():
 
     Performs DCJ operations on the first 2 genomes found in the genome file
     """
+    verbose_output: bool = bool(config_get("verbose_output"))
+
     # Create the dictionary of genomes from the input file
-    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
+    genomes: Dict[str, List[str]] = parse_genomes()
 
     # Get the first 2 genomes from the input file
     values_view = genomes.values()
     value_iterator = iter(values_view)
     genome1: List[str] = next(value_iterator)
     genome2: List[str] = next(value_iterator)
+
+    keys_view = genomes.keys()
+    key_iterator = iter(keys_view)
+    genome1_name: str = next(key_iterator)
+    genome2_name: str = next(key_iterator)
 
     # Calculate the initial BPG distance
     bpg_dist: BPGDistance = BPGDistance(Genome.from_strings(genome1), Genome.from_strings(genome2))
@@ -375,7 +376,11 @@ def dcj_rearrangements():
         raise Exception("Config attribute \"number_of_operations\" must be a number.\n")
 
     # Perform DCJ operations until distance == 0 or there are no more DCJ operations to perform
-    dcj: DCJRearrangement = DCJRearrangement(Genome.from_strings(genome1), Genome.from_strings(genome2))
+    operation_counts: Dict[int, int] = {OperationTypes.INVERSION: 0,
+                                        OperationTypes.TRANSLOCATION: 0,
+                                        OperationTypes.FISSION: 0,
+                                        OperationTypes.FUSION: 0}
+    dcj: DCJRearrangement = DCJRearrangement(Genome.from_strings(genome1), Genome.from_strings(genome2), verbose_output)
     dcj.initial_value()
     more: bool = True
 
@@ -389,23 +394,38 @@ def dcj_rearrangements():
 
         if len(rearrange_state) != 0:
             more = True
-            for genome in rearrange_state:
-                print("*******")
-                for i in range(len(genome.chromosomes)):
-                    print("Chromosome " + str(i) + "\n" + str(genome.chromosomes[i]))
+            if verbose_output:
+                for genome in rearrange_state:
+                    print("*******")
+                    for i in range(len(genome.chromosomes)):
+                        print("Chromosome " + str(i) + "\n" + str(genome.chromosomes[i]))
 
             new_genome: Genome = rearrange_state[len(rearrange_state) - 1]
             bpg_dist = BPGDistance(Genome(new_genome.chromosomes), Genome.from_strings(genome2))
             bpg_dist.calculate_distance()
             cur_dist = bpg_dist.distance
-            print("a run, steps: " + str(len(rearrange_state)) + ", cur_dist: " + str(cur_dist))
-            dcj = DCJRearrangement(Genome(new_genome.chromosomes), Genome.from_strings(genome2))
+            if verbose_output:
+                print("a run, steps: " + str(len(rearrange_state)) + ", cur_dist: " + str(cur_dist))
+            else:
+                print("\rCalculating DCJRearrangements, ""current distance between {g1} and {g2}: {d}".format(
+                        g1=genome1_name, g2=genome2_name, d=cur_dist), end="")
+            
+            for key, value in operation_counts.items():
+                operation_counts[key] += dcj.operation_counts[key]
+            dcj = DCJRearrangement(Genome(new_genome.chromosomes), Genome.from_strings(genome2), verbose_output)
             dcj.initial_value()
+
+    print("\rTotal number of DCJ rearrangement events between {g1} and {g2} is {td}, including:\n"
+          "x{inv} inversions, x{tra} translocations, x{fis} fissions, x{fus} fusions.\n"
+          "Remaining BPG distance between genomes after operations: {d}".format(
+            g1=genome1_name, g2=genome2_name, td=sum(operation_counts.values()),
+            inv=operation_counts[OperationTypes.INVERSION], tra=operation_counts[OperationTypes.TRANSLOCATION],
+            fis=operation_counts[OperationTypes.FISSION], fus=operation_counts[OperationTypes.FUSION], d=cur_dist))
 
 
 def genome_halving():
     # Create the dictionary of genomes from the input file
-    genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
+    genomes: Dict[str, List[str]] = parse_genomes()
 
     # Get the first 2 genomes from the input file
     values_view: ValuesView[List[str]] = genomes.values()
@@ -414,11 +434,7 @@ def genome_halving():
     outgroup: List[str] = next(value_iterator)
 
     # Get GenomeHalving configuration options
-    config_file: TextIO = open(CONFIG_DIR)
-    config_data = yaml.safe_load(config_file)
-    config_file.close()
-
-    to_replace: int = config_data.get(CONFIG_GENOME_REPLACE)
+    to_replace: int = config_get(CONFIG_GENOME_REPLACE)
     if type(to_replace) is not int:
         raise Exception("Config attribute \"genome_to_replace\" needs to be a number.\n")
     elif to_replace not in range(0, 3):
@@ -480,11 +496,7 @@ def get_algorithm(alg: str):
 
 
 def main():
-    config_file: TextIO = open(CONFIG_DIR)
-    config_data = yaml.safe_load(config_file)
-    config_file.close()
-    algorithm: str = config_data.get(CONFIG_ALGORITHM)
-
+    algorithm: str = config_get(CONFIG_ALGORITHM)
     get_algorithm(algorithm)
 
 
