@@ -185,7 +185,7 @@ def small_phylogeny():
 
     tree: Tree = parse_tree(CONFIG_DIR)
     genomes: Dict[str, List[str]] = parse_genomes(CONFIG_DIR)
-    genome_nodes: List[NetworkxNode] = NetworkxNode.genome_nodes_from_tree(tree)
+    genome_nodes: List[NetworkxNode] = NetworkxNode.genome_nodes_from_tree(tree, list(genomes.keys()))
     median_nodes: List[NetworkxNode] = NetworkxNode.parse_medians(genome_nodes)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -489,5 +489,5 @@ def main():
 
 
 if __name__ == '__main__':
-    cProfile.run('main()')
-    # main()
+    # cProfile.run('main()')
+    main()

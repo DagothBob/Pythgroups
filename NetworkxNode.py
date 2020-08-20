@@ -62,7 +62,7 @@ def parse_medians(graph_nodes: List[NetworkxNode]) -> List[NetworkxNode]:
     return medians
 
 
-def genome_nodes_from_tree(tree: Tree) -> List[NetworkxNode]:
+def genome_nodes_from_tree(tree: Tree, genomes: List[str]) -> List[NetworkxNode]:
     """
     Converts a tree into a networkx graph consisting of GenomeNode representations of each node
 
@@ -70,18 +70,20 @@ def genome_nodes_from_tree(tree: Tree) -> List[NetworkxNode]:
     ----------
     tree : Tree
         Tree object to convert into a graph
+    genomes : List[str]
+        List of each genome to match with the tree structure
 
     Returns
     -------
     List[NetworkxNode]
         A list of GenomeNodes representing each node, their neighbors, and their unique IDs
     """
-    terminals = tree.get_terminals()
+    # terminals = tree.get_terminals()
     nonterminals = tree.get_nonterminals()
     graph_indexes = dict()
     node_index = 0
-    for t in terminals:
-        graph_indexes[t.name] = node_index
+    for genome in genomes:
+        graph_indexes[genome] = node_index
         node_index += 1
     for nt in nonterminals:
         if nt.name is not None and len(nt.clades) > 0:
@@ -134,9 +136,9 @@ def print_tree_structure(nodes: List[NetworkxNode], distances: Dict):
     color_map: List[str] = []
     for node in nodes:
         if len(node.neighbors) == 3:
-            color_map.append("#ddaaaa")
+            color_map.append("#faaaaa")
         else:
-            color_map.append("#bbbbbb")
+            color_map.append("#cccccc")
         for neighbor in node.neighbors:
             edges.add((get_node(nodes, node.genome_id), get_node(nodes, neighbor)))
     graph.add_nodes_from(nodes)
