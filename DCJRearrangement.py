@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from DCJOperation import DCJOperation, OperationTypes, FusionSubtypes, TranslocationSubtypes
 from Gene import Gene
@@ -53,9 +53,13 @@ class DCJRearrangement:
         String representation for both gene nodes
     touched_chromosome : List[int]
         Current chromosome being updated
+    verbose_output : bool
+        Print verbose information at each state, or only the final DCJ operation counts
+    operation_counts : List[int]
+        A count of each inversion operation used
     """
 
-    def __init__(self, genome1: Genome, genome2: Genome):
+    def __init__(self, genome1: Genome, genome2: Genome, verbose_output: bool = False):
         """
         Constructor
 
@@ -65,7 +69,15 @@ class DCJRearrangement:
             First genome for DCJ operations
         genome2
             Second genome for DCJ operations
+        verbose_output
+            Print verbose information at each state, or only the final DCJ operation counts
         """
+        self.verbose_output: bool = verbose_output
+        self.operation_counts: Dict[int, int] = {OperationTypes.INVERSION: 0,
+                                                 OperationTypes.TRANSLOCATION: 0,
+                                                 OperationTypes.FISSION: 0,
+                                                 OperationTypes.FUSION: 0}
+
         self.genome1: Genome = genome1
         self.genome2: Genome = genome2
 
@@ -290,13 +302,21 @@ class DCJRearrangement:
 
             if operation.chromosome_1 != -1:
                 if operation.operation_type == OperationTypes.INVERSION:
-                    print("Inversion: " + str(operation.chromosome_1) + "\n")
+                    self.operation_counts[OperationTypes.INVERSION] += 1
+                    if self.verbose_output:
+                        print("Inversion: " + str(operation.chromosome_1))
                 elif operation.operation_type == OperationTypes.TRANSLOCATION:
-                    print("Translocation: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2) + "\n")
+                    self.operation_counts[OperationTypes.TRANSLOCATION] += 1
+                    if self.verbose_output:
+                        print("Translocation: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2))
                 elif operation.operation_type == OperationTypes.FISSION:
-                    print("Fission: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2) + "\n")
+                    self.operation_counts[OperationTypes.FISSION] += 1
+                    if self.verbose_output:
+                        print("Fission: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2))
                 elif operation.operation_type == OperationTypes.FUSION:
-                    print("Fusion: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2) + "\n")
+                    self.operation_counts[OperationTypes.FUSION] += 1
+                    if self.verbose_output:
+                        print("Fusion: " + str(operation.chromosome_1) + " " + str(operation.chromosome_2))
 
                 self.update_all_values(operation, which_chromosome)
 
