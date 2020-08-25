@@ -55,7 +55,7 @@ show_DCJR: True
 operations:  # DCJRearrangements
   - inversion
   - translocation
-  - fission
+#  - fission
 #  - fusion
 operations:  # SmallPhylogenyExample1, 2
   - inversion
