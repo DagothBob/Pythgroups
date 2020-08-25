@@ -104,6 +104,11 @@ def genome_nodes_from_tree(tree: Tree, genomes: List[str]) -> List[NetworkxNode]
             neighbor_ids.append(graph_indexes[neighbor])
         graph_nodes.append(NetworkxNode(node, neighbor_ids, genome_id))
 
+    for node in graph_nodes:
+        if len(node.neighbors) not in [1, 3]:
+            raise Exception("Clade \"{}\" in config attribute \"tree_structure\" has {} neighbors.\n"
+                            "Must either have 1 neighbor (a leaf) or 3 neighbors (a median).\n"
+                            .format(node.name, len(node.neighbors)))
     return graph_nodes
 
 

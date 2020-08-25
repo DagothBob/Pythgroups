@@ -82,9 +82,9 @@ class Chromosome:
         -------
         String representation of the Chromosome object
         """
-        ret: str = "chr: \n"
+        ret: str = ""
 
         for gene in self.genes:
             ret += str(gene) + " "
 
-        return ret
+        return ret + "$"

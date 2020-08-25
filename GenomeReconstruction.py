@@ -170,19 +170,27 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
 
 def small_phylogeny():
     """
-    Reconstructs the ancestor(s) of known modern genomes given an unrooted binary phylogenetic tree
+    Reconstructs the ancestor(s) of known modern leaf_genomes given an unrooted binary phylogenetic tree
     using the Pathgroups algorithm.
 
     """
     show_diagram = config_get(CONFIG_SHOW_DIAGRAM)
     show_dcjr = config_get(CONFIG_SHOW_DCJR)
+
+    if type(show_diagram) is not bool:
+        raise Exception("Config attribute \"show_diagram\" needs to be a boolean (True or False, "
+                        "case sensitive).\n")
+    if type(show_dcjr) is not bool:
+        raise Exception("Config attribute \"show_dcjr\" needs to be a boolean (True or False, "
+                        "case sensitive).\n")
+
     # # # # # # # # # # # # # # #
     # Step 1: Parse input data  #
     # # # # # # # # # # # # # # #
 
     tree = Phylo.read(StringIO(config_get(CONFIG_TREE_STRUCTURE)), "newick")
-    genomes: Dict[str, List[str]] = parse_genomes()
-    genome_nodes: List[NetworkxNode] = NetworkxNode.genome_nodes_from_tree(tree, list(genomes.keys()))
+    leaf_genomes: Dict[str, List[str]] = parse_genomes()
+    genome_nodes: List[NetworkxNode] = NetworkxNode.genome_nodes_from_tree(tree, list(leaf_genomes.keys()))
     median_nodes: List[NetworkxNode] = NetworkxNode.parse_medians(genome_nodes)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -191,10 +199,10 @@ def small_phylogeny():
 
     num_ancestor = len([node for node in tree.get_nonterminals() if node.name is not None])
     num_leaves = len([node for node in tree.get_terminals() if node.name is not None])  # don't count unnamed nodes
-    num_genes = count_genes(genomes)
+    num_genes = count_genes(leaf_genomes)
     all_genomes: List[Genome] = list()
 
-    for chromosomes in genomes.values():
+    for chromosomes in leaf_genomes.values():
         all_genomes.append(Genome.from_strings(chromosomes))
 
     ts: TreeStructure = TreeStructure(num_ancestor, num_leaves, num_genes, None, None, None, all_genomes)
@@ -234,6 +242,8 @@ def small_phylogeny():
             median_genomes[median_node.name].append(chromosome)
             print("{} $".format(chromosome))
         print("")
+
+    all_genomes: Dict[str, List[str]] = {**leaf_genomes, **median_genomes}
 
     reconstructed_paths: List[PGMPathForAGenome] = []
 
@@ -277,7 +287,7 @@ def small_phylogeny():
     mi.optimize_result(1, 50)
     optimized_dist: int = int()
 
-    print("Reconstructed ancestors (post-optimization):")
+    print("\nReconstructed ancestors (post-optimization):")
     for i in range(0, len(ts.medians)):
         ts.medians[i].get_ancestors()
         median_node: NetworkxNode = NetworkxNode.get_node(genome_nodes, i + num_leaves)
@@ -303,8 +313,8 @@ def small_phylogeny():
                 print("d({r},{c})={d}".format(r=str(node1.name), c=str(node2.name), d=str(cur_dist)))
                 distances[(node1, node2)] = str(cur_dist)
                 if show_dcjr:
-                    dcj_genomes: Dict[str, List[str]] = {node1.name: genomes[node1.name],
-                                                         node2.name: median_genomes[node2.name]}
+                    dcj_genomes: Dict[str, List[str]] = {node1.name: all_genomes[node1.name],
+                                                         node2.name: all_genomes[node2.name]}
                     dcj_rearrangements(False, dcj_genomes)
 
     print("Total distance: " + str(optimized_dist))
@@ -334,6 +344,10 @@ def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[st
 
     Performs DCJ operations on the first 2 genomes found in the genome file
     """
+    if type(verbose_output) is not bool:
+        raise Exception("Config attribute \"verbose_output\" needs to be a boolean (True or False, "
+                        "case sensitive).\n")
+
     # If genomes aren't specified, just read from the input file
     if genomes is None:
         genomes = parse_genomes()
@@ -474,13 +488,11 @@ def genome_halving():
     print("\n-\nGenome ancestor_AA:\n")
 
     for i in range(len(ggh.ancestor_AA.chromosomes)):
-        print("Chromosome " + str(i + 1))
         print(str(ggh.ancestor_AA.chromosomes[i]))
 
     print("\n-\nGenome ancestor_A:\n")
 
     for i in range(len(ggh.ancestor_A.chromosomes)):
-        print("Chromosome " + str(i + 1))
         print(str(ggh.ancestor_A.chromosomes[i]))
 
 

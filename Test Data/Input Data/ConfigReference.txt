@@ -1,0 +1,90 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This a reference file for "config.yaml"                       #
+# It contains the config data needed for the provided examples. #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # #
+# - General options - #
+# # # # # # # # # # # #
+
+# Genome reconstruction algorithm to use
+# [ SmallPhylogeny | DCJRearrangements | GenomeAliquoting | GenomeHalving ]
+# SmallPhylogenyExample1, 2:
+algorithm: SmallPhylogeny
+# DCJRearrangementsExample1:
+algorithm: DCJRearrangements
+# GuidedHalvingExample1:
+algorithm: GenomeHalving
+
+# Path to the aligned genome data file
+# (Relative to pythgroups folder)
+genome_file: Test Data/Input Data/DCJRearrangementsExample1.txt
+genome_file: Test Data/Input Data/GuidedHalvingExample1.txt
+genome_file: Test Data/Input Data/SmallPhylogenyExample1.txt
+genome_file: Test Data/Input Data/SmallPhylogenyExample2.txt
+
+# # # # # # # # # # # #
+# - Small Phylogeny - #
+# # # # # # # # # # # #
+
+# Tree structure in Newick format,
+# example: ""(ancestor(B.rapa,B.oleracea,B.nigra))"
+# SmallPhylogenyExample1:
+tree_structure: (median1(genome1, median2(genome4, genome5), median3(genome2, genome3)))
+# SmallPhylogenyExample2
+tree_structure: (ancestor(B.rapa,B.oleracea,B.nigra))
+
+# At the end, display the tree structure with calculated distances between nodes
+# [ True | False ]
+show_diagram: True
+
+# Along with the calculated distances, calculate and show the number of each
+# DCJ operation performed between each median and their neighbors.
+# Notes: Be sure to configure DCJ Rearrangements below. May take longer to compute!
+# [ True | False ]
+show_DCJR: True
+
+# # # # # # # # # # # # # #
+# - DCJ Rearrangements -  #
+# # # # # # # # # # # # # #
+
+# DCJ operations to perform
+# Disable operations by commenting them out with a '#'
+# Note: if you get an IndexError in DCJRearrangements.py, try disabling fission and/or fusion.
+# { inversion, translocation, fission, fusion }
+operations:  # DCJRearrangements
+  - inversion
+  - translocation
+#  - fission
+#  - fusion
+operations:  # SmallPhylogenyExample1, 2
+  - inversion
+  - translocation
+#  - fission
+#  - fusion
+
+# True: Print the chromosomes at each rearrangement step along with the operation counts.
+# False: Print just the final operation counts
+# [ True | False ]
+verbose_output: False  #
+
+# The minimum number of chromosomes to maintain for fusion operations (>= 1) Default: 1
+minimum_chromosome: 1
+
+# The maximum number of chromosomes for fission operations to produce (>= 2) Default: 30
+maximum_chromosome: 30
+
+# Which chromosome to operate on (-1 for random, -2 for all of them) Default: -2
+# [ -1 | -2 ]
+which_chromosome: -2
+
+# Maximum number of operations to perform per cycle (> 0) Default: 10
+number_of_operations: 10
+
+# # # # # # # # # # # # # # #
+# - Guided Genome Halving - #
+# # # # # # # # # # # # # # #
+
+# Which genome to replace (1 or 2 -- 0 for a random one) Default: 1
+# [ 0 | 1 | 2 ]
+genome_to_replace: 1

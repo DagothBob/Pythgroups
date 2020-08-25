@@ -1,3 +1,9 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This experimental file is currently not in use.       #
+# Its purpose is to parse gene family files             #
+# into the format needed for the Pathgroups algorithm.  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 from typing import List, Dict
 
 import yaml
