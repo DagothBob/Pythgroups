@@ -1,0 +1,48 @@
+Performing initial reconstruction... Complete
+
+Reconstructed ancestors (pre-optimization):
+>ancestor
+1 2 3 4 5 6 7 8 -12 10 11 -9 13 14 15 16 17 18 19 $
+33 -32 -31 -30 -29 -28 -27 -26 -25 -24 -23 -22 -21 -20 158 159 160 161 162 163 164 -165 166 167 168 169 -171 -170 172 173 174 175 176 -177 178 $
+34 35 36 37 38 39 40 41 42 43 44 45 -46 -47 48 49 50 51 52 53 54 55 56 57 144 145 -146 147 148 149 150 151 152 153 154 155 156 157 $
+-63 62 -61 134 -135 138 136 137 139 140 59 60 -141 -58 -143 -142 -133 $
+64 65 66 67 68 69 70 71 72 73 74 75 -76 -126 -125 -124 -123 -122 -121 -120 $
+88 -87 -86 -85 -84 -83 -82 -81 -80 -79 -78 -77 127 128 129 130 131 132 $
+-89 90 91 92 93 94 95 96 97 98 99 101 100 -113 -112 -111 -110 $
+109 -108 -107 -106 -105 102 103 104 114 115 116 117 118 119 $
+
+Calculated distances:
+d(B.oleracea, ancestor) = 27
+d(B.rapa, ancestor) = 27
+d(B.nigra, ancestor) = 71
+Total distance: 125
+
+Optimizating result: Complete!
+
+Reconstructed ancestors (post-optimization):
+>ancestor
+1 2 3 4 5 6 7 8 -12 10 11 -9 13 14 15 16 17 18 19 $
+33 -32 -31 -30 -29 -28 -27 -26 -25 -24 -23 -22 -21 -20 158 159 160 161 162 163 164 -165 166 167 168 169 -171 -170 172 173 174 175 176 -177 178 $
+34 35 36 37 38 39 40 41 42 43 44 45 -46 -47 48 49 50 51 52 53 54 55 56 57 144 145 -146 147 148 149 150 151 152 153 154 155 156 157 $
+-63 62 -61 134 -135 138 136 137 139 140 59 60 -141 -58 -143 -142 -133 $
+64 65 66 67 68 69 70 71 72 73 74 75 -76 -126 -125 -124 -123 -122 -121 -120 $
+88 -87 -86 -85 -84 -83 -82 -81 -80 -79 -78 -77 127 128 129 130 131 132 $
+-89 90 91 92 93 94 95 96 97 98 99 101 100 -113 -112 -111 -110 $
+109 -108 -107 -106 -105 102 103 104 114 115 116 117 118 119 $
+
+Calculated distances:
+d(B.oleracea,ancestor)=27
+	Total number of DCJ operations performed for B.oleracea to ancestor is 24, including:
+	x19 inversions, x5 translocations, x0 fissions, x0 fusions.
+	Remaining BPG distance between genomes after operations: 3
+d(B.rapa,ancestor)=27
+	Total number of DCJ operations performed for B.rapa to ancestor is 25, including:
+	x21 inversions, x4 translocations, x0 fissions, x0 fusions.
+	Remaining BPG distance between genomes after operations: 2
+d(B.nigra,ancestor)=71
+	Total number of DCJ operations performed for B.nigra to ancestor is 62, including:
+	x40 inversions, x22 translocations, x0 fissions, x0 fusions.
+	Remaining BPG distance between genomes after operations: 9
+Total distance: 125
+
+Process finished with exit code 0
