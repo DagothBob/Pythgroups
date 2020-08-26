@@ -60,7 +60,7 @@ NOTE: Pythgroups is currently in development. We will update this manual as more
 
 ### config.yaml
 
-Before running the program, you have to make sure to edit `config.yaml` with the appropriate information. 
+Before running the program, you have to make sure to edit `config.yaml` with the appropriate information. Check out `Test Data/Input Data` for examples of each algorithm's input.
 
 ##### General
 `algorithm` 
@@ -73,15 +73,27 @@ Before running the program, you have to make sure to edit `config.yaml` with the
 `tree_structure` 
 > The tree structure in Newick format to be used in the SmallPhylogeny algorithm. For example: `(ancestor(B.rapa,B.oleracea,B.nigra))`
 
+`show_diagram` 
+> Whether to print out a matplotlib diagram of the tree structure along with the distances between each node at the end of the program
+
+`show_DCJR`
+> Whether to run the DCJRearrangements algorithm for each node adjacency alongside their distances
+
+`optimization_rounds`
+> The amount of optimization rounds to perform. The higher the number, the more accurate but takes longer to compute.
+
 ##### DCJRearrangements
 `operations`  
 > List of operations available to use in the DCJRearrangements algorithm. The following example uses only inversions and translocations: 
 ```
-	- inversion
-	- translocation
-	# - fission
+    - inversion
+    - translocation
+    # - fission
     # - fusion
 ```
+`verbose_output`
+> Whether to print out its calculations at each step of the DCJRearrangements algorithm, or just print out a summary of the result at the end.
+
 `minimum_chromosome`  
 > The minimum number of chromosomes to maintain for fusion operations. Must be at least 1. Default: 1
 
@@ -104,8 +116,4 @@ Before running the program, you have to make sure to edit `config.yaml` with the
 
     $ python GenomeReconstruction.py
 
-[Insert example usage here once output is formatted better]
-
-
-
-
+Check out `Test Data/Output Data` for examples of each algorithm's output
