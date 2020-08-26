@@ -44,6 +44,7 @@ CONFIG_GENOME_FILE = "genome_file"
 CONFIG_TREE_STRUCTURE = "tree_structure"
 CONFIG_SHOW_DIAGRAM = "show_diagram"
 CONFIG_SHOW_DCJR = "show_DCJR"
+CONFIG_OPTIMIZATION_ROUNDS = "optimization_rounds"
 
 # DCJRearrangements
 CONFIG_OPERATIONS = "operations"
@@ -176,6 +177,7 @@ def small_phylogeny():
     """
     show_diagram = config_get(CONFIG_SHOW_DIAGRAM)
     show_dcjr = config_get(CONFIG_SHOW_DCJR)
+    optimization_rounds = int(config_get(CONFIG_OPTIMIZATION_ROUNDS))
 
     if type(show_diagram) is not bool:
         raise Exception("Config attribute \"show_diagram\" needs to be a boolean (True or False, "
@@ -183,6 +185,8 @@ def small_phylogeny():
     if type(show_dcjr) is not bool:
         raise Exception("Config attribute \"show_dcjr\" needs to be a boolean (True or False, "
                         "case sensitive).\n")
+    if optimization_rounds < 0:
+        raise Exception("Config attribute \"optimization_rounds\" must be at least 0\n")
 
     # # # # # # # # # # # # # # #
     # Step 1: Parse input data  #
@@ -284,7 +288,7 @@ def small_phylogeny():
 
     mi: MedianIteration = MedianIteration(ts.number_of_leaves, ts.number_of_ancestors, ts.gene_number,
                                           ts.leaves, reconstructed_paths, ts.medians, ts.node_int, ts.node_string)
-    mi.optimize_result(1, 50)
+    mi.optimize_result(1, optimization_rounds)
     optimized_dist: int = int()
 
     print("\nReconstructed ancestors (post-optimization):")
