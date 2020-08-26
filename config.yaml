@@ -7,7 +7,7 @@
 algorithm: [algorithm]
 
 # Path to the aligned genome data file
-# (Relative to pythgroups folder)
+# (Relative to the Pythgroups folder)
 genome_file: [path]
 
 # # # # # # # # # # # #
@@ -15,24 +15,30 @@ genome_file: [path]
 # # # # # # # # # # # #
 
 # Tree structure in Newick format,
-# example: "(ancestor(B.rapa,B.oleracea,B.nigra))"
 tree_structure: [tree]
-#tree_structure: (median1(genome1, median2(genome4, genome5), median3(genome2, genome3)))
 
 # At the end, display the tree structure with calculated distances between nodes
+# [ True | False ]
 show_diagram: True
 
 # Along with the calculated distances, calculate and show the number of each
 # DCJ operation performed between each median and their neighbors.
 # Notes: Be sure to configure DCJ Rearrangements below. May take longer to compute!
+# [ True | False ]
 show_DCJR: False
+
+# The number of optimization rounds to perform.
+# A lower number will take less time but may affect accuracy, while anything greater than 50 has minimal effect.
+# Must be at least 0 (skips optimization step if 0). Default: 50
+optimization_rounds: 50
 
 # # # # # # # # # # # # # #
 # - DCJ Rearrangements -  #
 # # # # # # # # # # # # # #
 
-# DCJ operations to perform. Disable operations by commenting them out with a '#'
-# Note that you may need to disable some operations depending on the input data (typically fission and/or fusion)
+# DCJ operations to perform
+# Disable operations by commenting them out with a '#'
+# Note: the fission and fusion operations sometimes cause errors, if so then one or both of them should be disabled.
 # { inversion, translocation, fission, fusion }
 operations:
   - inversion
@@ -42,6 +48,7 @@ operations:
 
 # True: Print the chromosomes at each rearrangement step along with the operation counts.
 # False: Print just the final operation counts
+# [ True | False ]
 verbose_output: False
 
 # The minimum number of chromosomes to maintain for fusion operations (>= 1) Default: 1
@@ -51,6 +58,7 @@ minimum_chromosome: 1
 maximum_chromosome: 30
 
 # Which chromosome to operate on (-1 for random, -2 for all of them) Default: -2
+# [ -1 | -2 ]
 which_chromosome: -2
 
 # Maximum number of operations to perform per cycle (> 0) Default: 10
@@ -61,4 +69,5 @@ number_of_operations: 10
 # # # # # # # # # # # # # # #
 
 # Which genome to replace (1 or 2 -- 0 for a random one) Default: 1
+# [ 0 | 1 | 2 ]
 genome_to_replace: 1
