@@ -1,13 +1,14 @@
+import threading
+import time
 from io import StringIO
 from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
-import time
-import threading
 
 import yaml
 from Bio import Phylo
 from numpy.core.multiarray import ndarray
 
-import InputPreprocessing
+import NetworkxNode
+from Aliquoting import Aliquoting
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
@@ -17,7 +18,6 @@ from MedianIteration import MedianIteration
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
-import NetworkxNode
 
 """
  Driver program for Pythgroups
@@ -167,6 +167,17 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
                             Exiting.\n".format(genome))
 
     return final_count
+
+
+def count_ploidy(poly: List[str]) -> int:
+    highest_ploidy: int = 0
+
+    for chromosome in poly:
+        for gene in split_at_whitespace(chromosome):
+            if highest_ploidy < ord(gene[-1]):
+                highest_ploidy = ord(gene[-1])
+
+    return highest_ploidy - 96
 
 
 def small_phylogeny():
@@ -332,13 +343,49 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
-    gene_data = InputPreprocessing.parse_gene_file(CONFIG_DIR)
+    # Create the dictionary of genomes from the input file
+    genomes: Dict[str, List[str]] = parse_genomes()
 
-    genome_data = InputPreprocessing.group_genomes(gene_data)
+    # Get the first 2 genomes from the input file
+    values_view: ValuesView[List[str]] = genomes.values()
+    value_iterator: Iterator[List[str]] = iter(values_view)
+    polyd: List[str] = next(value_iterator)
+    reference: List[str] = next(value_iterator)
+    ploidy: int = count_ploidy(polyd)
 
-    pathgroups_data = InputPreprocessing.to_pathgroups_format(genome_data)
+    # Get Aliquoting configuration options
+    to_replace: int = config_get(CONFIG_GENOME_REPLACE)
+    if type(to_replace) is not int:
+        raise Exception("Config attribute \"genome_to_replace\" needs to be a number.\n")
+    elif to_replace not in range(0, ploidy + 1):
+        raise Exception("Genome to replace must be non-negative and less than the number of poly genome copies (n).\n")
 
-    print(pathgroups_data)
+    # Perform Guided Genome Halving on the given polyd genome
+    ggh: Aliquoting = Aliquoting(Genome.from_strings(polyd), Genome.from_strings(reference), to_replace, ploidy)
+    ggh.get_result()
+
+    bpg_distance: BPGDistance = BPGDistance(Genome.from_strings(polyd), ggh.ancestor_AA)
+    bpg_distance.calculate_distance()
+    distance_1: int = bpg_distance.distance
+
+    bpg_distance = BPGDistance(Genome.from_strings(reference), ggh.ancestor_A)
+    bpg_distance.calculate_distance()
+    distance_2: int = bpg_distance.distance
+
+    total_distance: int = distance_1 + distance_2
+
+    print("\nd(AA, tetra) = " + str(distance_1) + " | d(A,outgroup) = " + str(distance_2), " | total = " +
+          str(total_distance) + "\n")
+
+    print("\n-\nGenome ancestor_AA:\n")
+
+    for i in range(len(ggh.ancestor_AA.chromosomes)):
+        print(str(ggh.ancestor_AA.chromosomes[i]))
+
+    print("\n-\nGenome ancestor_A:\n")
+
+    for i in range(len(ggh.ancestor_A.chromosomes)):
+        print(str(ggh.ancestor_A.chromosomes[i]))
 
 
 def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[str]]] = None):
