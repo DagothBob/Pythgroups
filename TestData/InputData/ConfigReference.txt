@@ -11,16 +11,16 @@ algorithm: SmallPhylogeny  # SmallPhylogenyExample1, 2
 algorithm: DCJRearrangements  # DCJRearrangementsExample1
 algorithm: GenomeHalving  # GuidedHalvingExample1
 
-genome_file: Test Data/Input Data/DCJRearrangementsExample1.txt
-genome_file: Test Data/Input Data/GuidedHalvingExample1.txt
-genome_file: Test Data/Input Data/SmallPhylogenyExample1.txt
-genome_file: Test Data/Input Data/SmallPhylogenyExample2.txt
+genome_file: TestData/InputData/DCJRearrangementsExample1.txt
+genome_file: TestData/InputData/GuidedHalvingExample1.txt
+genome_file: TestData/InputData/SmallPhylogenyExample1.txt
+genome_file: TestData/InputData/SmallPhylogenyExample2.txt
 
 # # # # # # # # # # # #
 # - Small Phylogeny - #
 # # # # # # # # # # # #
 
-tree_structure: (median1(genome1, median2(genome4, genome5), median3(genome2, genome3)))  # SmallPhylogenyExample1
+tree_structure: (median1(genome1,median2(genome4,genome5),median3(genome2,genome3)))  # SmallPhylogenyExample1
 tree_structure: (ancestor(B.rapa,B.oleracea,B.nigra))  # SmallPhylogenyExample2
 
 show_diagram: True
