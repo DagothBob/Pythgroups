@@ -49,7 +49,7 @@ def check_temp_list(temp_list: List[Dict[str, Any]], f: int) -> int:
     """
     for i in range(len(temp_list)):
         if temp_list[i] is not None:
-            if temp_list[i]["genome_1_path"]["head"] == f:
+            if temp_list[i]["genome_paths"][0]["head"] == f:
                 return i
 
     return -1
@@ -184,7 +184,7 @@ class Aliquoting:
             self.choice_structures[cs_index]["index_from"] = i
 
             for j in range(self.ploidy):
-                self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[i + (self.gene_number * j * 2)]
+                self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[i + (self.gene_number * j)]
 
             # self.choice_structures[cs_index]["genome_1_path"] = self.polyd[i]
             # self.choice_structures[cs_index]["genome_2_path"] = self.polyd[i + self.gene_number * 2]
@@ -272,7 +272,7 @@ class Aliquoting:
         List[Dict[str, int]]
             List of PGMPaths for the genome
         """
-        path1: List[Optional[Dict[str, int]]] = [None for _ in range((4 * self.gene_number) + 1)]
+        path1: List[Optional[Dict[str, int]]] = [None for _ in range((2 * self.ploidy * self.gene_number) + 1)]
 
         null_node: int = -1
 
@@ -833,12 +833,12 @@ class Aliquoting:
             if froms[i - 1] > self.gene_number * i * 2:
                 froms.append(froms[i - 1])
             else:
-                froms.append(index_from + self.gene_number * i * 2)
+                froms.append(froms[i - 1] + self.gene_number * i * 2)
 
             if tails[i - 1] > self.gene_number * i * 2:
                 tails.append(tails[i - 1])
             else:
-                tails.append(tail + self.gene_number * i * 2)
+                tails.append(tails[i - 1] + self.gene_number * i * 2)
 
             l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
 
@@ -868,16 +868,34 @@ class Aliquoting:
                     new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[j])
 
                 if index_from > self.gene_number * i * 2 and tail > self.gene_number * i * 2:
-                    circ_j: int = 0 if j == len(l_paths) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
+                    circ_j: int = 0 if j + 1 == len(l_paths) else j + 1
+                    path: Dict[str, int] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
+
+                    if path is None:
+                        circ_j = j - 1
+                        new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
+                    else:
+                        new_paths[j] = path
 
                 if index_from <= self.gene_number * i * 2 < tail:
-                    circ_j: int = 0 if j == len(paths_x_2) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
+                    circ_j: int = 0 if j + 1 == len(paths_x_2) else j + 1
+                    path: Dict[str, int] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
+
+                    if path is None:
+                        circ_j = j - 1
+                        new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
+                    else:
+                        new_paths[j] = path
 
                 if index_from > self.gene_number * i * 2 >= tail:
-                    circ_j: int = 0 if j == len(paths_x_1) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
+                    circ_j: int = 0 if j + 1 == len(paths_x_1) else j + 1
+                    path: Dict[str, int] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
+
+                    if path is None:
+                        circ_j = j - 1
+                        new_paths[j] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
+                    else:
+                        new_paths[j] = path
 
         # new_path1: Optional[Dict[str, int]] = None
         # new_path2: Optional[Dict[str, int]] = None
