@@ -2,6 +2,8 @@ from io import StringIO
 from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
 import time
 import threading
+import sys
+from os import path
 
 import yaml
 from Bio import Phylo
@@ -36,7 +38,11 @@ import NetworkxNode
 """
 
 # General
-CONFIG_DIR = "config.yaml"
+if len(sys.argv) > 1:
+    CONFIG_FILE = sys.argv[1]
+else:
+    CONFIG_FILE = "config.yaml"
+
 CONFIG_ALGORITHM = "algorithm"
 CONFIG_GENOME_FILE = "genome_file"
 
@@ -91,11 +97,20 @@ def config_get(parameter: str) -> Any:
     Any
         The data from the specified parameter
     """
-    with open(CONFIG_DIR, "r") as config_file:
-        config_contents = yaml.safe_load(config_file)
-        parameter_data = config_contents.get(parameter)
-
-    return parameter_data
+    try:
+        with open(CONFIG_FILE, "r") as config_file:
+            config_contents = yaml.safe_load(config_file)
+            parameter_data = config_contents.get(parameter)
+        return parameter_data
+    except yaml.YAMLError:
+        print("YAMLError: invalid yaml file \'{}\'".format(CONFIG_FILE))
+        exit(1)
+    except FileNotFoundError:
+        print("FileNotFoundError: [Errno 2] No such file or directory: \'{}\'".format(CONFIG_FILE))
+        exit(1)
+    except:
+        print("Error parsing file \'{}\'".format(CONFIG_FILE))
+        exit(1)
 
 
 def parse_genomes() -> Dict[str, List[str]]:
@@ -332,7 +347,7 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
-    gene_data = InputPreprocessing.parse_gene_file(CONFIG_DIR)
+    gene_data = InputPreprocessing.parse_gene_file(CONFIG_FILE)
 
     genome_data = InputPreprocessing.group_genomes(gene_data)
 
@@ -373,7 +388,7 @@ def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[st
     cur_dist: int = bpg_dist.distance
 
     # Get DCJ configuration options from config file
-    config_file: TextIO = open(CONFIG_DIR)
+    config_file: TextIO = open(CONFIG_FILE)
     config_data = yaml.safe_load(config_file)
     config_file.close()
     operation_types: List[int] = list()
@@ -441,7 +456,7 @@ def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[st
             else:
                 print("\rCalculating DCJRearrangements, ""current distance between {g1} and {g2}: {d}".format(
                         g1=genome1_name, g2=genome2_name, d=cur_dist), end="")
-            
+
             for key, value in operation_counts.items():
                 operation_counts[key] += dcj.operation_counts[key]
             dcj = DCJRearrangement(Genome(new_genome.chromosomes), Genome.from_strings(genome2), verbose_output)

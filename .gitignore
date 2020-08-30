@@ -6,5 +6,5 @@ pyvenv.cfg
 venv/
 
 !requirements.txt
-!Test Data
-!Test Data/*
+!TestData
+!TestData/*
