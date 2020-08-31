@@ -3,7 +3,7 @@ from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
 import time
 import threading
 import sys
-from os import path
+import io
 
 import yaml
 from Bio import Phylo
@@ -45,6 +45,7 @@ else:
 
 CONFIG_ALGORITHM = "algorithm"
 CONFIG_GENOME_FILE = "genome_file"
+CONFIG_USE_GF_PARSER = "use_gene_family_parser"
 
 # SmallPhylogeny
 CONFIG_TREE_STRUCTURE = "tree_structure"
@@ -123,9 +124,17 @@ def parse_genomes() -> Dict[str, List[str]]:
         A dictionary containing each genome's chromosomes,
         where keys are genome headers and values are lists of chromosomes
     """
-    genome_file = open(config_get(CONFIG_GENOME_FILE))
+    if bool(config_get(CONFIG_USE_GF_PARSER)):
+        parsed_file = InputPreprocessing.parse_gene_file(CONFIG_FILE, CONFIG_GENOME_FILE)
+        grouped_genomes = InputPreprocessing.group_genomes(parsed_file)
+        genome_str = InputPreprocessing.to_pathgroups_format(grouped_genomes)
+    else:
+        with open(config_get(CONFIG_GENOME_FILE), "r") as file:
+            genome_str: str = file.read()
+
+    buf = io.StringIO(genome_str)
     genomes: Dict[str, List[str]] = dict()
-    line: str = genome_file.readline()
+    line: str = buf.readline()
     header: str = str()
 
     while len(line) != 0:
@@ -144,9 +153,9 @@ def parse_genomes() -> Dict[str, List[str]]:
                                               if string.strip() != ""])
 
                 chromosomes.append(chromosome)
-                line = genome_file.readline()
+                line = buf.readline()
             genomes[header] = chromosomes
-        line = genome_file.readline()
+        line = buf.readline()
 
     return genomes
 
@@ -347,13 +356,7 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
-    gene_data = InputPreprocessing.parse_gene_file(CONFIG_FILE)
-
-    genome_data = InputPreprocessing.group_genomes(gene_data)
-
-    pathgroups_data = InputPreprocessing.to_pathgroups_format(genome_data)
-
-    print(pathgroups_data)
+    print("Genome Aliquoting is a work in progress")
 
 
 def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[str]]] = None):

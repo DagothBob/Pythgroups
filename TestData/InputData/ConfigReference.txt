@@ -27,6 +27,8 @@ show_diagram: True
 
 show_DCJR: True
 
+use_gene_family_parser: False  # must be False for all example inputs
+
 # # # # # # # # # # # # # #
 # - DCJ Rearrangements -  #
 # # # # # # # # # # # # # #
