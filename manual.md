@@ -72,24 +72,35 @@ simply run the following command as described above before using Pythgroups:
 
 NOTE: Pythgroups is currently in development. We will update this manual as more functionality gets added.
 
-### config.yaml
+### yaml config file
 
-Before running the program, you have to make sure to edit `config.yaml` with the appropriate information. Check out 
-`TestData/InputData` for examples of each algorithm's input.
+Before running the program, you have to make sure to edit the desired yaml file (default: `config.yaml`) with the 
+appropriate information. Check out `TestData/InputData` for examples of each algorithm's input, and 
+`TestData/InputData/ConfigReference.txt` for the required config settings for each example.
 
 ##### General
 `algorithm` 
 > Which algorithm you wish to use. Algorithms include `SmallPhylogeny`, `DCJRearrangements`, and `GenomeHalving`
 
 `genome_file` 
-> The path to your aligned genome data file, relative to the Pythgroups directory. For example: 
+> The path to your genome data file, relative to the Pythgroups directory. For example: 
 >`TestData/InputData/SmallPhylogeny2.txt`. See examples in the `TestData` directory for the required 
 >format for each algorithm.
+
+`use_gene_family_parser`
+> An experimental feature that parses raw gene family data directly, rather than requiring the genome data to be 
+> formatted for pathgroups. The parser expects the following data for each gene (in the given order):
+> `geneName, geneFamilyID, chr, start, end, strand, dummy1, dummy2, CoGeID, dummy3`, with each line representing a gene.
+> An example showing the format for each gene's data (note that they must be delimited by tab characters):
+
+    PAC:17829606	2	1	10068084	10075187	-	25	-1	19990	1
 
 ##### SmallPhylogeny
 `tree_structure` 
 > The tree structure in Newick format to be used in the SmallPhylogeny algorithm. For example: 
->`(ancestor(B.rapa,B.oleracea,B.nigra))`
+>`(ancestor(B.rapa,B.oleracea,B.nigra))`.
+> Note that the non-median genome names must match those found in the genome file, while the median genomes can be any 
+> name that isn't blank
 
 `show_diagram` 
 > Whether to print out a matplotlib diagram of the tree structure along with the distances between each 
@@ -103,8 +114,8 @@ Before running the program, you have to make sure to edit `config.yaml` with the
 
 ##### DCJRearrangements
 `operations`  
-> List of operations available to use in the DCJRearrangements algorithm. The following example uses only inversions 
->and translocations: 
+> List of operations available to use in the DCJRearrangements algorithm. Note that this algorithm sometimes gives 
+> errors when fission and fusion operations are enabled. The following example uses only inversions and translocations: 
 ```
     - inversion
     - translocation

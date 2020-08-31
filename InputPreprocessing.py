@@ -1,26 +1,18 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# This experimental file is currently not in use.       #
-# Its purpose is to parse gene family files             #
-# into the format needed for the Pathgroups algorithm.  #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 from typing import List, Dict
 
 import yaml
 
-CONFIG_DIR = "config.yaml"
-CONFIG_GENOME_FILE = "genome_file"
-CONFIG_TREE_STRUCTURE = "tree_structure"
 
-
-def parse_gene_file(config_dir: str) -> List[List[str]]:
+def parse_gene_file(config_dir: str, genome_file_attr: str) -> List[List[str]]:
     """
     Parse the raw gene data, extracting the individual data points for each gene
 
     Parameters
     ----------
-    config_dir
+    config_dir : str
         Directory of the config file
+    genome_file_attr : str
+        The name of the genome file attribute in the config file
 
     Returns
     -------
@@ -31,17 +23,15 @@ def parse_gene_file(config_dir: str) -> List[List[str]]:
     """
     parsed_data: List[List[str]] = []
 
-    config_file = open(config_dir, "r")
-    config_data = yaml.safe_load(config_file)
+    with open(config_dir, "r") as file:
+        config_data = yaml.safe_load(file)
 
     # Parse the genes, where genes are delimited by new lines and data points by tab characters
-    with open(config_data.get(CONFIG_GENOME_FILE)) as genome_file:
+    with open(config_data.get(genome_file_attr)) as genome_file:
         for line in genome_file:
             data: List[str] = line.strip().split("\t")
             if data[0] != "geneName":  # Ignore the header text
                 parsed_data.append([data[i] for i in [1, 2, 3, 4, 5, 8]])  # familyID, chr, start, end, strand, genome
-
-    config_file.close()
 
     return parsed_data
 

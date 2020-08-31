@@ -6,15 +6,24 @@
 # [ SmallPhylogeny | DCJRearrangements | GenomeAliquoting | GenomeHalving ]
 algorithm: [algorithm]
 
-# Path to the aligned genome data file
-# (Relative to the Pythgroups folder)
+# Path to the aligned genome data file (must be formatted for pathgroups as found in the TestData/InputData examples,
+# unless use_gene_family_parser is enabled.
+# (file Path is relative to the Pythgroups folder)
 genome_file: [path]
+
+# EXPERIMENTAL FEATURE: Hasn't been extensively tested
+# Parse raw gene family data directly, rather than requiring the data to be formatted for pathgroups.
+# Check out the config section of the manual for details on its formatting.
+# [ True | False ]
+use_gene_family_parser: False
 
 # # # # # # # # # # # #
 # - Small Phylogeny - #
 # # # # # # # # # # # #
 
 # Tree structure in Newick format
+# Note that the non-median genome names must correspond to those found in the genome file
+# while median genomes may be called anything (must have a name though)
 tree_structure: [tree]
 
 # At the end, display the tree structure with calculated distances between nodes
