@@ -1,13 +1,16 @@
-import threading
-import time
 from io import StringIO
 from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
+import time
+import threading
+import sys
+import io
 
 import yaml
 from Bio import Phylo
 from numpy.core.multiarray import ndarray
 
 import NetworkxNode
+import InputPreprocessing
 from Aliquoting import Aliquoting
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
@@ -36,9 +39,14 @@ from TreeStructure import TreeStructure
 """
 
 # General
-CONFIG_DIR = "config.yaml"
+if len(sys.argv) > 1:
+    CONFIG_FILE = sys.argv[1]
+else:
+    CONFIG_FILE = "config.yaml"
+
 CONFIG_ALGORITHM = "algorithm"
 CONFIG_GENOME_FILE = "genome_file"
+CONFIG_USE_GF_PARSER = "use_gene_family_parser"
 
 # SmallPhylogeny
 CONFIG_TREE_STRUCTURE = "tree_structure"
@@ -91,11 +99,20 @@ def config_get(parameter: str) -> Any:
     Any
         The data from the specified parameter
     """
-    with open(CONFIG_DIR, "r") as config_file:
-        config_contents = yaml.safe_load(config_file)
-        parameter_data = config_contents.get(parameter)
-
-    return parameter_data
+    try:
+        with open(CONFIG_FILE, "r") as config_file:
+            config_contents = yaml.safe_load(config_file)
+            parameter_data = config_contents.get(parameter)
+        return parameter_data
+    except yaml.YAMLError:
+        print("YAMLError: invalid yaml file \'{}\'".format(CONFIG_FILE))
+        exit(1)
+    except FileNotFoundError:
+        print("FileNotFoundError: [Errno 2] No such file or directory: \'{}\'".format(CONFIG_FILE))
+        exit(1)
+    except:
+        print("Error parsing file \'{}\'".format(CONFIG_FILE))
+        exit(1)
 
 
 def parse_genomes() -> Dict[str, List[str]]:
@@ -108,9 +125,17 @@ def parse_genomes() -> Dict[str, List[str]]:
         A dictionary containing each genome's chromosomes,
         where keys are genome headers and values are lists of chromosomes
     """
-    genome_file = open(config_get(CONFIG_GENOME_FILE))
+    if bool(config_get(CONFIG_USE_GF_PARSER)):
+        parsed_file = InputPreprocessing.parse_gene_file(CONFIG_FILE, CONFIG_GENOME_FILE)
+        grouped_genomes = InputPreprocessing.group_genomes(parsed_file)
+        genome_str = InputPreprocessing.to_pathgroups_format(grouped_genomes)
+    else:
+        with open(config_get(CONFIG_GENOME_FILE), "r") as file:
+            genome_str: str = file.read()
+
+    buf = io.StringIO(genome_str)
     genomes: Dict[str, List[str]] = dict()
-    line: str = genome_file.readline()
+    line: str = buf.readline()
     header: str = str()
 
     while len(line) != 0:
@@ -129,9 +154,9 @@ def parse_genomes() -> Dict[str, List[str]]:
                                               if string.strip() != ""])
 
                 chromosomes.append(chromosome)
-                line = genome_file.readline()
+                line = buf.readline()
             genomes[header] = chromosomes
-        line = genome_file.readline()
+        line = buf.readline()
 
     return genomes
 
@@ -420,7 +445,7 @@ def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[st
     cur_dist: int = bpg_dist.distance
 
     # Get DCJ configuration options from config file
-    config_file: TextIO = open(CONFIG_DIR)
+    config_file: TextIO = open(CONFIG_FILE)
     config_data = yaml.safe_load(config_file)
     config_file.close()
     operation_types: List[int] = list()
@@ -488,7 +513,7 @@ def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[st
             else:
                 print("\rCalculating DCJRearrangements, ""current distance between {g1} and {g2}: {d}".format(
                         g1=genome1_name, g2=genome2_name, d=cur_dist), end="")
-            
+
             for key, value in operation_counts.items():
                 operation_counts[key] += dcj.operation_counts[key]
             dcj = DCJRearrangement(Genome(new_genome.chromosomes), Genome.from_strings(genome2), verbose_output)
