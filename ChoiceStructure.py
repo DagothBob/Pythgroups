@@ -124,8 +124,8 @@ def set_new_path(source: Dict[str, Any],
         genome_here = path["head"]
 
         for i in range(ploidy - 1, 0, -1):
-            if genome_here > gene_number * i * 2:
-                genome_here -= gene_number * i * 2
+            if genome_here > gene_number * 2 * i:
+                genome_here -= gene_number * 2 * i
                 break
 
         if source["index_from"] != genome_here:

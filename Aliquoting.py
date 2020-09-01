@@ -112,8 +112,6 @@ class Aliquoting:
     """
     Attributes
     ----------
-    node_int
-        Nodes in integer form
     node_str
         Nodes in string form
     ancestors
@@ -152,7 +150,7 @@ class Aliquoting:
         ploidy
             Number of gene copy sets in the polyploid genome (n)
         """
-        self.node_int: List[int] = list()
+        # self.node_int: List[int] = list()
         self.node_str: List[str] = list()
         self.ancestors: List[Genome] = list()
 
@@ -161,11 +159,16 @@ class Aliquoting:
         self.ploidy: int = ploidy
 
         self.priorities: List[Priority] = self.initialize_priorities()
-        self.set_nodes(reference)
-        self.polyd: List[Dict[str, int]] = self.get_pgm_path(polyd)
 
-        self.fragments: List[Optional[PGMFragment]] = [
-            None for _ in range(self.gene_number * (self.ploidy - 1) * 2 + 1)]
+        self.set_nodes(reference)
+        self.polyd: List[Optional[Dict[str, int]]] = self.get_pgm_path(polyd)
+
+        for path in self.polyd:
+            if path is not None:
+                print("{}\t{}".format(path["head"], path["tail"]))
+
+        self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs
+            None for _ in range(self.gene_number * 2 * self.ploidy + 1)]
 
         for i in range(int(len(self.fragments) / 2)):
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
@@ -175,16 +178,16 @@ class Aliquoting:
         self.gray_edge_index: int = 0
 
         self.choice_structures: List[Optional[Dict[str, Any]]] = [
-            None for _ in range(self.gene_number * (self.ploidy - 1) * 2)]
+            None for _ in range(self.gene_number * 2)]
 
         cs_index: int = 0
 
-        for i in range(1, self.gene_number * (self.ploidy - 1) * 2 + 1):
+        for i in range(1, self.gene_number * 2 + 1):
             self.choice_structures[cs_index] = ChoiceStructure.create_cs(ploidy=self.ploidy)
             self.choice_structures[cs_index]["index_from"] = i
 
-            for j in range(self.ploidy):
-                self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[i + (self.gene_number * j)]
+            for j in range(self.ploidy):  # For each genome path
+                self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[(self.gene_number * 2 * j) + i]
 
             # self.choice_structures[cs_index]["genome_1_path"] = self.polyd[i]
             # self.choice_structures[cs_index]["genome_2_path"] = self.polyd[i + self.gene_number * 2]
@@ -203,7 +206,7 @@ class Aliquoting:
         List[Priority]
             Priority list
         """
-        priority_size: int = self.gene_number * (self.ploidy - 1) * 2 + 1000
+        priority_size: int = self.gene_number * self.ploidy + 1000
         priorities: List[Priority] = list()
 
         priorities.append(Priority(priority_size))
@@ -225,8 +228,7 @@ class Aliquoting:
         genome
             Genome to generate from
         """
-        self.node_int = [int() for _ in range(self.gene_number * (self.ploidy - 1) * 2)]
-        self.node_str = [str() for _ in range(self.gene_number * (self.ploidy - 1) * 2)]
+        self.node_str = [str() for _ in range(self.gene_number * 2)]
 
         index: int = 0
 
@@ -239,22 +241,16 @@ class Aliquoting:
                     node_1 = str().join([gene.name[1:], "h"])
                     node_2 = str().join([gene.name[1:], "t"])
 
-                    self.node_int[index] = index + 1
                     self.node_str[index] = node_2
                     index += 1
-
-                    self.node_int[index] = index + 1
                     self.node_str[index] = node_1
                     index += 1
                 else:
                     node_1 = str().join([gene.name, "t"])
                     node_2 = str().join([gene.name, "h"])
 
-                    self.node_int[index] = index + 1
                     self.node_str[index] = node_1
                     index += 1
-
-                    self.node_int[index] = index + 1
                     self.node_str[index] = node_2
                     index += 1
 
@@ -272,7 +268,7 @@ class Aliquoting:
         List[Dict[str, int]]
             List of PGMPaths for the genome
         """
-        path1: List[Optional[Dict[str, int]]] = [None for _ in range((2 * self.ploidy * self.gene_number) + 1)]
+        path1: List[Optional[Dict[str, int]]] = [None for _ in range((self.gene_number * 2 * self.ploidy) + 1)]
 
         null_node: int = -1
 
@@ -338,7 +334,7 @@ class Aliquoting:
                 if copy_ == "a":
                     return i + 1
                 elif copy_ in ploidys.values():
-                    return (i + 1) + self.gene_number * (ord(copy_) - 97) * 2
+                    return (i + 1) + self.gene_number * 2 * (ord(copy_) - 97)
 
         return 0
 
@@ -401,21 +397,21 @@ class Aliquoting:
             Temporary variable used in calling function
         """
         if gray_edge["head"] >= 0 and gray_edge["tail"] >= 0:
-            from_1: int = 0
-            tail_1: int = 0
+            from_1: int = -10000
+            tail_1: int = -10000
 
             for i in range(self.ploidy - 1, 0, -1):
-                if from_1 == 0 and gray_edge["head"] > self.gene_number * i * 2:
-                    from_1 = gray_edge["head"] - self.gene_number * i * 2
+                if from_1 == -10000 and gray_edge["head"] > self.gene_number * 2 * i:
+                    from_1 = gray_edge["head"] - self.gene_number * 2 * i
 
-                if tail_1 == 0 and gray_edge["tail"] > self.gene_number * i * 2:
-                    tail_1 = gray_edge["tail"] - self.gene_number * i * 2
+                if tail_1 == -10000 and gray_edge["tail"] > self.gene_number * 2 * i:
+                    tail_1 = gray_edge["tail"] - self.gene_number * 2 * i
 
-            if from_1 == 0:
-                from_1 = gray_edge["head"] + self.gene_number * (self.ploidy - 1) * 2
+            if from_1 == -10000:  # Node is already normalized
+                from_1 = gray_edge["head"] + self.gene_number * 2 * (self.ploidy - 1)
 
-            if tail_1 == 0:
-                tail_1 = gray_edge["tail"] + self.gene_number * (self.ploidy - 1) * 2
+            if tail_1 == -10000:  # Node is already normalized
+                tail_1 = gray_edge["tail"] + self.gene_number * 2 * (self.ploidy - 1)
 
             # if gray_edge["head"] > self.gene_number * 2:
             #     from_1 = gray_edge["head"] - self.gene_number * 2
@@ -432,14 +428,12 @@ class Aliquoting:
             self.gray_edge[self.gray_edge_index] = PGMPath.create_pgm_path(from_1, tail_1)
             self.gray_edge_index += 1
 
-        cs_index: int = -10000
+        cs_index: int = gray_edge["head"]
 
-        for i in range(self.ploidy - 1, 0, -1):
-            if gray_edge["head"] > self.gene_number * i * 2:
-                cs_index = (gray_edge["head"] - 1) - self.gene_number * i * 2
+        while cs_index > self.gene_number * 2:
+            cs_index -= self.gene_number * 2
 
-        if cs_index == -10000:
-            cs_index = gray_edge["head"] - 1
+        cs_index -= 1
 
         # if gray_edge["head"] > self.gene_number * 2:
         #     cs_index = (gray_edge["head"] - 1) - self.gene_number * 2
@@ -466,11 +460,11 @@ class Aliquoting:
         end_index: int = -10000
 
         for i in range(self.ploidy - 1, 0, -1):
-            if start_index == -10000 and path_l["head"] > self.gene_number * i * 2:
-                start_index = path_l["head"] - self.gene_number * i * 2
+            if start_index == -10000 and path_l["head"] > self.gene_number * 2 * i:
+                start_index = path_l["head"] - self.gene_number * 2 * i
 
-            if end_index == - 10000 and path_l["tail"] > self.gene_number * i * 2:
-                end_index = path_l["tail"] - self.gene_number * i * 2
+            if end_index == - 10000 and path_l["tail"] > self.gene_number * 2 * i:
+                end_index = path_l["tail"] - self.gene_number * 2 * i
 
         if start_index == -10000:
             start_index = path_l["head"]
@@ -536,8 +530,8 @@ class Aliquoting:
                 tails.append(-10000)
 
                 for j in range(self.ploidy - 1, 0, -1):
-                    if choice_structure["genome_paths"][i]["tail"] > self.gene_number * j * 2:
-                        tails[i] = choice_structure["genome_paths"][i]["tail"] - self.gene_number * j * 2
+                    if choice_structure["genome_paths"][i]["tail"] > self.gene_number * 2 * j:
+                        tails[i] = choice_structure["genome_paths"][i]["tail"] - self.gene_number * 2 * j
 
                 if tails[i] == -10000:
                     tails[i] = choice_structure["genome_paths"][i]["tail"]
@@ -598,7 +592,7 @@ class Aliquoting:
 
                     for j in range(i + 1):
                         self.ancestors[i].add_chromosome(
-                            self.get_chromosome_using_start_gene(start_index + self.gene_number * j * 2, end_index))
+                            self.get_chromosome_using_start_gene(start_index + self.gene_number * 2 * j, end_index))
 
         # self.ancestor_AA = Genome(list())
         #
@@ -733,11 +727,11 @@ class Aliquoting:
 
         if node_1 > 0 and node_2 > 0:
             for i in range(self.ploidy - 1, 0, -1):
-                if node_1 == ancestor_1 and node_1 > self.gene_number * i * 2:
-                    node_1 -= self.gene_number * i * 2
+                if node_1 == ancestor_1 and node_1 > self.gene_number * 2 * i:
+                    node_1 -= self.gene_number * 2 * i
 
-                if node_2 == ancestor_2 and node_2 > self.gene_number * i * 2:
-                    node_2 -= self.gene_number * i * 2
+                if node_2 == ancestor_2 and node_2 > self.gene_number * 2 * i:
+                    node_2 -= self.gene_number * 2 * i
 
             # if node_1 > self.gene_number * 2:
             #     node_1 -= self.gene_number * 2
@@ -788,15 +782,17 @@ class Aliquoting:
         List[Optional[Dict[str, Any]]]
             New ChoiceStructure
         """
-        froms: List[int] = [index_from]
-        tails: List[int] = [tail]
+        froms: List[int] = [-10000 for _ in range(self.ploidy)]
+        tails: List[int] = [-10000 for _ in range(self.ploidy)]
+        froms[0] = index_from
+        tails[0] = tail
 
         for i in range(self.ploidy - 1, 0, -1):
-            if froms[0] == index_from and froms[0] > self.gene_number * i * 2:
-                froms[0] -= self.gene_number * i * 2
+            if froms[0] == index_from and froms[0] > self.gene_number * 2 * i:
+                froms[0] -= self.gene_number * 2 * i
 
-            if tails[0] == tail and tails[0] > self.gene_number * i * 2:
-                tails[0] -= self.gene_number * i * 2
+            if tails[0] == tail and tails[0] > self.gene_number * 2 * i:
+                tails[0] -= self.gene_number * 2 * i
 
         if froms[0] != choice_structure_index + 1:
             raise Exception("Wrong choice_structure_index: " + str(choice_structure_index))
@@ -830,15 +826,8 @@ class Aliquoting:
         l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
 
         for i in range(1, self.ploidy):
-            if froms[i - 1] > self.gene_number * i * 2:
-                froms.append(froms[i - 1])
-            else:
-                froms.append(froms[i - 1] + self.gene_number * i * 2)
-
-            if tails[i - 1] > self.gene_number * i * 2:
-                tails.append(tails[i - 1])
-            else:
-                tails.append(tails[i - 1] + self.gene_number * i * 2)
+            froms[i] = froms[0] + self.gene_number * 2 * i
+            tails[i] = tails[0] + self.gene_number * 2 * i
 
             l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
 
@@ -862,40 +851,52 @@ class Aliquoting:
 
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
 
+        # for i in range(len(new_paths)):
+        #     new_paths[i] = PGMPath.connect(paths_x_1[i], paths_x_2[i], l_paths[i])
+
+        # "Greater-than" checks are done in descending order from ploidy and
+        # "lesser-than" checks are done in ascending order from 0, for best fit
+        #
+        # This has to be significantly more complex in aliquoting vs. GGH to solve
+        # the problem of choosing a best-fit new path
         for i in range(self.ploidy - 1, 0, -1):
-            for j in range(self.ploidy):
-                if index_from <= self.gene_number * i * 2 and tail <= self.gene_number * i * 2:
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[j])
+            for j in range(1, self.ploidy):
+                for k in range(len(new_paths)):
+                    if new_paths[k] is not None:
+                        continue
 
-                if index_from > self.gene_number * i * 2 and tail > self.gene_number * i * 2:
-                    circ_j: int = 0 if j + 1 == len(l_paths) else j + 1
-                    path: Dict[str, int] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
+                    if index_from <= self.gene_number * 2 * j and tail <= self.gene_number * 2 * j:
+                        new_path: Dict[str, int] = PGMPath.connect(paths_x_1[k], paths_x_2[k], l_paths[k])
 
-                    if path is None:
-                        circ_j = j - 1
-                        new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
-                    else:
-                        new_paths[j] = path
+                        if new_path is not None:
+                            new_paths[k] = new_path
 
-                if index_from <= self.gene_number * i * 2 < tail:
-                    circ_j: int = 0 if j + 1 == len(paths_x_2) else j + 1
-                    path: Dict[str, int] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
+                    if index_from > self.gene_number * 2 * i and tail > self.gene_number * 2 * i:
+                        for p in range(1, len(l_paths)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[k], paths_x_2[k], l_paths[(k + p) % len(l_paths)])
 
-                    if path is None:
-                        circ_j = j - 1
-                        new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
-                    else:
-                        new_paths[j] = path
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
 
-                if index_from > self.gene_number * i * 2 >= tail:
-                    circ_j: int = 0 if j + 1 == len(paths_x_1) else j + 1
-                    path: Dict[str, int] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
+                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * i:
+                        for p in range(1, len(paths_x_2)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
 
-                    if path is None:
-                        circ_j = j - 1
-                        new_paths[j] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
-                    else:
-                        new_paths[j] = path
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
+
+                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * j:
+                        for p in range(1, len(paths_x_1)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
+
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
 
         # new_path1: Optional[Dict[str, int]] = None
         # new_path2: Optional[Dict[str, int]] = None
@@ -968,17 +969,17 @@ class Aliquoting:
         t: int = t2
 
         for i in range(self.ploidy - 1, 0, -1):
-            if f1 == path1["head"] and f1 > self.gene_number * i * 2:
-                f1 -= self.gene_number * i * 2
+            if f1 == path1["head"] and f1 > self.gene_number * 2 * i:
+                f1 -= self.gene_number * 2 * i
 
-            if t1 == path1["tail"] and t1 > self.gene_number * i * 2:
-                t1 -= self.gene_number * i * 2
+            if t1 == path1["tail"] and t1 > self.gene_number * 2 * i:
+                t1 -= self.gene_number * 2 * i
 
-            if f == f2 and f > self.gene_number * i * 2:
-                f -= self.gene_number * i * 2
+            if f == f2 and f > self.gene_number * 2 * i:
+                f -= self.gene_number * 2 * i
 
-            if t == t2 and t > self.gene_number * i * 2:
-                t -= self.gene_number * i * 2
+            if t == t2 and t > self.gene_number * 2 * i:
+                t -= self.gene_number * 2 * i
 
         # if f1 > self.gene_number * 2:
         #     f1 -= self.gene_number * 2
@@ -1024,11 +1025,11 @@ class Aliquoting:
         tail_small: int = -10000
 
         for i in range(self.ploidy - 1, 0, -1):
-            if from_small == -10000 and from_1 > self.gene_number * i * 2:
-                from_small = from_1 - self.gene_number * i * 2
+            if from_small == -10000 and from_1 > self.gene_number * 2 * i:
+                from_small = from_1 - self.gene_number * 2 * i
 
-            if tail_small == -10000 and tail_1 > self.gene_number * i * 2:
-                tail_small = tail_1 - self.gene_number * i * 2
+            if tail_small == -10000 and tail_1 > self.gene_number * 2 * i:
+                tail_small = tail_1 - self.gene_number * 2 * i
 
         if from_small == -10000:
             from_small = from_1
@@ -1177,8 +1178,8 @@ class Aliquoting:
         #             start_index = get_gene_next_node(next_gene_index)
         # elif ploidy == 2:
         for i in range(self.ploidy - 1, 0, -1):
-            if start_index > self.gene_number * i * 2:
-                start: str = self.node_str[start_index - self.gene_number * i * 2 - 1]
+            if start_index > self.gene_number * 2 * i:
+                start: str = self.node_str[start_index - self.gene_number * 2 * i - 1]
 
                 if start.endswith("h"):
                     ancestor_chromosome = "-" + start[:-1] + ploidys[i]
@@ -1206,8 +1207,8 @@ class Aliquoting:
             next_gene: str = ""
 
             for i in range(self.ploidy - 1, 0, -1):
-                if next_gene_index > self.gene_number * i * 2:
-                    next_gene = self.node_str[next_gene_index - self.gene_number * i * 2 - 1]
+                if next_gene_index > self.gene_number * 2 * i:
+                    next_gene = self.node_str[next_gene_index - self.gene_number * 2 * i - 1]
                     break
 
             if next_gene == "":
@@ -1216,8 +1217,8 @@ class Aliquoting:
             current_start_index: int = -10000
 
             for i in range(self.ploidy - 1, 0, -1):
-                if start_index > self.gene_number * i * 2:
-                    current_start_index = start_index - self.gene_number * i * 2
+                if start_index > self.gene_number * 2 * i:
+                    current_start_index = start_index - self.gene_number * 2 * i
                     break
 
             if current_start_index == -10000:
@@ -1230,7 +1231,7 @@ class Aliquoting:
                     ac_changed: bool = False
 
                     for i in range(self.ploidy - 1, 0, -1):
-                        if next_gene_index > self.gene_number * i * 2:
+                        if next_gene_index > self.gene_number * 2 * i:
                             ancestor_chromosome += " -" + next_gene[:-1] + ploidys[i]
                             break
 
@@ -1240,7 +1241,7 @@ class Aliquoting:
                     ac_changed: bool = False
 
                     for i in range(self.ploidy - 1, 0, -1):
-                        if next_gene_index > self.gene_number * i * 2:
+                        if next_gene_index > self.gene_number * 2 * i:
                             ancestor_chromosome += " " + next_gene[:-1] + ploidys[i]
                             break
 
@@ -1273,11 +1274,11 @@ class Aliquoting:
             return 200
 
         for i in range(self.ploidy - 1, 0, -1):
-            if index_from == tail + self.gene_number * i * 2 or \
-               tail == index_from + self.gene_number * i * 2:
+            if index_from == tail + self.gene_number * 2 * i or \
+               tail == index_from + self.gene_number * 2 * i:
                 return 200
 
-        cycle_now: int = self.count_cycle_for_edge(choice_structure_index, index_from, tail)
+        cycle_now: int = self.count_cycles_for_edge(choice_structure_index, index_from, tail)
 
         if cycle_now == 3:
             return 0
@@ -1285,7 +1286,8 @@ class Aliquoting:
         created_fragment: List[PGMFragment] = self.get_created_fragment(index_from, tail)
         self.get_new_fragment_list(created_fragment)
         created_choice_structure: List[Dict[str, Any]] = self.get_new_choice_structure(choice_structure_index,
-                                                                                       index_from, tail)
+                                                                                       index_from,
+                                                                                       tail)
 
         look_ahead_cycles: List[int] = self.count_all_look_ahead_cycles(created_choice_structure)
         max_cycle_look_ahead: int = look_ahead_cycles[0]
@@ -1314,7 +1316,7 @@ class Aliquoting:
 
         return 200
 
-    def count_cycle_for_edge(self, choice_structure_index: int, index_from: int, index_tail: int) -> int:
+    def count_cycles_for_edge(self, choice_structure_index: int, index_from: int, index_tail: int) -> int:
         """
         Counts the cycles for the current edge
 
@@ -1339,19 +1341,19 @@ class Aliquoting:
             return -1
 
         for i in range(self.ploidy - 1, 0, -1):
-            if head == tail + self.gene_number * i * 2 or \
-                    tail == head + self.gene_number * i * 2:
+            if head == tail + self.gene_number * 2 * i or \
+                    tail == head + self.gene_number * 2 * i:
                 return -1
 
         result: int = 0
 
         if tail > 0:
             for i in range(self.ploidy - 1, 0, -1):
-                if head == index_from and head > self.gene_number * i * 2:
-                    head -= self.gene_number * i * 2
+                if head == index_from and head > self.gene_number * 2 * i:
+                    head -= self.gene_number * 2 * i
 
-                if tail == index_tail and tail > self.gene_number * i * 2:
-                    tail -= self.gene_number * i * 2
+                if tail == index_tail and tail > self.gene_number * 2 * i:
+                    tail -= self.gene_number * 2 * i
 
             ancestor_choice_structure: ChoiceStructure = self.choice_structures[
                 choice_structure_index]
@@ -1371,11 +1373,11 @@ class Aliquoting:
                 old_t: int = tails[i]
 
                 for j in range(self.ploidy - 1, 0, -1):
-                    if froms[i] == old_f and froms[i] > self.gene_number * j * 2:
-                        froms[i] -= self.gene_number * j * 2
+                    if froms[i] == old_f and froms[i] > self.gene_number * 2 * j:
+                        froms[i] -= self.gene_number * 2 * j
 
-                    if tails[i] == old_t and tails[i] > self.gene_number * j * 2:
-                        tails[i] -= self.gene_number * j * 2
+                    if tails[i] == old_t and tails[i] > self.gene_number * 2 * j:
+                        tails[i] -= self.gene_number * 2 * j
 
                 if froms[i] == head and tails[i] == tail:
                     result += 1
@@ -1501,7 +1503,7 @@ class Aliquoting:
                     for choice_structure in current_new_choice_structure:
                         current_count = self.count_cycle_look_ahead(choice_structure)
 
-                        if current_count == 3:
+                        if current_count == self.ploidy:
                             return current_count
 
                         if current_max < current_count:
@@ -1520,7 +1522,7 @@ class Aliquoting:
                         for choice_structure in current_new_choice_structure:
                             current_count = self.count_cycle_look_ahead(choice_structure)
 
-                            if current_count == 3:
+                            if current_count == self.ploidy:
                                 return current_count
 
                             if current_max < current_count:
@@ -1568,8 +1570,8 @@ class Aliquoting:
         start: int = -10000
 
         for i in range(self.ploidy - 1, 0, -1):
-            if tail > self.gene_number * i * 2:
-                start = tail - self.gene_number * i * 2
+            if tail > self.gene_number * 2 * i:
+                start = tail - self.gene_number * 2 * i
                 break
 
         if start == -10000:
@@ -1590,19 +1592,25 @@ class Aliquoting:
         # path_2_2: Dict[str, int] = new_choice_structure["genome_2_path"]
         # path_3_2: Dict[str, int] = new_choice_structure["genome_3_path"]
 
-        froms: List[int] = [index_from]
-        tails: List[int] = [tail]
+        froms: List[int] = [-10000 for _ in range(self.ploidy)]
+        tails: List[int] = [-10000 for _ in range(self.ploidy)]
+        froms[0] = index_from
+        tails[0] = tail
+
+        for i in range(self.ploidy - 1, 0, -1):
+            if froms[0] == index_from and froms[0] > self.gene_number * 2 * i:
+                froms[0] -= self.gene_number * 2 * i
+
+            if tails[0] == tail and tails[0] > self.gene_number * 2 * i:
+                tails[0] -= self.gene_number * 2 * i
+
+        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
 
         for i in range(1, self.ploidy):
-            if froms[i - 1] > self.gene_number * i * 2:
-                froms.append(froms[i - 1])
-            else:
-                froms.append(index_from + self.gene_number * i * 2)
+            froms[i] = froms[0] + self.gene_number * 2 * i
+            tails[i] = tails[0] + self.gene_number * 2 * i
 
-            if tails[i - 1] > self.gene_number * i * 2:
-                tails.append(tails[i - 1])
-            else:
-                tails.append(tail + self.gene_number * i * 2)
+            l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
 
         # from_2: int
         # to_2: int
@@ -1628,32 +1636,59 @@ class Aliquoting:
         #     to_3 = to_2
         # else:
         #     to_3 = tail
-
-        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(f, t)
-                                         for f, t in zip(froms, tails)]
-
+        #
         # path_l1: Dict[str, int] = PGMPath.create_pgm_path(index_from, tail)
         # path_l2: Dict[str, int] = PGMPath.create_pgm_path(from_2, to_2)
         # path_l3: Dict[str, int] = PGMPath.create_pgm_path(from_3, to_3)
 
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
 
+        # for i in range(len(new_paths)):
+        #     new_paths[i] = PGMPath.connect(paths_x_1[i], paths_x_2[i], l_paths[i])
+
+        # "Greater-than" checks are done in descending order from ploidy and
+        # "lesser-than" checks are done in ascending order from 0, for best fit
+        #
+        # This has to be significantly more complex in aliquoting vs. GGH to solve
+        # the problem of choosing a best-fit new path
         for i in range(self.ploidy - 1, 0, -1):
-            for j in range(self.ploidy):
-                if index_from <= self.gene_number * i * 2 and tail <= self.gene_number * i * 2:
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[j])
+            for j in range(1, self.ploidy):
+                for k in range(len(new_paths)):
+                    if new_paths[k] is not None:
+                        continue
 
-                if index_from > self.gene_number * i * 2 and tail > self.gene_number * i * 2:
-                    circ_j: int = 0 if j == len(l_paths) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[j], l_paths[circ_j])
+                    if index_from <= self.gene_number * 2 * j and tail <= self.gene_number * 2 * j:
+                        new_path: Dict[str, int] = PGMPath.connect(paths_x_1[k], paths_x_2[k], l_paths[k])
 
-                if index_from <= self.gene_number * i * 2 < tail:
-                    circ_j: int = 0 if j == len(paths_x_2) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[j], paths_x_2[circ_j], l_paths[j])
+                        if new_path is not None:
+                            new_paths[k] = new_path
 
-                if index_from > self.gene_number * i * 2 >= tail:
-                    circ_j: int = 0 if j == len(paths_x_1) else j
-                    new_paths[j] = PGMPath.connect(paths_x_1[circ_j], paths_x_2[j], l_paths[j])
+                    if index_from > self.gene_number * 2 * i and tail > self.gene_number * 2 * i:
+                        for p in range(1, len(l_paths)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[k], paths_x_2[k], l_paths[(k + p) % len(l_paths)])
+
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
+
+                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * i:
+                        for p in range(1, len(paths_x_2)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
+
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
+
+                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * j:
+                        for p in range(1, len(paths_x_1)):
+                            new_path: Dict[str, int] = PGMPath.connect(
+                                paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
+
+                            if new_path is not None:
+                                new_paths[k] = new_path
+                                break
 
         # new_path1: Optional[Dict[str, int]] = None
         # new_path2: Optional[Dict[str, int]] = None
@@ -1745,8 +1780,8 @@ class Aliquoting:
         for i in range(len(tails)):
             for j in range(self.ploidy - 1, 0, -1):
                 if tails[i] == ancestor_choice_structure["genome_paths"][i]["tail"] and \
-                        tails[i] > self.gene_number * i * 2:
-                    tails[i] -= self.gene_number * i * 2
+                        tails[i] > self.gene_number * 2 * i:
+                    tails[i] -= self.gene_number * 2 * i
 
         # if ancestor_choice_structure["genome_1_path"]["tail"] > self.gene_number * 2:
         #     tail_1 = ancestor_choice_structure["genome_1_path"]["tail"] - self.gene_number * 2
@@ -1805,11 +1840,11 @@ class Aliquoting:
         n2: int = -10000
 
         for i in range(self.ploidy - 1, 0, -1):
-            if n1 == -10000 and node_1 > self.gene_number * i * 2:
-                n1 = node_1 - self.gene_number * i * 2
+            if n1 == -10000 and node_1 > self.gene_number * 2 * i:
+                n1 = node_1 - self.gene_number * 2 * i
 
-            if n2 == -10000 and node_2 > self.gene_number * i * 2:
-                n2 = node_2 - self.gene_number * i * 2
+            if n2 == -10000 and node_2 > self.gene_number * 2 * i:
+                n2 = node_2 - self.gene_number * 2 * i
 
         if n1 == -10000:
             n1 = node_1

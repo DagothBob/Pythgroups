@@ -40,7 +40,9 @@ def connect(path1: Dict[str, int],
             path_l: Dict[str, int],
             which_genome: Optional[int] = None) -> Optional[Dict[str, int]]:
     """
-    Connect two PGMPaths
+    Connect two PGMPaths by placing path1 at the head of the new path
+    and path2 at the tail, while maintaining path1's relative facing
+    direction to path2
 
     Parameters
     ----------
@@ -67,8 +69,8 @@ def connect(path1: Dict[str, int],
     p1_tail: int = path1["tail"]
     p2_head: int = path2["head"]
     p2_tail: int = path2["tail"]
-    pl_head: int = path_l["head"]
-    pl_tail: int = path_l["tail"]
+    p_l_head: int = path_l["head"]
+    p_l_tail: int = path_l["tail"]
 
     if which_genome is not None:
         p1_ghead: int = path1["genome_head"]
@@ -78,8 +80,8 @@ def connect(path1: Dict[str, int],
         pl_ghead: int = path_l["genome_head"]
         pl_gtail: int = path_l["genome_tail"]
 
-        if p1_head == pl_head and p1_ghead == pl_ghead and \
-                p2_head == pl_tail and p2_ghead == pl_gtail:
+        if p1_head == p_l_head and p1_ghead == pl_ghead and \
+                p2_head == p_l_tail and p2_ghead == pl_gtail:
             head = p1_tail
             genome_head = p1_gtail
             tail = p2_tail
@@ -95,8 +97,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_head == pl_tail and p1_ghead == pl_gtail and \
-                p2_head == pl_head and p2_ghead == pl_ghead:
+        elif p1_head == p_l_tail and p1_ghead == pl_gtail and \
+                p2_head == p_l_head and p2_ghead == pl_ghead:
             head = p1_tail
             genome_head = p1_gtail
             tail = p2_tail
@@ -112,8 +114,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_head == pl_tail and p1_ghead == pl_gtail and \
-                p2_tail == pl_head and p2_gtail == pl_ghead:
+        elif p1_head == p_l_tail and p1_ghead == pl_gtail and \
+                p2_tail == p_l_head and p2_gtail == pl_ghead:
             head = p1_tail
             genome_head = p1_gtail
             tail = p2_head
@@ -129,8 +131,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_head == pl_head and p1_ghead == pl_ghead and \
-                p2_tail == pl_tail and p2_gtail == pl_gtail:
+        elif p1_head == p_l_head and p1_ghead == pl_ghead and \
+                p2_tail == p_l_tail and p2_gtail == pl_gtail:
             head = p1_tail
             genome_head = p1_gtail
             tail = p2_head
@@ -146,8 +148,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_tail == pl_head and p1_gtail == pl_ghead and \
-                p2_head == pl_tail and p2_ghead == pl_gtail:
+        elif p1_tail == p_l_head and p1_gtail == pl_ghead and \
+                p2_head == p_l_tail and p2_ghead == pl_gtail:
             head = p1_head
             genome_head = p1_ghead
             tail = p2_tail
@@ -163,8 +165,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_tail == pl_tail and p1_gtail == pl_gtail and \
-                p2_head == pl_head and p2_ghead == pl_ghead:
+        elif p1_tail == p_l_tail and p1_gtail == pl_gtail and \
+                p2_head == p_l_head and p2_ghead == pl_ghead:
             head = p1_head
             genome_head = p1_ghead
             tail = p2_tail
@@ -180,8 +182,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_tail == pl_head and p1_gtail == pl_ghead and \
-                p2_tail == pl_tail and p2_gtail == pl_gtail:
+        elif p1_tail == p_l_head and p1_gtail == pl_ghead and \
+                p2_tail == p_l_tail and p2_gtail == pl_gtail:
             head = p1_head
             genome_head = p1_ghead
             tail = p2_head
@@ -197,8 +199,8 @@ def connect(path1: Dict[str, int],
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
 
-        elif p1_tail == pl_tail and p1_gtail == pl_gtail and \
-                p2_tail == pl_head and p2_gtail == pl_ghead:
+        elif p1_tail == p_l_tail and p1_gtail == pl_gtail and \
+                p2_tail == p_l_head and p2_gtail == pl_ghead:
             head = p1_head
             genome_head = p1_ghead
             tail = p2_head
@@ -213,22 +215,22 @@ def connect(path1: Dict[str, int],
                 genome_tail = which_genome
 
             return create_pgm_path(head, tail, genome_head, genome_tail)
-    else:  # GGH version
-        if p1_head == pl_head and p2_head == pl_tail:
+    else:  # GGH/ALQ version
+        if p1_head == p_l_head and p2_head == p_l_tail:
             return create_pgm_path(p1_tail, p2_tail)
-        elif p1_head == pl_tail and p2_head == pl_head:
+        elif p1_head == p_l_tail and p2_head == p_l_head:
             return create_pgm_path(p1_tail, p2_tail)
-        elif p1_head == pl_tail and p2_tail == pl_head:
+        elif p1_head == p_l_tail and p2_tail == p_l_head:
             return create_pgm_path(p1_tail, p2_head)
-        elif p1_head == pl_head and p2_tail == pl_tail:
+        elif p1_head == p_l_head and p2_tail == p_l_tail:
             return create_pgm_path(p1_tail, p2_head)
-        elif p1_tail == pl_head and p2_head == pl_tail:
+        elif p1_tail == p_l_head and p2_head == p_l_tail:
             return create_pgm_path(p1_head, p2_tail)
-        elif p1_tail == pl_tail and p2_head == pl_head:
+        elif p1_tail == p_l_tail and p2_head == p_l_head:
             return create_pgm_path(p1_head, p2_tail)
-        elif p1_tail == pl_head and p2_tail == pl_tail:
+        elif p1_tail == p_l_head and p2_tail == p_l_tail:
             return create_pgm_path(p1_head, p2_head)
-        elif p1_tail == pl_tail and p2_tail == pl_head:
+        elif p1_tail == p_l_tail and p2_tail == p_l_head:
             return create_pgm_path(p1_head, p2_head)
 
     return None

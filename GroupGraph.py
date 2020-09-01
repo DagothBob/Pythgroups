@@ -132,6 +132,10 @@ class GroupGraph:
         self.tetrad: List[Dict[str, int]] = self.get_pgm_path(tetrad, 2)
         self.outgroup: List[Dict[str, int]] = self.get_pgm_path(outgroup, 1)
 
+        for path in self.tetrad:
+            if path is not None:
+                print("{}\t{}".format(path["head"], path["tail"]))
+
         self.fragments: List[Optional[PGMFragment]] = [None for _ in range(self.gene_number * 2 + 1)]
 
         for i in range(int(len(self.fragments) / 2)):
