@@ -150,7 +150,6 @@ class Aliquoting:
         ploidy
             Number of gene copy sets in the polyploid genome (n)
         """
-        # self.node_int: List[int] = list()
         self.node_str: List[str] = list()
         self.ancestors: List[Genome] = list()
 
@@ -162,10 +161,6 @@ class Aliquoting:
 
         self.set_nodes(reference)
         self.polyd: List[Optional[Dict[str, int]]] = self.get_pgm_path(polyd)
-
-        for path in self.polyd:
-            if path is not None:
-                print("{}\t{}".format(path["head"], path["tail"]))
 
         self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs
             None for _ in range(self.gene_number * 2 * self.ploidy + 1)]
