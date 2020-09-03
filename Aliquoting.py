@@ -184,13 +184,12 @@ class Aliquoting:
             for j in range(self.ploidy):  # For each genome path
                 self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[(self.gene_number * 2 * j) + i]
 
-            # self.choice_structures[cs_index]["genome_1_path"] = self.polyd[i]
-            # self.choice_structures[cs_index]["genome_2_path"] = self.polyd[i + self.gene_number * 2]
-            # self.choice_structures[cs_index]["genome_3_path"] = self.outgroup[i]
             self.choice_structures[cs_index]["priority"] = 200
             self.choice_structures[cs_index]["position"] = -1
             self.choice_structures[cs_index]["gray_edge"] = None
             cs_index += 1
+
+        a = 1
 
     def initialize_priorities(self) -> List[Priority]:
         """
@@ -408,16 +407,6 @@ class Aliquoting:
             if tail_1 == -10000:  # Node is already normalized
                 tail_1 = gray_edge["tail"] + self.gene_number * 2 * (self.ploidy - 1)
 
-            # if gray_edge["head"] > self.gene_number * 2:
-            #     from_1 = gray_edge["head"] - self.gene_number * 2
-            # else:
-            #     from_1 = gray_edge["head"] + self.gene_number * 2
-            #
-            # if gray_edge["tail"] > self.gene_number * 2:
-            #     tail_1 = gray_edge["tail"] - self.gene_number * 2
-            # else:
-            #     tail_1 = gray_edge["tail"] + self.gene_number * 2
-
             self.gray_edge[self.gray_edge_index] = gray_edge
             self.gray_edge_index += 1
             self.gray_edge[self.gray_edge_index] = PGMPath.create_pgm_path(from_1, tail_1)
@@ -429,11 +418,6 @@ class Aliquoting:
             cs_index -= self.gene_number * 2
 
         cs_index -= 1
-
-        # if gray_edge["head"] > self.gene_number * 2:
-        #     cs_index = (gray_edge["head"] - 1) - self.gene_number * 2
-        # else:
-        #     cs_index = gray_edge["head"] - 1
 
         self.update_all(cs_index, gray_edge)
 
@@ -466,16 +450,6 @@ class Aliquoting:
 
         if end_index == -10000:
             end_index = path_l["tail"]
-
-        # if path_l["head"] > self.gene_number * 2:
-        #     start_index = path_l["head"] - (self.gene_number * 2)
-        # else:
-        #     start_index = path_l["head"]
-        #
-        # if path_l["tail"] > self.gene_number * 2:
-        #     end_index = path_l["tail"] - (self.gene_number * 2)
-        # else:
-        #     end_index = path_l["tail"]
 
         self.priorities[self.choice_structures[start_index - 1]["priority"]].\
             remove(self.choice_structures[start_index - 1]["position"])
@@ -535,34 +509,6 @@ class Aliquoting:
                 if tails[i] > 0:
                     self.update_priority(tails[i] - 1)
 
-            # tail1: int
-            # tail2: int
-            # tail3: int
-            #
-            # if choice_structure["genome_1_path"]["tail"] > self.gene_number * 2:
-            #     tail1 = choice_structure["genome_1_path"]["tail"] - (self.gene_number * 2)
-            # else:
-            #     tail1 = choice_structure["genome_1_path"]["tail"]
-            #
-            # if choice_structure["genome_2_path"]["tail"] > self.gene_number * 2:
-            #     tail2 = choice_structure["genome_2_path"]["tail"] - (self.gene_number * 2)
-            # else:
-            #     tail2 = choice_structure["genome_2_path"]["tail"]
-            #
-            # if choice_structure["genome_3_path"]["tail"] > self.gene_number * 2:
-            #     tail3 = choice_structure["genome_3_path"]["tail"] - (self.gene_number * 2)
-            # else:
-            #     tail3 = choice_structure["genome_3_path"]["tail"]
-            #
-            # if tail1 > 0:
-            #     self.update_priority(tail1 - 1)
-            #
-            # if tail2 > 0:
-            #     self.update_priority(tail2 - 1)
-            #
-            # if tail3 > 0:
-            #     self.update_priority(tail3 - 1)
-
     def get_ancestors(self):
         """
         Finds ancestor genomes using PathGroups algorithm
@@ -577,7 +523,7 @@ class Aliquoting:
             if fragment is not None:
                 median_chromosome += 1
 
-        for i in range(self.ploidy):
+        for i in range(self.ploidy):  # For each ancestor
             self.ancestors.append(Genome(list()))
 
             for fragment in self.fragments:
@@ -585,29 +531,9 @@ class Aliquoting:
                     start_index: int = fragment.end1
                     end_index: int = fragment.end2
 
-                    for j in range(i + 1):
+                    for j in range(i + 1):  # A(1) = {0}, A(2) = {0,1}, A(3) = {0,1,2}
                         self.ancestors[i].add_chromosome(
                             self.get_chromosome_using_start_gene(start_index + self.gene_number * 2 * j, end_index))
-
-        # self.ancestor_AA = Genome(list())
-        #
-        # for fragment in self.fragments:
-        #     if fragment is not None:
-        #         start_index: int = fragment.end1
-        #         end_index: int = fragment.end2
-        #
-        #         self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(start_index, end_index, 2))
-        #         self.ancestor_AA.add_chromosome(self.get_chromosome_using_start_gene(
-        #             start_index + self.gene_number * 2, end_index, 2))
-        #
-        # self.ancestor_A = Genome(list())
-        #
-        # for fragment in self.fragments:
-        #     if fragment is not None:
-        #         start_index: int = fragment.end1
-        #         end_index: int = fragment.end2
-        #
-        #         self.ancestor_A.add_chromosome(self.get_chromosome_using_start_gene(start_index, end_index, 1))
 
     def get_priority_count(self, cs_index: int) -> int:
         """
@@ -630,11 +556,6 @@ class Aliquoting:
         froms: List[int] = [self.choice_structures[cs_index]["genome_paths"][i]["head"] for i in range(self.ploidy)]
         tails: List[int] = [self.choice_structures[cs_index]["genome_paths"][i]["tail"] for i in range(self.ploidy)]
 
-        # from_1: int = self.choice_structures[cs_index]["genome_1_path"]["head"]
-        # from_2: int = self.choice_structures[cs_index]["genome_2_path"]["head"]
-        # tail_1: int = self.choice_structures[cs_index]["genome_1_path"]["tail"]
-        # tail_2: int = self.choice_structures[cs_index]["genome_2_path"]["tail"]
-
         rng: Random = Random()
 
         if self.replace == 0:
@@ -642,11 +563,6 @@ class Aliquoting:
             to_replace = rng.randint(0, 1)
         elif self.replace <= self.ploidy:
             to_replace = self.replace - 1
-
-        # elif self.replace == 1:
-        #     to_replace = 0
-        # elif self.replace == 2:
-        #     to_replace = 1
 
         for i in range(self.ploidy):
             ancestor_priority = self.calculate_case(cs_index, froms[i], tails[i])
@@ -665,38 +581,6 @@ class Aliquoting:
                 self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(froms[i], tails[i])
 
             to_replace = 1 - to_replace
-
-        # ancestor_priority = self.calculate_case(cs_index, from_1, tail_1)
-        #
-        # if ancestor_priority == 0 or ancestor_priority == 1:
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_1, tail_1)
-        #
-        #     return ancestor_priority
-        #
-        # if ancestor_priority < result:
-        #     result = ancestor_priority
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_1, tail_1)
-        #
-        # if ancestor_priority == result and to_replace == 1:
-        #     result = ancestor_priority
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_1, tail_1)
-        #
-        # to_replace = 1 - to_replace
-        #
-        # ancestor_priority = self.calculate_case(cs_index, from_2, tail_2)
-        #
-        # if ancestor_priority == 1:
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_2, tail_2)
-        #
-        #     return ancestor_priority
-        #
-        # if ancestor_priority < result:
-        #     result = ancestor_priority
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_2, tail_2)
-        #
-        # elif ancestor_priority == result and to_replace == 1:
-        #     result = ancestor_priority
-        #     self.choice_structures[cs_index]["gray_edge"] = PGMPath.create_pgm_path(from_2, tail_2)
 
         return result
 
@@ -727,12 +611,6 @@ class Aliquoting:
 
                 if node_2 == ancestor_2 and node_2 > self.gene_number * 2 * i:
                     node_2 -= self.gene_number * 2 * i
-
-            # if node_1 > self.gene_number * 2:
-            #     node_1 -= self.gene_number * 2
-            #
-            # if node_2 > self.gene_number * 2:
-            #     node_2 -= self.gene_number * 2
 
             result.append(PGMFragment.from_fragment(self.fragments[node_1]))
             result.append(PGMFragment.from_fragment(self.fragments[node_2]))
@@ -782,72 +660,39 @@ class Aliquoting:
         froms[0] = index_from
         tails[0] = tail
 
-        for i in range(self.ploidy - 1, 0, -1):
-            if froms[0] == index_from and froms[0] > self.gene_number * 2 * i:
-                froms[0] -= self.gene_number * 2 * i
-
-            if tails[0] == tail and tails[0] > self.gene_number * 2 * i:
-                tails[0] -= self.gene_number * 2 * i
-
-        if froms[0] != choice_structure_index + 1:
-            raise Exception("Wrong choice_structure_index: " + str(choice_structure_index))
-
-        # f1: int = index_from
-        # t1: int = tail
-        #
-        # if index_from > self.gene_number * 2:
-        #     f1 = index_from - self.gene_number * 2
-        #
-        # if tail > self.gene_number * 2:
-        #     t1 = tail - self.gene_number * 2
-        #
-        # if f1 != choice_structure_index + 1:
-        #     raise Exception("Wrong choice_structure_index: " + str(choice_structure_index))
-
         paths_x_1: List[Dict[str, int]] = list()
         paths_x_2: List[Dict[str, int]] = list()
 
+        norm_t: int = tail
+
+        for i in range(self.ploidy - 1, 0, -1):
+            if norm_t > self.gene_number * 2 * i:
+                norm_t -= self.gene_number * 2 * i
+                break
+
         for i in range(self.ploidy):
             paths_x_1.append(self.choice_structures[choice_structure_index]["genome_paths"][i])
-            paths_x_2.append(self.choice_structures[tails[0] - 1]["genome_paths"][i])
-
-        # path_1_1: Dict[str, int] = self.choice_structures[choice_structure_index]["genome_1_path"]
-        # path_1_2: Dict[str, int] = self.choice_structures[t1 - 1]["genome_1_path"]
-        # path_2_1: Dict[str, int] = self.choice_structures[choice_structure_index]["genome_2_path"]
-        # path_2_2: Dict[str, int] = self.choice_structures[t1 - 1]["genome_2_path"]
-        # path_3_1: Dict[str, int] = self.choice_structures[choice_structure_index]["genome_3_path"]
-        # path_3_2: Dict[str, int] = self.choice_structures[t1 - 1]["genome_3_path"]
+            paths_x_2.append(self.choice_structures[norm_t - 1]["genome_paths"][i])
 
         l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
 
         for i in range(1, self.ploidy):
-            froms[i] = froms[0] + self.gene_number * 2 * i
-            tails[i] = tails[0] + self.gene_number * 2 * i
+            for j in range(self.ploidy - 1, 0, -1):
+                if froms[i] == -10000 and index_from > self.gene_number * 2 * j:
+                    froms[i] = index_from - self.gene_number * 2 * j
+
+                if tails[i] == -10000 and tail > self.gene_number * 2 * j:
+                    tails[i] = tail - self.gene_number * 2 * j
+
+            if froms[i] == -10000:  # Node is already normalized
+                froms[i] = index_from + self.gene_number * 2 * (self.ploidy - i)
+
+            if tails[i] == -10000:  # Node is already normalized
+                tails[i] = tail + self.gene_number * 2 * (self.ploidy - i)
 
             l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
 
-        # path_l1: Dict[str, int] = PGMPath.create_pgm_path(index_from, tail)
-        #
-        # f2: int
-        #
-        # if index_from > self.gene_number * 2:
-        #     f2 = f1
-        # else:
-        #     f2 = index_from + (self.gene_number * 2)
-        #
-        # t2: int
-        #
-        # if tail > self.gene_number * 2:
-        #     t2 = t1
-        # else:
-        #     t2 = tail + (self.gene_number * 2)
-        #
-        # path_l2: Dict[str, int] = PGMPath.create_pgm_path(f2, t2)
-
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
-
-        # for i in range(len(new_paths)):
-        #     new_paths[i] = PGMPath.connect(paths_x_1[i], paths_x_2[i], l_paths[i])
 
         # "Greater-than" checks are done in descending order from ploidy and
         # "lesser-than" checks are done in ascending order from 0, for best fit
@@ -875,7 +720,7 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * i:
+                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * 2 * i:
                         for p in range(1, len(paths_x_2)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
@@ -884,7 +729,7 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * j:
+                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * 2 * j:
                         for p in range(1, len(paths_x_1)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
@@ -893,28 +738,6 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-        # new_path1: Optional[Dict[str, int]] = None
-        # new_path2: Optional[Dict[str, int]] = None
-        #
-        # if index_from <= self.gene_number * 2 and tail <= self.gene_number * 2:
-        #     new_path1 = PGMPath.connect(path_1_1, path_1_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_2_1, path_2_2, path_l2)
-        #
-        # if index_from > self.gene_number * 2 and tail > self.gene_number * 2:
-        #     new_path1 = PGMPath.connect(path_1_1, path_1_2, path_l2)
-        #     new_path2 = PGMPath.connect(path_2_1, path_2_2, path_l1)
-        #
-        # if index_from <= self.gene_number * 2 < tail:
-        #     new_path1 = PGMPath.connect(path_1_1, path_2_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_2_1, path_1_2, path_l2)
-        #
-        # if index_from > self.gene_number * 2 >= tail:
-        #     new_path1 = PGMPath.connect(path_2_1, path_1_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_1_1, path_2_2, path_l2)
-        #
-        # path_l3: Dict[str, int] = PGMPath.create_pgm_path(f1, t1)
-        # new_path3: Dict[str, int] = PGMPath.connect(path_3_1, path_3_2, path_l3)
-
         temp: List[Optional[Dict[str, Any]]] = [None for _ in range(self.ploidy * 4)]
 
         for path in new_paths:
@@ -922,23 +745,6 @@ class Aliquoting:
                 temp = self.get_new_choice_structure_based_on_path(path, temp)
 
         return temp[:len(temp) - temp.count(None)]
-
-        # temp: List[Optional[Dict[str, Any]]] = [None for _ in range(6)]
-        #
-        # if not self.is_a_cycle(new_path1, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path1, temp, None, 2)
-        # if not self.is_a_cycle(new_path2, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path2, temp, None, 2)
-        # if not self.is_a_cycle(new_path3, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path3, temp, None, 1)
-        #
-        # new_choice_structure_number: int = 0
-        #
-        # for choice_structure in temp:
-        #     if choice_structure is not None:
-        #         new_choice_structure_number += 1
-        #
-        # return temp[:new_choice_structure_number]
 
     def is_a_cycle(self, path1: Dict[str, int], f2: int, t2: int) -> bool:
         """
@@ -975,21 +781,6 @@ class Aliquoting:
 
             if t == t2 and t > self.gene_number * 2 * i:
                 t -= self.gene_number * 2 * i
-
-        # if f1 > self.gene_number * 2:
-        #     f1 -= self.gene_number * 2
-        #
-        # if t1 > self.gene_number * 2:
-        #     t1 -= self.gene_number * 2
-        #
-        # f: int = f2
-        # t: int = t2
-        #
-        # if f > self.gene_number * 2:
-        #     f -= self.gene_number * 2
-        #
-        # if t > self.gene_number * 2:
-        #     t -= self.gene_number * 2
 
         return (f1 == f and t1 == t) or (f1 == t and t1 == f)
 
@@ -1032,19 +823,6 @@ class Aliquoting:
         if tail_small == -10000:
             tail_small = tail_1
 
-        # if from_1 > self.gene_number * 2:
-        #     from_small = from_1 - (self.gene_number * 2)
-        # else:
-        #     from_small = from_1
-        #
-        # tail_1: int = new_path1["tail"]
-        # tail_small: int
-        #
-        # if tail_1 > self.gene_number * 2:
-        #     tail_small = tail_1 - (self.gene_number * 2)
-        # else:
-        #     tail_small = tail_1
-
         temp_index: int = len(temp) - temp.count(None)
 
         if from_1 > 0:
@@ -1057,16 +835,18 @@ class Aliquoting:
                     for choice_structure in new_choice_structures:
                         if choice_structure["index_from"] == from_small:
                             temp[temp_index] = ChoiceStructure.create_cs(choice_structure)
-                            ChoiceStructure.set_new_path(temp[temp_index], new_path1, self.ploidy, self.gene_number)
+                            ChoiceStructure.set_new_path(
+                                temp[temp_index], new_path1, self.ploidy, self.gene_number, True)
                             find_now = True
                             break
 
                 if not find_now and self.choice_structures[from_small - 1] is not None:
                     temp[temp_index] = ChoiceStructure.create_cs(self.choice_structures[from_small - 1])
-                    ChoiceStructure.set_new_path(temp[temp_index], new_path1, self.ploidy, self.gene_number)
+                    ChoiceStructure.set_new_path(
+                        temp[temp_index], new_path1, self.ploidy, self.gene_number, True)
                     temp_index += 1
             else:
-                ChoiceStructure.set_new_path(temp[small_index], new_path1, self.ploidy, self.gene_number)
+                ChoiceStructure.set_new_path(temp[small_index], new_path1, self.ploidy, self.gene_number, True)
 
         if tail_1 > 0:
             np1: Dict[str, int] = PGMPath.create_pgm_path(tail_1, from_1)
@@ -1079,16 +859,16 @@ class Aliquoting:
                     for choice_structure in new_choice_structures:
                         if choice_structure["index_from"] == tail_small:
                             temp[temp_index] = ChoiceStructure.create_cs(choice_structure)
-                            ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number)
+                            ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number, True)
                             find_now = True
                             break
 
                 if not find_now and self.choice_structures[tail_small - 1] is not None:
                     temp[temp_index] = ChoiceStructure.create_cs(self.choice_structures[tail_small - 1])
-                    ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number)
+                    ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number, True)
                     temp_index += 1
             else:
-                ChoiceStructure.set_new_path(temp[small_index], np1, self.ploidy, self.gene_number)
+                ChoiceStructure.set_new_path(temp[small_index], np1, self.ploidy, self.gene_number, True)
 
         return temp
 
@@ -1138,40 +918,6 @@ class Aliquoting:
         """
         ancestor_chromosome: str = str()
 
-        # if ploidy == 1:
-        #     start: str = self.node_str[start_index - 1]
-        #
-        #     if start.endswith("h"):
-        #         ancestor_chromosome = "-" + start[:-1]
-        #     else:
-        #         ancestor_chromosome = start[:-1]
-        #
-        #     start_index = get_gene_next_node(start_index)
-        #
-        #     while True:
-        #         next_gene_index: int = self.find_gray_edge_node(start_index, self.gray_edge, 1)
-        #
-        #         if next_gene_index == -1000:
-        #             break
-        #
-        #         next_gene: str = self.node_str[next_gene_index - 1]
-        #         current_start_index: int
-        #
-        #         if start_index > self.gene_number * 2:
-        #             current_start_index = start_index - (self.gene_number * 2)
-        #         else:
-        #             current_start_index = start_index
-        #
-        #         if current_start_index == end_index:
-        #             break
-        #         else:
-        #             if next_gene.endswith("h"):
-        #                 ancestor_chromosome += " -" + next_gene[:-1]
-        #             else:
-        #                 ancestor_chromosome += " " + next_gene[:-1]
-        #
-        #             start_index = get_gene_next_node(next_gene_index)
-        # elif ploidy == 2:
         for i in range(self.ploidy - 1, 0, -1):
             if start_index > self.gene_number * 2 * i:
                 start: str = self.node_str[start_index - self.gene_number * 2 * i - 1]
@@ -1356,13 +1102,6 @@ class Aliquoting:
             froms: List[int] = [path["head"] for path in ancestor_choice_structure["genome_paths"]]
             tails: List[int] = [path["tail"] for path in ancestor_choice_structure["genome_paths"]]
 
-            # f1: int = ancestor_choice_structure["genome_1_path"]["head"]
-            # t1: int = ancestor_choice_structure["genome_1_path"]["tail"]
-            # f2: int = ancestor_choice_structure["genome_2_path"]["head"]
-            # t2: int = ancestor_choice_structure["genome_2_path"]["tail"]
-            # f3: int = ancestor_choice_structure["genome_3_path"]["head"]
-            # t3: int = ancestor_choice_structure["genome_3_path"]["tail"]
-
             for i in range(len(froms)):
                 old_f: int = froms[i]
                 old_t: int = tails[i]
@@ -1376,27 +1115,6 @@ class Aliquoting:
 
                 if froms[i] == head and tails[i] == tail:
                     result += 1
-
-            # if f1 > self.gene_number * 2:
-            #     f1 -= self.gene_number * 2
-            #
-            # if t1 > self.gene_number * 2:
-            #     t1 -= self.gene_number * 2
-            #
-            # if f2 > self.gene_number * 2:
-            #     f2 -= self.gene_number * 2
-            #
-            # if t2 > self.gene_number * 2:
-            #     t2 -= self.gene_number * 2
-            #
-            # if f1 == head and t1 == tail:
-            #     result += 1
-            #
-            # if f2 == head and t2 == tail:
-            #     result += 1
-            #
-            # if f3 == head and t3 == tail:
-            #     result += 1
 
         return result
 
@@ -1461,14 +1179,6 @@ class Aliquoting:
                 froms: List[int] = [path["head"] for path in ancestor_choice_structure["genome_paths"]]
                 tails: List[int] = [path["tail"] for path in ancestor_choice_structure["genome_paths"]]
 
-                # from_1: int = ancestor_choice_structure["genome_1_path"]["head"]
-                # from_2: int = ancestor_choice_structure["genome_2_path"]["head"]
-                # from_3: int = ancestor_choice_structure["genome_3_path"]["head"]
-                #
-                # tail_1: int = ancestor_choice_structure["genome_1_path"]["tail"]
-                # tail_2: int = ancestor_choice_structure["genome_2_path"]["tail"]
-                # tail_3: int = ancestor_choice_structure["genome_3_path"]["tail"]
-
                 if max_cycle > 1:
                     current_from: int = -1000
                     current_tail: int = -1000
@@ -1480,14 +1190,6 @@ class Aliquoting:
                             elif tails[i] == tails[j]:
                                 current_from = froms[i]
                                 current_tail = tails[i]
-
-                    # if tail_1 == tail_2 or tail_1 == tail_3:
-                    #     current_from = from_1
-                    #     current_tail = tail_1
-                    #
-                    # if tail_2 == tail_3:
-                    #     current_from = from_2
-                    #     current_tail = tail_2
 
                     current_new_choice_structure: List[Dict[str, Any]] = \
                         self.get_new_choice_structure_2_step(current_from,
@@ -1517,7 +1219,7 @@ class Aliquoting:
                         for choice_structure in current_new_choice_structure:
                             current_count = self.count_cycle_look_ahead(choice_structure)
 
-                            if current_count == self.ploidy:
+                            if current_count == 3:
                                 return current_count
 
                             if current_max < current_count:
@@ -1554,10 +1256,6 @@ class Aliquoting:
 
         paths_x_1: List[Dict[str, int]] = [path for path in ancestor_choice_structure["genome_paths"]]
 
-        # path_1_1: Dict[str, int] = ancestor_choice_structure["genome_1_path"]
-        # path_2_1: Dict[str, int] = ancestor_choice_structure["genome_2_path"]
-        # path_3_1: Dict[str, int] = ancestor_choice_structure["genome_3_path"]
-
         # getTheCSWithGandStart(t, allncs)
         new_choice_structure: Optional[Dict[str, Any]] = None
         cont: bool = False
@@ -1583,63 +1281,30 @@ class Aliquoting:
 
         paths_x_2: List[Dict[str, int]] = [path for path in new_choice_structure["genome_paths"]]
 
-        # path_1_2: Dict[str, int] = new_choice_structure["genome_1_path"]
-        # path_2_2: Dict[str, int] = new_choice_structure["genome_2_path"]
-        # path_3_2: Dict[str, int] = new_choice_structure["genome_3_path"]
-
         froms: List[int] = [-10000 for _ in range(self.ploidy)]
         tails: List[int] = [-10000 for _ in range(self.ploidy)]
         froms[0] = index_from
         tails[0] = tail
 
-        for i in range(self.ploidy - 1, 0, -1):
-            if froms[0] == index_from and froms[0] > self.gene_number * 2 * i:
-                froms[0] -= self.gene_number * 2 * i
-
-            if tails[0] == tail and tails[0] > self.gene_number * 2 * i:
-                tails[0] -= self.gene_number * 2 * i
-
         l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
 
         for i in range(1, self.ploidy):
-            froms[i] = froms[0] + self.gene_number * 2 * i
-            tails[i] = tails[0] + self.gene_number * 2 * i
+            for j in range(self.ploidy - 1, 0, -1):
+                if froms[i] == -10000 and index_from > self.gene_number * 2 * j:
+                    froms[i] = index_from - self.gene_number * 2 * j
+
+                if tails[i] == -10000 and tail > self.gene_number * 2 * j:
+                    tails[i] = tail - self.gene_number * 2 * j
+
+            if froms[i] == -10000:  # Node is already normalized
+                froms[i] = index_from + self.gene_number * 2 * (self.ploidy - i)
+
+            if tails[i] == -10000:  # Node is already normalized
+                tails[i] = tail + self.gene_number * 2 * (self.ploidy - i)
 
             l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
 
-        # from_2: int
-        # to_2: int
-        # from_3: int
-        # to_3: int
-        #
-        # if index_from > self.gene_number * 2:
-        #     from_2 = index_from - self.gene_number * 2
-        # else:
-        #     from_2 = index_from + self.gene_number * 2
-        #
-        # if tail > self.gene_number * 2:
-        #     to_2 = tail - self.gene_number * 2
-        # else:
-        #     to_2 = tail + self.gene_number * 2
-        #
-        # if index_from > self.gene_number * 2:
-        #     from_3 = from_2
-        # else:
-        #     from_3 = index_from
-        #
-        # if tail > self.gene_number * 2:
-        #     to_3 = to_2
-        # else:
-        #     to_3 = tail
-        #
-        # path_l1: Dict[str, int] = PGMPath.create_pgm_path(index_from, tail)
-        # path_l2: Dict[str, int] = PGMPath.create_pgm_path(from_2, to_2)
-        # path_l3: Dict[str, int] = PGMPath.create_pgm_path(from_3, to_3)
-
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
-
-        # for i in range(len(new_paths)):
-        #     new_paths[i] = PGMPath.connect(paths_x_1[i], paths_x_2[i], l_paths[i])
 
         # "Greater-than" checks are done in descending order from ploidy and
         # "lesser-than" checks are done in ascending order from 0, for best fit
@@ -1667,7 +1332,7 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * i:
+                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * 2 * i:
                         for p in range(1, len(paths_x_2)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
@@ -1676,7 +1341,7 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * j:
+                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * 2 * j:
                         for p in range(1, len(paths_x_1)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
@@ -1685,27 +1350,6 @@ class Aliquoting:
                                 new_paths[k] = new_path
                                 break
 
-        # new_path1: Optional[Dict[str, int]] = None
-        # new_path2: Optional[Dict[str, int]] = None
-        #
-        # if index_from <= self.gene_number * 2 and tail <= self.gene_number * 2:
-        #     new_path1 = PGMPath.connect(path_1_1, path_1_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_2_1, path_2_2, path_l2)
-        #
-        # if index_from > self.gene_number * 2 and tail > self.gene_number * 2:
-        #     new_path1 = PGMPath.connect(path_1_1, path_1_2, path_l2)
-        #     new_path2 = PGMPath.connect(path_2_1, path_2_2, path_l1)
-        #
-        # if index_from <= self.gene_number * 2 < tail:
-        #     new_path1 = PGMPath.connect(path_1_1, path_2_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_2_1, path_1_2, path_l2)
-        #
-        # if index_from > self.gene_number * 2 >= tail:
-        #     new_path1 = PGMPath.connect(path_2_1, path_1_2, path_l1)
-        #     new_path2 = PGMPath.connect(path_1_1, path_2_2, path_l2)
-        #
-        # new_path3: Optional[Dict[str, int]] = PGMPath.connect(path_3_1, path_3_2, path_l3)
-
         temp: List[Optional[Dict[str, Any]]] = [None for _ in range(self.ploidy * 4)]
 
         for path in new_paths:
@@ -1713,17 +1357,6 @@ class Aliquoting:
                 temp = self.get_new_choice_structure_based_on_path(path, temp, new_choice_structures)
 
         return temp[:len(temp) - temp.count(None)]
-
-        # temp: List[Optional[Dict[str, Any]]] = [None for _ in range(6)]
-        #
-        # if not self.is_a_cycle(new_path1, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path1, temp, new_choice_structures)
-        # if not self.is_a_cycle(new_path2, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path2, temp, new_choice_structures)
-        # if not self.is_a_cycle(new_path3, index_from, tail):
-        #     temp = self.get_new_choice_structure_based_on_path(new_path3, temp, new_choice_structures)
-        #
-        # return temp[:len(temp) - temp.count(None)]
 
     def count_cycle_look_ahead(self, ancestor_choice_structure: Optional[Dict[str, Any]]) -> int:
         """
@@ -1751,69 +1384,38 @@ class Aliquoting:
         if count > 1:
             return count
 
-        # if ancestor_choice_structure["genome_1_path"]["tail"] < 0 and \
-        #         ancestor_choice_structure["genome_2_path"]["tail"] < 0 and \
-        #         ancestor_choice_structure["genome_3_path"]["tail"] < 0:
-        #     return 3
-        #
-        # if ancestor_choice_structure["genome_1_path"]["tail"] < 0 and \
-        #         ancestor_choice_structure["genome_2_path"]["tail"] < 0:
-        #     return 2
-        #
-        # if ancestor_choice_structure["genome_1_path"]["tail"] < 0 and \
-        #         ancestor_choice_structure["genome_3_path"]["tail"] < 0:
-        #     return 2
-        #
-        # if ancestor_choice_structure["genome_2_path"]["tail"] < 0 and \
-        #         ancestor_choice_structure["genome_3_path"]["tail"] < 0:
-        #     return 2
-        #
-        # tail_1: int
-        # tail_2: int
-        # tail_3: int
-
         for i in range(len(tails)):
             for j in range(self.ploidy - 1, 0, -1):
                 if tails[i] == ancestor_choice_structure["genome_paths"][i]["tail"] and \
-                        tails[i] > self.gene_number * 2 * i:
-                    tails[i] -= self.gene_number * 2 * i
-
-        # if ancestor_choice_structure["genome_1_path"]["tail"] > self.gene_number * 2:
-        #     tail_1 = ancestor_choice_structure["genome_1_path"]["tail"] - self.gene_number * 2
-        # else:
-        #     tail_1 = ancestor_choice_structure["genome_1_path"]["tail"]
-        #
-        # if ancestor_choice_structure["genome_2_path"]["tail"] > self.gene_number * 2:
-        #     tail_2 = ancestor_choice_structure["genome_2_path"]["tail"] - self.gene_number * 2
-        # else:
-        #     tail_2 = ancestor_choice_structure["genome_2_path"]["tail"]
-        #
-        # if ancestor_choice_structure["genome_3_path"]["tail"] > self.gene_number * 2:
-        #     tail_3 = ancestor_choice_structure["genome_3_path"]["tail"] - self.gene_number * 2
-        # else:
-        #     tail_3 = ancestor_choice_structure["genome_3_path"]["tail"]
+                        tails[i] > self.gene_number * 2 * j:
+                    tails[i] -= self.gene_number * 2 * j
+                    break
 
         count = 0
+        max_equal: int = 0
 
         for i in range(len(tails)):
+            equal_vec: List[int] = list()
+
             for j in range(len(tails)):
-                if i >= j:
+                if i == j:
                     continue
                 elif tails[i] == tails[j]:
-                    count += 1
+                    if i not in equal_vec:
+                        equal_vec.append(i)
 
-        if count <= 1:
-            return 1
+                    if j not in equal_vec:
+                        equal_vec.append(j)
+
+            count = len(equal_vec)
+
+            if count > max_equal:
+                max_equal = count
+
+        if max_equal > 1:
+            return max_equal
         else:
-            return count
-
-        # if tail_1 == tail_2 and tail_1 == tail_3:
-        #     return 3
-        #
-        # if tail_1 == tail_2 or tail_1 == tail_3 or tail_2 == tail_3:
-        #     return 2
-        #
-        # return 1
+            return 1
 
     def is_circular_chromosome(self, node_1: int, node_2: int) -> bool:
         """
@@ -1846,16 +1448,6 @@ class Aliquoting:
 
         if n2 == -10000:
             n2 = node_2
-
-        # if node_1 > self.gene_number * 2:
-        #     n1 = node_1 - self.gene_number * 2
-        # else:
-        #     n1 = node_1
-        #
-        # if node_2 > self.gene_number * 2:
-        #     n2 = node_2 - self.gene_number * 2
-        # else:
-        #     n2 = node_2
 
         if 0 < n1 == self.fragments[n1].end1 and \
            self.fragments[n1] is not None and \

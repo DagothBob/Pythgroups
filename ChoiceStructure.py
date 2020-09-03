@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import copy
 from typing import Optional, Dict, Any, List
 
 """                                 
@@ -64,7 +65,7 @@ def create_cs(source: Optional[Dict[str, Any]] = None, ploidy: Optional[int] = N
             cs["genome_2_path"] = source["genome_2_path"]
             cs["genome_3_path"] = source["genome_3_path"]
         else:
-            cs["genome_paths"] = source["genome_paths"]
+            cs["genome_paths"] = copy(source["genome_paths"])  # copy is needed
 
         cs["gray_edge"] = source["gray_edge"]
 
@@ -74,7 +75,8 @@ def create_cs(source: Optional[Dict[str, Any]] = None, ploidy: Optional[int] = N
 def set_new_path(source: Dict[str, Any],
                  path: Dict[str, int],
                  ploidy: Optional[int] = None,
-                 gene_number: Optional[int] = None) -> Optional[Dict[str, Any]]:
+                 gene_number: Optional[int] = None,
+                 alq: bool = False) -> Optional[Dict[str, Any]]:
     """
     Sets instance paths to the given PGMPath if its genome matches
 
@@ -88,6 +90,8 @@ def set_new_path(source: Dict[str, Any],
         Monoploid or diploid
     gene_number
         Number of genes
+    alq
+        True if called from GenomeAliquoting
     """
     genome_here: int
 
@@ -102,7 +106,7 @@ def set_new_path(source: Dict[str, Any],
 
         if genome_here == source["genome_3_path"]["genome_head"]:
             source["genome_3_path"] = path
-    elif ploidy < 3:
+    elif not alq:
         genome_here = path["head"]
 
         if genome_here > gene_number * 2:
