@@ -1,15 +1,17 @@
+import io
+import sys
+import threading
+import time
 from io import StringIO
 from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
-import time
-import threading
-import sys
-import io
 
 import yaml
 from Bio import Phylo
 from numpy.core.multiarray import ndarray
 
 import InputPreprocessing
+import NetworkxNode
+from Aliquoting import Aliquoting
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
 from DCJRearrangement import DCJRearrangement
@@ -19,7 +21,6 @@ from MedianIteration import MedianIteration
 from PGMPathForAGenome import PGMPathForAGenome
 from SmallPhylogeny import SmallPhylogeny
 from TreeStructure import TreeStructure
-import NetworkxNode
 
 """
  Driver program for Pythgroups
@@ -193,6 +194,17 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     return final_count
 
 
+def count_ploidy(poly: Genome) -> int:
+    highest_ploidy: int = 0
+
+    for chromosome in poly.chromosomes:
+        for gene in chromosome.genes:
+            if highest_ploidy < ord(gene.name[-1]):
+                highest_ploidy = ord(gene.name[-1])
+
+    return highest_ploidy - 96
+
+
 def small_phylogeny():
     """
     Reconstructs the ancestor(s) of known modern leaf_genomes given an unrooted binary phylogenetic tree
@@ -356,7 +368,37 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
-    print("Genome Aliquoting is a work in progress")
+    # Create the dictionary of genomes from the input file
+    genomes: Dict[str, List[str]] = parse_genomes()
+
+    # Get the first 2 genomes from the input file
+    values_view: ValuesView[List[str]] = genomes.values()
+    value_iterator: Iterator[List[str]] = iter(values_view)
+    polyd: Genome = Genome.from_strings(next(value_iterator))
+    reference: List[str] = next(value_iterator)
+    ploidy: int = count_ploidy(polyd)
+
+    # Get Aliquoting configuration options
+    to_replace: int = config_get(CONFIG_GENOME_REPLACE)
+    if type(to_replace) is not int:
+        raise Exception("Config attribute \"genome_to_replace\" needs to be a number.\n")
+    elif to_replace not in range(0, ploidy + 1):
+        raise Exception("Genome to replace must be non-negative and less than the number of poly genome copies (n).\n")
+
+    # Perform Genome aliquoting on the given polyd genome
+    alq: Aliquoting = Aliquoting(polyd, Genome.from_strings(reference), to_replace, ploidy)
+    alq.get_result()
+
+    bpg_distance: BPGDistance = BPGDistance(polyd, alq.ideal_ancestor)
+    bpg_distance.calculate_distance()
+    distance: int = bpg_distance.distance
+
+    print("\nd(Am, polyd) = " + str(distance) + "\n")
+
+    print("\n-\nGenome ancestor_A(m):\n")
+
+    for i in range(len(alq.ideal_ancestor.chromosomes)):
+        print(str(alq.ideal_ancestor.chromosomes[i]))
 
 
 def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[str]]] = None):
