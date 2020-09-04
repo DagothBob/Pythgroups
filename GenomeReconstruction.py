@@ -1,16 +1,16 @@
+import io
+import sys
+import threading
+import time
 from io import StringIO
 from typing import List, Dict, ValuesView, Iterator, TextIO, Any, Optional
-import time
-import threading
-import sys
-import io
 
 import yaml
 from Bio import Phylo
 from numpy.core.multiarray import ndarray
 
-import NetworkxNode
 import InputPreprocessing
+import NetworkxNode
 from Aliquoting import Aliquoting
 from BPGDistance import BPGDistance
 from DCJOperation import OperationTypes
@@ -194,13 +194,13 @@ def count_genes(genomes: Dict[str, List[str]]) -> int:
     return final_count
 
 
-def count_ploidy(poly: List[str]) -> int:
+def count_ploidy(poly: Genome) -> int:
     highest_ploidy: int = 0
 
-    for chromosome in poly:
-        for gene in split_at_whitespace(chromosome):
-            if highest_ploidy < ord(gene[-1]):
-                highest_ploidy = ord(gene[-1])
+    for chromosome in poly.chromosomes:
+        for gene in chromosome.genes:
+            if highest_ploidy < ord(gene.name[-1]):
+                highest_ploidy = ord(gene.name[-1])
 
     return highest_ploidy - 96
 
@@ -374,7 +374,7 @@ def genome_aliquoting():
     # Get the first 2 genomes from the input file
     values_view: ValuesView[List[str]] = genomes.values()
     value_iterator: Iterator[List[str]] = iter(values_view)
-    polyd: List[str] = next(value_iterator)
+    polyd: Genome = Genome.from_strings(next(value_iterator))
     reference: List[str] = next(value_iterator)
     ploidy: int = count_ploidy(polyd)
 
@@ -385,32 +385,20 @@ def genome_aliquoting():
     elif to_replace not in range(0, ploidy + 1):
         raise Exception("Genome to replace must be non-negative and less than the number of poly genome copies (n).\n")
 
-    # Perform Guided Genome Halving on the given polyd genome
-    ggh: Aliquoting = Aliquoting(Genome.from_strings(polyd), Genome.from_strings(reference), to_replace, ploidy)
-    ggh.get_result()
+    # Perform Genome aliquoting on the given polyd genome
+    alq: Aliquoting = Aliquoting(polyd, Genome.from_strings(reference), to_replace, ploidy)
+    alq.get_result()
 
-    bpg_distance: BPGDistance = BPGDistance(Genome.from_strings(polyd), ggh.ancestor_AA)
+    bpg_distance: BPGDistance = BPGDistance(polyd, alq.ideal_ancestor)
     bpg_distance.calculate_distance()
-    distance_1: int = bpg_distance.distance
+    distance: int = bpg_distance.distance
 
-    bpg_distance = BPGDistance(Genome.from_strings(reference), ggh.ancestor_A)
-    bpg_distance.calculate_distance()
-    distance_2: int = bpg_distance.distance
+    print("\nd(Am, polyd) = " + str(distance) + "\n")
 
-    total_distance: int = distance_1 + distance_2
+    print("\n-\nGenome ancestor_A(m):\n")
 
-    print("\nd(AA, tetra) = " + str(distance_1) + " | d(A,outgroup) = " + str(distance_2), " | total = " +
-          str(total_distance) + "\n")
-
-    print("\n-\nGenome ancestor_AA:\n")
-
-    for i in range(len(ggh.ancestor_AA.chromosomes)):
-        print(str(ggh.ancestor_AA.chromosomes[i]))
-
-    print("\n-\nGenome ancestor_A:\n")
-
-    for i in range(len(ggh.ancestor_A.chromosomes)):
-        print(str(ggh.ancestor_A.chromosomes[i]))
+    for i in range(len(alq.ideal_ancestor.chromosomes)):
+        print(str(alq.ideal_ancestor.chromosomes[i]))
 
 
 def dcj_rearrangements(verbose_output: bool, genomes: Optional[Dict[str, List[str]]] = None):

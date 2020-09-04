@@ -114,8 +114,8 @@ class Aliquoting:
     ----------
     node_str
         Nodes in string form
-    ancestors
-        Ancestor genomes
+    ideal_ancestor
+        A, where d(A1 (+) ... (+) Am, Polyd) is minimal
     replace
         Which genome to replace
     gene_number
@@ -151,7 +151,7 @@ class Aliquoting:
             Number of gene copy sets in the polyploid genome (n)
         """
         self.node_str: List[str] = list()
-        self.ancestors: List[Genome] = list()
+        self.ideal_ancestor: Genome = Genome(list())
 
         self.replace: int = replace
         self.gene_number: int = count_gene_number(reference)
@@ -163,7 +163,7 @@ class Aliquoting:
         self.polyd: List[Optional[Dict[str, int]]] = self.get_pgm_path(polyd)
 
         self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs
-            None for _ in range(self.gene_number * 2 * self.ploidy + 1)]
+            None for _ in range(self.gene_number * 2 + 1)]
 
         for i in range(int(len(self.fragments) / 2)):
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
@@ -188,8 +188,6 @@ class Aliquoting:
             self.choice_structures[cs_index]["position"] = -1
             self.choice_structures[cs_index]["gray_edge"] = None
             cs_index += 1
-
-        a = 1
 
     def initialize_priorities(self) -> List[Priority]:
         """
@@ -523,17 +521,14 @@ class Aliquoting:
             if fragment is not None:
                 median_chromosome += 1
 
-        for i in range(self.ploidy):  # For each ancestor
-            self.ancestors.append(Genome(list()))
+        for fragment in self.fragments:
+            if fragment is not None:
+                start_index: int = fragment.end1
+                end_index: int = fragment.end2
 
-            for fragment in self.fragments:
-                if fragment is not None:
-                    start_index: int = fragment.end1
-                    end_index: int = fragment.end2
-
-                    for j in range(i + 1):  # A(1) = {0}, A(2) = {0,1}, A(3) = {0,1,2}
-                        self.ancestors[i].add_chromosome(
-                            self.get_chromosome_using_start_gene(start_index + self.gene_number * 2 * j, end_index))
+                for i in range(self.ploidy):
+                    self.ideal_ancestor.add_chromosome(
+                        self.get_chromosome_using_start_gene(start_index + self.gene_number * i * 2, end_index))
 
     def get_priority_count(self, cs_index: int) -> int:
         """
@@ -968,26 +963,24 @@ class Aliquoting:
             if current_start_index == end_index:
                 break
             else:
+                prefix: str
+
                 if next_gene.endswith("h"):
-                    ac_changed: bool = False
-
-                    for i in range(self.ploidy - 1, 0, -1):
-                        if next_gene_index > self.gene_number * 2 * i:
-                            ancestor_chromosome += " -" + next_gene[:-1] + ploidys[i]
-                            break
-
-                    if not ac_changed:
-                        ancestor_chromosome += " -" + next_gene[:-1] + "a"
+                    prefix = " -"
                 else:
-                    ac_changed: bool = False
+                    prefix = " "
 
-                    for i in range(self.ploidy - 1, 0, -1):
-                        if next_gene_index > self.gene_number * 2 * i:
-                            ancestor_chromosome += " " + next_gene[:-1] + ploidys[i]
-                            break
+                ac_changed: bool = False
 
-                    if not ac_changed:
-                        ancestor_chromosome += " " + next_gene[:-1] + "a"
+                for i in range(self.ploidy - 1, 0, -1):
+                    if next_gene_index > self.gene_number * 2 * i:
+                        add: str = prefix + next_gene[:-1] + ploidys[i]
+                        ancestor_chromosome += add
+                        ac_changed = True
+                        break
+
+                if not ac_changed:
+                    ancestor_chromosome += prefix + next_gene[:-1] + "a"
 
                 start_index = get_gene_next_node(next_gene_index)
 
@@ -1391,7 +1384,6 @@ class Aliquoting:
                     tails[i] -= self.gene_number * 2 * j
                     break
 
-        count = 0
         max_equal: int = 0
 
         for i in range(len(tails)):
