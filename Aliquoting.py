@@ -708,17 +708,13 @@ class Aliquoting:
                 path_1: Dict[str, int] = paths_x_1[i]
                 l_path: Dict[str, int]
 
-                if index_from == norm_f:  # Parallel for froms
-                    l_path = l_paths[i]     # First choice
-                else:                       # Next choice
-                    l_path = l_paths[(i + 1) % len(l_paths)]
-
                 for j in range(len(paths_x_2)):
-                    path_attempt: Dict[str, int] = PGMPath.connect(path_1, paths_x_2[j], l_path)
+                    for k in range(len(l_paths)):
+                        path_attempt: Dict[str, int] = PGMPath.connect(path_1, paths_x_2[j], l_paths[k])
 
-                    if path_attempt is not None:
-                        new_paths[i] = path_attempt
-                        break
+                        if path_attempt is not None:
+                            new_paths[i] = path_attempt
+                            break
 
         if new_paths.count(None) > 0:
             raise Exception("New paths were not created successfully for new ChoiceStructure.")
