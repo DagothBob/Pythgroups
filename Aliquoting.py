@@ -119,7 +119,7 @@ class Aliquoting:
     replace
         Which genome to replace
     gene_number
-        Number of genes in outgroup genome
+        Number of genes in reference genome
     priorities
         Priority list
     polyd
@@ -162,7 +162,7 @@ class Aliquoting:
         self.set_nodes(reference)
         self.polyd: List[Optional[Dict[str, int]]] = self.get_pgm_path(polyd)
 
-        self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs
+        self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs (trios for n=3?)
             None for _ in range(self.gene_number * 2 + 1)]
 
         for i in range(int(len(self.fragments) / 2)):
@@ -173,15 +173,15 @@ class Aliquoting:
         self.gray_edge_index: int = 0
 
         self.choice_structures: List[Optional[Dict[str, Any]]] = [
-            None for _ in range(self.gene_number * 2)]
+            None for _ in range(self.gene_number * 2)]  # Scaling for ploidy is in genome_paths
 
         cs_index: int = 0
 
-        for i in range(1, self.gene_number * 2 + 1):
+        for i in range(1, self.gene_number * 2 + 1):  # self.polyd is 1-indexed
             self.choice_structures[cs_index] = ChoiceStructure.create_cs(ploidy=self.ploidy)
             self.choice_structures[cs_index]["index_from"] = i
 
-            for j in range(self.ploidy):  # For each genome path
+            for j in range(self.ploidy):  # For each genome path (0 + i -> gn*2 + i -> gn*4 + i...)
                 self.choice_structures[cs_index]["genome_paths"][j] = self.polyd[(self.gene_number * 2 * j) + i]
 
             self.choice_structures[cs_index]["priority"] = 200
@@ -220,7 +220,7 @@ class Aliquoting:
         genome
             Genome to generate from
         """
-        self.node_str = [str() for _ in range(self.gene_number * 2)]
+        self.node_str = [str() for _ in range(self.gene_number * 2)]  # *2 for both nodes
 
         index: int = 0
 
@@ -669,8 +669,6 @@ class Aliquoting:
             paths_x_1.append(self.choice_structures[choice_structure_index]["genome_paths"][i])
             paths_x_2.append(self.choice_structures[norm_t - 1]["genome_paths"][i])
 
-        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
-
         for i in range(1, self.ploidy):
             for j in range(self.ploidy - 1, 0, -1):
                 if froms[i] == -10000 and index_from > self.gene_number * 2 * j:
@@ -685,28 +683,27 @@ class Aliquoting:
             if tails[i] == -10000:  # Node is already normalized
                 tails[i] = tail + self.gene_number * 2 * (self.ploidy - i)
 
-            l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
+        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
 
-        new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
+        new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(l_paths))]
 
         # "Greater-than" checks are done in descending order from ploidy and
         # "lesser-than" checks are done in ascending order from 0, for best fit
         #
         # This has to be significantly more complex in aliquoting vs. GGH to solve
         # the problem of choosing a best-fit new path
-        for i in range(self.ploidy - 1, 0, -1):
-            for j in range(1, self.ploidy):
-                for k in range(len(new_paths)):
-                    if new_paths[k] is not None:
-                        continue
+        for k in range(len(new_paths)):
+            if new_paths[k] is not None:
+                continue
 
+            for i in range(self.ploidy - 1, 0, -1):
+                for j in range(1, self.ploidy):
                     if index_from <= self.gene_number * 2 * j and tail <= self.gene_number * 2 * j:
                         new_path: Dict[str, int] = PGMPath.connect(paths_x_1[k], paths_x_2[k], l_paths[k])
 
                         if new_path is not None:
                             new_paths[k] = new_path
-
-                    if index_from > self.gene_number * 2 * i and tail > self.gene_number * 2 * i:
+                    elif index_from > self.gene_number * 2 * i and tail > self.gene_number * 2 * i:
                         for p in range(1, len(l_paths)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[k], paths_x_2[k], l_paths[(k + p) % len(l_paths)])
@@ -714,8 +711,7 @@ class Aliquoting:
                             if new_path is not None:
                                 new_paths[k] = new_path
                                 break
-
-                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * 2 * i:
+                    elif index_from <= self.gene_number * 2 * j and tail > self.gene_number * 2 * i:
                         for p in range(1, len(paths_x_2)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
@@ -723,8 +719,7 @@ class Aliquoting:
                             if new_path is not None:
                                 new_paths[k] = new_path
                                 break
-
-                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * 2 * j:
+                    elif index_from > self.gene_number * 2 * i and tail <= self.gene_number * 2 * j:
                         for p in range(1, len(paths_x_1)):
                             new_path: Dict[str, int] = PGMPath.connect(
                                 paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
@@ -732,6 +727,9 @@ class Aliquoting:
                             if new_path is not None:
                                 new_paths[k] = new_path
                                 break
+
+        if new_paths.count(None) > 0:
+            raise Exception("New paths were not created successfully for new ChoiceStructure.")
 
         temp: List[Optional[Dict[str, Any]]] = [None for _ in range(self.ploidy * 4)]
 
