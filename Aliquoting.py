@@ -650,6 +650,7 @@ class Aliquoting:
         List[Optional[Dict[str, Any]]]
             New ChoiceStructure
         """
+        # TODO: bookmark
         froms: List[int] = [-10000 for _ in range(self.ploidy)]
         tails: List[int] = [-10000 for _ in range(self.ploidy)]
         froms[0] = index_from
@@ -1230,6 +1231,7 @@ class Aliquoting:
         List[Dict[str, Any]]
             Set of new ChoiceStructures
         """
+        # TODO: bookmark
         if tail <= 0:
             return list()
 
@@ -1257,6 +1259,7 @@ class Aliquoting:
 
         if not cont:
             new_choice_structure = ChoiceStructure.create_cs(self.choice_structures[start - 1])
+        # Return
 
         paths_x_2: List[Dict[str, int]] = [path for path in new_choice_structure["genome_paths"]]
 
@@ -1265,69 +1268,58 @@ class Aliquoting:
         froms[0] = index_from
         tails[0] = tail
 
-        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[0], tails[0])]
+        norm_t: int = tail
+        t_scalar: int = 0
 
-        for i in range(1, self.ploidy):
-            for j in range(self.ploidy - 1, 0, -1):
-                if froms[i] == -10000 and index_from > self.gene_number * 2 * j:
-                    froms[i] = index_from - self.gene_number * 2 * j
+        for i in range(self.ploidy - 1, 0, -1):
+            if norm_t > self.gene_number * 2 * i:
+                norm_t -= self.gene_number * 2 * i
+                t_scalar = i
+                break
 
-                if tails[i] == -10000 and tail > self.gene_number * 2 * j:
-                    tails[i] = tail - self.gene_number * 2 * j
+        norm_f: int = index_from
+        f_scalar: int = 0
 
-            if froms[i] == -10000:  # Node is already normalized
-                froms[i] = index_from + self.gene_number * 2 * (self.ploidy - i)
+        for i in range(self.ploidy - 1, 0, -1):
+            if index_from > self.gene_number * 2 * i:
+                norm_f -= self.gene_number * 2 * i
+                f_scalar = i
+                break
 
-            if tails[i] == -10000:  # Node is already normalized
-                tails[i] = tail + self.gene_number * 2 * (self.ploidy - i)
+        current_f_scalar: int = 0
+        current_t_scalar: int = 0
 
-            l_paths.append(PGMPath.create_pgm_path(froms[i], tails[i]))
+        for i in range(self.ploidy):  # List position
+            if current_f_scalar == f_scalar:
+                current_f_scalar += 1
+
+            if current_t_scalar == t_scalar:
+                current_t_scalar += 1
+
+            if i > 0:
+                froms[i] = norm_f + self.gene_number * 2 * current_f_scalar
+                tails[i] = norm_t + self.gene_number * 2 * current_t_scalar
+                current_f_scalar += 1
+                current_t_scalar += 1
+
+        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
 
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
 
-        # "Greater-than" checks are done in descending order from ploidy and
-        # "lesser-than" checks are done in ascending order from 0, for best fit
-        #
-        # This has to be significantly more complex in aliquoting vs. GGH to solve
-        # the problem of choosing a best-fit new path
-        for i in range(self.ploidy - 1, 0, -1):
-            for j in range(1, self.ploidy):
-                for k in range(len(new_paths)):
-                    if new_paths[k] is not None:
-                        continue
+        for i in range(len(new_paths)):
+            path_1: Dict[str, int] = paths_x_1[i]
+            l_path: Dict[str, int]
 
-                    if index_from <= self.gene_number * 2 * j and tail <= self.gene_number * 2 * j:
-                        new_path: Dict[str, int] = PGMPath.connect(paths_x_1[k], paths_x_2[k], l_paths[k])
+            for j in range(len(paths_x_2)):
+                for k in range(len(l_paths)):
+                    path_attempt: Dict[str, int] = PGMPath.connect(path_1, paths_x_2[j], l_paths[k])
 
-                        if new_path is not None:
-                            new_paths[k] = new_path
+                    if path_attempt is not None:
+                        new_paths[i] = path_attempt
+                        break
 
-                    if index_from > self.gene_number * 2 * i and tail > self.gene_number * 2 * i:
-                        for p in range(1, len(l_paths)):
-                            new_path: Dict[str, int] = PGMPath.connect(
-                                paths_x_1[k], paths_x_2[k], l_paths[(k + p) % len(l_paths)])
-
-                            if new_path is not None:
-                                new_paths[k] = new_path
-                                break
-
-                    if index_from <= self.gene_number * 2 * j and tail > self.gene_number * 2 * i:
-                        for p in range(1, len(paths_x_2)):
-                            new_path: Dict[str, int] = PGMPath.connect(
-                                paths_x_1[k], paths_x_2[(k + p) % len(paths_x_2)], l_paths[k])
-
-                            if new_path is not None:
-                                new_paths[k] = new_path
-                                break
-
-                    if index_from > self.gene_number * 2 * i and tail <= self.gene_number * 2 * j:
-                        for p in range(1, len(paths_x_1)):
-                            new_path: Dict[str, int] = PGMPath.connect(
-                                paths_x_1[(k + p) % len(paths_x_1)], paths_x_2[k], l_paths[k])
-
-                            if new_path is not None:
-                                new_paths[k] = new_path
-                                break
+        if new_paths.count(None) > 0:
+            raise Exception("New paths were not created successfully for new ChoiceStructure.")
 
         temp: List[Optional[Dict[str, Any]]] = [None for _ in range(self.ploidy * 4)]
 
