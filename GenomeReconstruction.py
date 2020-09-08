@@ -368,6 +368,8 @@ def genome_aliquoting():
     See the 2010 paper, section 2.5
 
     """
+    raise Exception("Genome Aliquoting is not functional yet.")
+
     # Create the dictionary of genomes from the input file
     genomes: Dict[str, List[str]] = parse_genomes()
 
@@ -571,7 +573,7 @@ def get_algorithm(alg: str):
     """
     if alg == "SmallPhylogeny":
         small_phylogeny()
-    elif alg == "GenomeAliquoting":
+    elif alg == "GenomeAliquoting":  # Genome aliquoting does not work yet
         genome_aliquoting()
     elif alg == "DCJRearrangements":
         dcj_rearrangements(bool(config_get("verbose_output")))
@@ -580,7 +582,6 @@ def get_algorithm(alg: str):
     else:
         raise Exception("Algorithm not supported by this program. Supported algorithms:\n"
                         "- SmallPhylogeny\n"
-                        "- GenomeAliquoting\n"
                         "- DCJRearrangements\n"
                         "- GenomeHalving\n\n")
 
