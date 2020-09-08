@@ -166,11 +166,6 @@ class Aliquoting:
         self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs (trios for n=3?)
             None for _ in range(self.gene_number * 2 + 1)]
 
-        # for i in range(len(self.fragments) // self.ploidy):
-        #     for j in range(1, self.ploidy + 1):
-        #         self.fragments[self.ploidy * i + j] = PGMFragment(self.ploidy * i + j,
-        #                                                           self.ploidy * i + (j + 1) % self.ploidy)
-
         for i in range(int(len(self.fragments) / 2)):
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
             self.fragments[2 * i + 2] = PGMFragment(2 * i + 2, 2 * i + 1)
@@ -416,12 +411,15 @@ class Aliquoting:
             self.gray_edge[self.gray_edge_index] = PGMPath.create_pgm_path(from_1, tail_1)
             self.gray_edge_index += 1
 
-        cs_index: int = gray_edge["head"]
+        cs_index: int = -10000
 
-        while cs_index > self.gene_number * 2:
-            cs_index -= self.gene_number * 2
+        for i in range(self.ploidy - 1, 0, -1):
+            if gray_edge["head"] > self.gene_number * 2 * i:
+                cs_index = (gray_edge["head"] - 1) - self.gene_number * 2 * i
+                break
 
-        cs_index -= 1
+        if cs_index == -10000:
+            cs_index = gray_edge["head"] - 1
 
         self.update_all(cs_index, gray_edge)
 
@@ -1212,7 +1210,7 @@ class Aliquoting:
                         for choice_structure in current_new_choice_structure:
                             current_count = self.count_cycle_look_ahead(choice_structure)
 
-                            if current_count == 3:
+                            if current_count == self.ploidy:
                                 return current_count
 
                             if current_max < current_count:

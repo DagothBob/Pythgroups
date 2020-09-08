@@ -3,13 +3,13 @@
 # # # # # # # # # # # #
 
 # Genome reconstruction algorithm to use
-# [ SmallPhylogeny | DCJRearrangements | GenomeAliquoting | GenomeHalving ]
-algorithm: [algorithm]
+# [ SmallPhylogeny | DCJRearrangements | GenomeHalving ]
+algorithm: SmallPhylogeny
 
 # Path to the aligned genome data file (must be formatted for pathgroups as found in the TestData/InputData examples,
 # unless use_gene_family_parser is enabled.
 # (file Path is relative to the Pythgroups folder)
-genome_file: [path]
+genome_file: TestData/InputData/SmallPhylogenyExample1.txt
 
 # EXPERIMENTAL FEATURE: Hasn't been extensively tested
 # Parse raw gene family data directly, rather than requiring the data to be formatted for pathgroups.
@@ -24,7 +24,7 @@ use_gene_family_parser: False
 # Tree structure in Newick format
 # Note that the non-median genome names must correspond to those found in the genome file
 # while median genomes may be called anything (must have a name though)
-tree_structure: [tree]
+tree_structure: (median1(genome1,median2(genome4,genome5),median3(genome2,genome3)))
 
 # At the end, display the tree structure with calculated distances between nodes
 # [ True | False ]
