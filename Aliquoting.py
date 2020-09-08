@@ -1,5 +1,6 @@
+from itertools import permutations
 from random import Random
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 import ChoiceStructure
 import PGMPath
@@ -164,6 +165,11 @@ class Aliquoting:
 
         self.fragments: List[Optional[PGMFragment]] = [  # Fragments are in pairs (trios for n=3?)
             None for _ in range(self.gene_number * 2 + 1)]
+
+        # for i in range(len(self.fragments) // self.ploidy):
+        #     for j in range(1, self.ploidy + 1):
+        #         self.fragments[self.ploidy * i + j] = PGMFragment(self.ploidy * i + j,
+        #                                                           self.ploidy * i + (j + 1) % self.ploidy)
 
         for i in range(int(len(self.fragments) / 2)):
             self.fragments[2 * i + 1] = PGMFragment(2 * i + 1, 2 * i + 2)
@@ -491,16 +497,17 @@ class Aliquoting:
             self.update_priority(new_fragment[2].end2 - 1)
 
         for choice_structure in new_choice_structure:
-            tails: List[int] = list()
+            tails: List[int] = [-10000 for _ in range(self.ploidy)]
 
-            for i in range(self.ploidy):
-                tails.append(-10000)
-
+            for i in range(len(tails)):
                 for j in range(self.ploidy - 1, 0, -1):
-                    if choice_structure["genome_paths"][i]["tail"] > self.gene_number * 2 * j:
-                        tails[i] = choice_structure["genome_paths"][i]["tail"] - self.gene_number * 2 * j
+                    tail: int = choice_structure["genome_paths"][i]["tail"]
 
-                if tails[i] == -10000:
+                    if tail > self.gene_number * 2 * j:
+                        tails[i] = tail - self.gene_number * 2 * j
+                        break
+
+                if tails[i] == -10000:  # Already normalized
                     tails[i] = choice_structure["genome_paths"][i]["tail"]
 
             for i in range(self.ploidy):
@@ -674,8 +681,9 @@ class Aliquoting:
                 f_scalar = i
                 break
 
-        paths_x_1: List[Dict[str, int]] = [p for p in self.choice_structures[choice_structure_index]["genome_paths"]]
-        paths_x_2: List[Dict[str, int]] = [p for p in self.choice_structures[norm_t - 1]["genome_paths"]]
+        paths_x_1: List[Optional[Dict[str, int]]] = \
+            [p for p in self.choice_structures[choice_structure_index]["genome_paths"]]
+        paths_x_2: List[Optional[Dict[str, int]]] = [p for p in self.choice_structures[norm_t - 1]["genome_paths"]]
 
         current_f_scalar: int = 0
         current_t_scalar: int = 0
@@ -693,29 +701,32 @@ class Aliquoting:
                 current_f_scalar += 1
                 current_t_scalar += 1
 
-        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
+        l_paths: List[Optional[Dict[str, int]]] = \
+            [PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
 
         new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(l_paths))]
 
-        # "Greater-than" checks are done in descending order from ploidy and
-        # "lesser-than" checks are done in ascending order from 0, for best fit
-        #
-        # This has to be significantly more complex in aliquoting vs. GGH to solve
-        # the problem of choosing a best-fit new path
-        for i in range(len(new_paths)):
-            if norm_f == norm_t:          # Parallel for all
-                new_paths[i] = PGMPath.connect(paths_x_1[i], paths_x_2[i], l_paths[i])
+        perm_p1: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(paths_x_1))
+        perm_p2: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(paths_x_2))
+        perm_lp: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(l_paths))
+
+        for p1 in perm_p1:
+            for p2 in perm_p2:
+                for lp in perm_lp:
+                    candidates: List[Optional[Dict[str, int]]] = [PGMPath.connect(p1[i], p2[i], lp[i])
+                                                                  for i in range(self.ploidy)]
+
+                    if candidates.count(None) == 0:
+                        new_paths = candidates
+                        break
+                else:
+                    continue
+
+                break
             else:
-                path_1: Dict[str, int] = paths_x_1[i]
-                l_path: Dict[str, int]
+                continue
 
-                for j in range(len(paths_x_2)):
-                    for k in range(len(l_paths)):
-                        path_attempt: Dict[str, int] = PGMPath.connect(path_1, paths_x_2[j], l_paths[k])
-
-                        if path_attempt is not None:
-                            new_paths[i] = path_attempt
-                            break
+            break
 
         if new_paths.count(None) > 0:
             raise Exception("New paths were not created successfully for new ChoiceStructure.")
@@ -816,14 +827,15 @@ class Aliquoting:
                 if new_choice_structures is not None:
                     for choice_structure in new_choice_structures:
                         if choice_structure["index_from"] == from_small:
-                            temp[temp_index] = ChoiceStructure.create_cs(choice_structure)
+                            temp[temp_index] = ChoiceStructure.create_cs(choice_structure, ploidy=self.ploidy)
                             ChoiceStructure.set_new_path(
                                 temp[temp_index], new_path1, self.ploidy, self.gene_number, True)
                             find_now = True
                             break
 
                 if not find_now and self.choice_structures[from_small - 1] is not None:
-                    temp[temp_index] = ChoiceStructure.create_cs(self.choice_structures[from_small - 1])
+                    temp[temp_index] = ChoiceStructure.create_cs(
+                        self.choice_structures[from_small - 1], ploidy=self.ploidy)
                     ChoiceStructure.set_new_path(
                         temp[temp_index], new_path1, self.ploidy, self.gene_number, True)
                     temp_index += 1
@@ -840,13 +852,14 @@ class Aliquoting:
                 if new_choice_structures is not None:  # LA2 case
                     for choice_structure in new_choice_structures:
                         if choice_structure["index_from"] == tail_small:
-                            temp[temp_index] = ChoiceStructure.create_cs(choice_structure)
+                            temp[temp_index] = ChoiceStructure.create_cs(choice_structure, ploidy=self.ploidy)
                             ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number, True)
                             find_now = True
                             break
 
                 if not find_now and self.choice_structures[tail_small - 1] is not None:
-                    temp[temp_index] = ChoiceStructure.create_cs(self.choice_structures[tail_small - 1])
+                    temp[temp_index] = ChoiceStructure.create_cs(
+                        self.choice_structures[tail_small - 1], ploidy=self.ploidy)
                     ChoiceStructure.set_new_path(temp[temp_index], np1, self.ploidy, self.gene_number, True)
                     temp_index += 1
             else:
@@ -1235,7 +1248,7 @@ class Aliquoting:
         if tail <= 0:
             return list()
 
-        paths_x_1: List[Dict[str, int]] = [path for path in ancestor_choice_structure["genome_paths"]]
+        paths_x_1: List[Optional[Dict[str, int]]] = [path for path in ancestor_choice_structure["genome_paths"]]
 
         # getTheCSWithGandStart(t, allncs)
         new_choice_structure: Optional[Dict[str, Any]] = None
@@ -1253,15 +1266,15 @@ class Aliquoting:
 
         for choice_structure in new_choice_structures:
             if choice_structure["index_from"] == start:
-                new_choice_structure = ChoiceStructure.create_cs(choice_structure)
+                new_choice_structure = ChoiceStructure.create_cs(choice_structure, ploidy=self.ploidy)
                 cont = True
                 break
 
         if not cont:
-            new_choice_structure = ChoiceStructure.create_cs(self.choice_structures[start - 1])
+            new_choice_structure = ChoiceStructure.create_cs(self.choice_structures[start - 1], ploidy=self.ploidy)
         # Return
 
-        paths_x_2: List[Dict[str, int]] = [path for path in new_choice_structure["genome_paths"]]
+        paths_x_2: List[Optional[Dict[str, int]]] = [path for path in new_choice_structure["genome_paths"]]
 
         froms: List[int] = [-10000 for _ in range(self.ploidy)]
         tails: List[int] = [-10000 for _ in range(self.ploidy)]
@@ -1302,21 +1315,31 @@ class Aliquoting:
                 current_f_scalar += 1
                 current_t_scalar += 1
 
-        l_paths: List[Dict[str, int]] = [PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
+        l_paths: List[Optional[Dict[str, int]]] = [
+            PGMPath.create_pgm_path(froms[i], tails[i]) for i in range(self.ploidy)]
 
-        new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(paths_x_1))]
+        new_paths: List[Optional[Dict[str, int]]] = [None for _ in range(len(l_paths))]
+        perm_p1: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(paths_x_1))
+        perm_p2: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(paths_x_2))
+        perm_lp: List[Tuple[Optional[Dict[str, int]]]] = list(permutations(l_paths))
 
-        for i in range(len(new_paths)):
-            path_1: Dict[str, int] = paths_x_1[i]
-            l_path: Dict[str, int]
+        for p1 in perm_p1:
+            for p2 in perm_p2:
+                for lp in perm_lp:
+                    candidates: List[Optional[Dict[str, int]]] = [PGMPath.connect(p1[i], p2[i], lp[i])
+                                                                  for i in range(self.ploidy)]
 
-            for j in range(len(paths_x_2)):
-                for k in range(len(l_paths)):
-                    path_attempt: Dict[str, int] = PGMPath.connect(path_1, paths_x_2[j], l_paths[k])
-
-                    if path_attempt is not None:
-                        new_paths[i] = path_attempt
+                    if candidates.count(None) == 0:
+                        new_paths = candidates
                         break
+                else:
+                    continue
+
+                break
+            else:
+                continue
+
+            break
 
         if new_paths.count(None) > 0:
             raise Exception("New paths were not created successfully for new ChoiceStructure.")
