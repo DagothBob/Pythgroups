@@ -16,6 +16,8 @@ genome_file: TestData/InputData/GuidedHalvingExample1.txt
 genome_file: TestData/InputData/SmallPhylogenyExample1.txt
 genome_file: TestData/InputData/SmallPhylogenyExample2.txt
 
+use_gene_family_parser: False  # must be False for all example inputs
+
 # # # # # # # # # # # #
 # - Small Phylogeny - #
 # # # # # # # # # # # #
@@ -26,8 +28,6 @@ tree_structure: (ancestor(B.rapa,B.oleracea,B.nigra))  # SmallPhylogenyExample2
 show_diagram: True
 
 show_DCJR: True
-
-use_gene_family_parser: False  # must be False for all example inputs
 
 # # # # # # # # # # # # # #
 # - DCJ Rearrangements -  #

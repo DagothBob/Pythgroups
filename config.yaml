@@ -11,7 +11,7 @@ algorithm: SmallPhylogeny
 # (file Path is relative to the Pythgroups folder)
 genome_file: TestData/InputData/SmallPhylogenyExample1.txt
 
-# EXPERIMENTAL FEATURE: Hasn't been extensively tested
+# EXPERIMENTAL FEATURE: Hasn't been extensively tested. Doesn't work for the GenomeHalving algorithm
 # Parse raw gene family data directly, rather than requiring the data to be formatted for pathgroups.
 # Check out the config section of the manual for details on its formatting.
 # [ True | False ]
