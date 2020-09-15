@@ -23,7 +23,7 @@ Zheng C., *Pathgroups, a dynamic data structure for genome reconstruction proble
 - *[Software for Small Phylogeny Construction using Pathgroups](http://216.48.92.133/Softwares/smallPhylogeny/smallPhylogeny.html)*
 - *[Software for Guided genome halving](http://216.48.92.133/Softwares/GuidedGenomeHalving/GGH.html)*
 
-Each of these programs are hosted on [Sankoff's website](http://216.48.92.133)
+Each of these programs are hosted on [Sankoff's website](http://216.48.92.133). Unfortunately the original DCJOperations package hasn't been officially published, but we've included it in our program anyway since it's mostly functional and provides unique functionality.
 
 ## Copyright
 Biopython is used under the Biopython Licence Agreement (c)2020
