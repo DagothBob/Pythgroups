@@ -118,9 +118,7 @@ An extension of GGH for n > 2. It is currently incomplete.
 
 ### `config.yaml`
 
-The user specifies relevant data in this config file. This includes:
-- The tree structure for the genomes
-- The file path for the gene family file
+The user specifies relevant data and configuration options in this YAML file. 
 
 ### `Chromosome.py`
 
